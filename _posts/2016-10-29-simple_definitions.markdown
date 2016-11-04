@@ -4,7 +4,7 @@ title:  "Producing Simple Definitions from Word Vectors"
 date:   2016-10-29 22:25:30 -0500
 categories: ml
 ---
-#Producing Simple Definitions from Word Vectors
+# Producing Simple Definitions from Word Vectors
 
 
 I’ve trained a neural network to take a word vector a predict a two word definition for the word it encodes.  For instance, the network predicts “red vegetable” as the definitions of “turnip.”
