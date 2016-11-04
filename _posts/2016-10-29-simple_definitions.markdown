@@ -1,16 +1,15 @@
 ---
 layout: post
 title:  "Producing Simple Definitions from Word Vectors"
-date:   2016-10-29 22:25:30 -0500
+date:   2016-10-29 22:25:30 -0000
 categories: ml
 ---
-# Producing Simple Definitions from Word Vectors
 
 
 I’ve trained a neural network to take a word vector a predict a two word definition for the word it encodes.  For instance, the network predicts “red vegetable” as the definitions of “turnip.”
 
 
-##introduction
+## introduction
 
 
 Word embeddings are a great way to represent words for NLP tasks, but the vectors themselves are hard to directly interpret.  One way to see what kind of concept a word vector represents is to look for similar vectors in the embedding space.  Let’s look at some examples
@@ -24,7 +23,7 @@ If you wanted to determine whether a person understood the meaning of a word, yo
 
 
 
-##gathering data
+## gathering data
 
 
 We need a large set of definitions examples of the form (adjective, noun).  Many dictionary definitions are of the form “adjective adjective hypernym ... “ where the hypernym is a category of which the word to define is an example.  For instance,
@@ -42,7 +41,7 @@ To extract these definitions automatically, I use hypernyms from wordnet.  I use
 This is a pretty simple approach, so I’ve hand built a list of disallowed adjectives, like “certain,” “such,” and “several.”  This ought to reduce the chance that a definition for “grass” comes out as “such plant.”  Problems like that occured before I did this preprocessing.
 
 
-##the model
+## the model
 
 
 Since I’m predicting a fixed length response from fixed length input, and there’s no expectation of repeated local structure in the input vectors, I’ll simply use a deep, fully connected architecture.  I experimented with the architecture some, but my original two 500 unit hidden layer, relu activated architecture gave the best results.  
@@ -51,7 +50,7 @@ Since I’m predicting a fixed length response from fixed length input, and ther
 I’ll train it using the Adam optimizer with a decaying learning rate starting at .001.  
 
 
-##results
+## results
 
 
 I’m quite pleased with the model’s performance on the validation set.  Here are some nice examples:
@@ -83,7 +82,7 @@ Some examples are slightly strange
 I’m betting chartreuse maps to red because red and green are close to each other in the word embedding space, so it’s not necessarily very easy to tell from the vector for chartreuse which color it is.
 
 
-##future work
+## future work
 
 
 I think these results could be greatly improved by collecting more data.  The set of examples I have is only about 50,000 strong.  
@@ -107,7 +106,7 @@ I have not addressed the question of polysemy in my data.  Many words have multi
 
 
 
-###Cute examples
+### Cute examples
 
 
 * penguin: large tree
@@ -134,7 +133,7 @@ I have not addressed the question of polysemy in my data.  Many words have multi
 
 
 
-###random examples from the validation set
+### random examples from the validation set
 
 
 * fawn: white goat
