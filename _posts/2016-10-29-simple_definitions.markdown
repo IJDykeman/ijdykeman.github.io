@@ -88,6 +88,9 @@ I have not addressed the question of polysemy in my data.  Many words have multi
 
 ### Cute examples
 
+* revenant: military spirit
+* buttock: small end
+* sensualism: religious carnality
 * row: continuous strip
 * birthday: s anniversary
 * graduation: successful completion
