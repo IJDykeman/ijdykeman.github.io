@@ -6,7 +6,10 @@ categories: ml
 ---
 
 
+![Simple network diagram]({{ site.url }}/assets/turnip_net.png)
+
 I’ve trained a neural network to take a word vector a predict a two word definition for the word it encodes.  For instance, the network predicts “red vegetable” as the definitions of “turnip.”
+
 
 
 ## introduction
