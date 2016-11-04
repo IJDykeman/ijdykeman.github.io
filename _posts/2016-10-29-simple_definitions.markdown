@@ -1,3 +1,9 @@
+---
+layout: post
+title:  "Producing Simple Definitions from Word Vectors"
+date:   2016-10-29 22:25:30 -0500
+categories: ml
+---
 #Producing Simple Definitions from Word Vectors
 
 
