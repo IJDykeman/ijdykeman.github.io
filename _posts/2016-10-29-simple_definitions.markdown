@@ -5,58 +5,56 @@ date:   2016-10-29 22:25:30 -0500
 categories: ml
 ---
 
-
 ![Simple network diagram]({{ site.url }}/assets/turnip_net.png)
 
-I’ve trained a neural network to take a word vector a predict a two word definition for the word it encodes.  For instance, the network predicts “red vegetable” as the definitions of “turnip.”
 
+I’ve trained a neural network to take a word vector a predict a two word definition for the word it encodes.  For instance, the network predicts “red vegetable” as the definition of “turnip.”
 
 
 ## introduction
 
-
-Word embeddings are a great way to represent words for NLP tasks, but the vectors themselves are hard to directly interpret.  One way to see what kind of concept a word vector represents is to look for similar vectors in the embedding space.  Let’s look at some examples
-
-
-The word “ostrich” is most similar to chicken.  The next most similar word is “elephant,” followed by “pig”, “giraffe”, and finally “ratite,” which is a term for a group of species of flightless birds to which the ostrich belongs.  It’s not clear from this information how much the word embedding space “understands” about the Ostrich.  It’s true that chickens are also birds, and it’s promising that “ratite” appears on the list, but “elephant” and “pig” are both above it.  It’s clearly recorded the fact that an Ostrich is an animal, but how detailed is the word embedding’s “idea” of what an ostrich is?
-
+Word embeddings are a great way to represent words for NLP tasks, but the vectors themselves are hard to directly interpret.  One way to see what kind of concept a word vector represents is to look for similar vectors in the embedding space.   For example, the word “ostrich” is most similar to chicken.  The next most similar word is “elephant,” followed by “pig”, “giraffe”, and finally “ratite,” which is a term for a group of species of flightless birds to which the ostrich belongs.  It’s not clear from this information how much the word embedding space “understands” about the Ostrich.  It’s true that chickens are also birds, and it’s promising that “ratite” appears on the list, but “elephant” and “pig” are both above it.  It’s clearly recorded the fact that an Ostrich is an animal, but how detailed is the word embedding’s “idea” of what an ostrich is?
 
 If you wanted to determine whether a person understood the meaning of a word, you might ask them to define it.  Let’s apply the same intuition here, and train a model to produce definitions of words in its vocabulary.  For this early experiment, I’ll limit the definitions to a simple form: a single adjective followed by a single noun.  For example, “flightless bird” might be a good definition for ostrich.
 
 
-
-
 ## gathering data
-
 
 We need a large set of definitions examples of the form (adjective, noun).  Many dictionary definitions are of the form “adjective adjective hypernym ... “ where the hypernym is a category of which the word to define is an example.  For instance,
 
-
 > ostrich (noun) a flightless swift-running African bird with a long neck, long legs, and two toes on each foot. It is the largest living bird, with males reaching an average height of 8 feet (2.5 m).
-
 
 So we have that an ostrich is a type of bird that is flightless, swift-running, and African.  I’ll consider “flightless bird,” “swift-running bird,” and “African bird” to all be acceptable definitions for ostrich.
 
-
 To extract these definitions automatically, I use hypernyms from wordnet.  I use part of speech tagging and take all the adjectives up to the first occurrence of a hypernym of the word being defined, and treat each (adjective, hypernym) pair as an example of a valid definition for that word.
 
-
 This is a pretty simple approach, so I’ve hand built a list of disallowed adjectives, like “certain,” “such,” and “several.”  This ought to reduce the chance that a definition for “grass” comes out as “such plant.”  Problems like that occured before I did this preprocessing.
+
+I also need the word vectors themselves.  I’m using both the vectors and the dictionary corpus from [this paper by Hill et. al.](http://www.aclweb.org/anthology/Q16-1002), which was a big factor in inspiring me to do this work, in addition to a good source of data.  You can get their data [here](http://www.cl.cam.ac.uk/~fh295/dicteval.html).
 
 
 ## the model
 
+Since I’m predicting a fixed length response from fixed length input, and there’s no expectation of repeated local structure in the input vectors, I’ll simply use a deep, fully connected architecture.  I experimented with the architecture some, but my original two 500 unit hidden layer, relu activated architecture gave the best results.
 
-Since I’m predicting a fixed length response from fixed length input, and there’s no expectation of repeated local structure in the input vectors, I’ll simply use a deep, fully connected architecture.  I experimented with the architecture some, but my original two 500 unit hidden layer, relu activated architecture gave the best results.  
+
+This certainly isn’t a deep architecture.  I think that makes sense since the representation we are starting with, the word vectors, are already a rich semantic representation of the words we are interested in.
 
 
-I’ll train it using the Adam optimizer with a decaying learning rate starting at .001.  
+I’ll train it using the Adam optimizer with a decaying learning rate starting at .001.  The loss function I’m using is 
+
+$$L = cos(a, a’)^2 + cos(n, n’)^2$$
+
+Where a and a’ are the predicted and correct adjective vector respectively, and the same for n and n’.  Cos is the cosine distance between two vectors.
 
 
 ## results
 
 
+
+
 I’m quite pleased with the model’s performance on the validation set.  Here are some nice examples:
+
 
 * roquefort: soft cheese
 * skewer: small blade
@@ -71,9 +69,7 @@ I’m quite pleased with the model’s performance on the validation set.  Here 
 * soleus: strong muscle
 * flamenco: strong music
 
-
 Some examples are slightly strange
-
 
 * inside: outer skin
 * chartreuse: thick red
@@ -81,43 +77,22 @@ Some examples are slightly strange
 * indifference: good disposition
 * frenchman: native inhabitant
 
-
-I’m betting chartreuse maps to red because red and green are close to each other in the word embedding space, so it’s not necessarily very easy to tell from the vector for chartreuse which color it is.
-
+I’m betting chartreuse maps to red because red and green are close to each other in the word embedding space, so it’s not necessarily very easy to tell from the vector for chartreuse which color it is.  WRITE MORE ABOUT THIS
 
 ## future work
 
-
 I think these results could be greatly improved by collecting more data.  The set of examples I have is only about 50,000 strong.  
-
 
 The other obvious next step is to try to produce arbitrary dictionary definitions from a word.  By limiting the form of definitions I use to (adjective, noun), I greatly reduce the amount of useful information I can extract from a dictionary.  The definition corpus used for BENGIO_PAPER has 800,000 examples.  Perhaps this could be used to train a recurrent model to predict a full definition from a word vector.
 
-
 I have not addressed the question of polysemy in my data.  Many words have multiple meanings, and so at training time, the network may be conflicting definitions for a given word.  One could remove definitions for non-dominant word senses, but word vectors are known to contain information about multiple senses of the word they represent, so there may be a way of creating reasonable definitions that cover various senses.  I plan to explore this.
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 ### Cute examples
 
-
-* penguin: large tree
 * row: continuous strip
 * birthday: s anniversary
 * graduation: successful completion
 * phi: greek letter
-* penguin: large tree
 * ostrich: large bird
 * sparrow: small bird
 * ship: large vessel
@@ -131,13 +106,7 @@ I have not addressed the question of polysemy in my data.  Many words have multi
 * turnip: red vegetable
 * hillary: general game
 
-
-
-
-
-
 ### random examples from the validation set
-
 
 * fawn: white goat
 * excuse: strong paycheck
@@ -261,5 +230,3 @@ I have not addressed the question of polysemy in my data.  Many words have multi
 * radiation: bodily substance
 * urbanity: obvious respect
 * marquetry: decorative decoration
-
-
