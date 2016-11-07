@@ -39,9 +39,9 @@ Some work has been done with multicolumn deep convolutional neural networks, but
 
 I’ll train it using the Adam optimizer with a decaying learning rate starting at .0005.  The loss function I’m using is 
 
-$$L = cos(a, a’)^2 + cos(n, n’)^2 + L2$$
+$$L = (1-cos(a, a’))^2 + (1-cos(n, n’))^2 + L2$$
 
-Where a and a’ are the predicted and correct adjective vector respectively, and the same for n and n’.  Cos is the cosine distance between two vectors.  L2 is the L2 regularization  term.
+Where a and a’ are the predicted and correct adjective vector respectively, and the same for n and n’.  Cos is the cosine similarity between two vectors.  L2 is the L2 regularization  term.
 
 ## ensemble method for filtering generated definitions
 
