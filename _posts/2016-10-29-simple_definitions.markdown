@@ -55,7 +55,7 @@ So if it seems that in cases where the distance between the prediction and the n
 
 ## results
 
-I’m quite pleased with the enseble model’s performance on the validation set.  My favorite is the definition of tracery as "botanical building."  Tracery is the stone openwork sometimes found on Gothic windows.
+I’m pleased with the enseble model’s performance on the validation set.  My favorite is the definition of tracery as "botanical building."  Tracery is the stone openwork sometimes found on Gothic windows.
 
 
 ![Tracery]({{ site.url }}/assets/tracery.jpg)
