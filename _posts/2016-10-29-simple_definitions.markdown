@@ -31,11 +31,6 @@ This is a pretty simple approach, and it tends to pick up low quality definition
 
 I also need the word vectors themselves.  I’m using both the vectors and the dictionary corpus from [this paper by Hill et. al.](http://www.aclweb.org/anthology/Q16-1002), which was a big factor in inspiring me to do this work, in addition to a good source of data.  You can get their data [here](http://www.cl.cam.ac.uk/~fh295/dicteval.html).
 
-## augmenting the data
-
-
-Only a fraction of definitions in the corpus are of the form I mentioned above.  It may be that some words’ hypernyms never show up in their definitions.  It might make sense to use hypernyms from wordnet even without corresponding adjectives.  This could help optimize the part of the network that determines hypernyms.  By having a separate loss function that only measures error on the noun prediction, I can make use of these hypernyms even without corresponding nouns.
-
 
 
 ## a multicolumn perceptron
@@ -59,9 +54,7 @@ Where a and a’ are the predicted and correct adjective vector respectively, an
 
 Even with the mutlicolumn architecture, there’s still some noise in the generated definitions.  Training the same model multiple times produces models that succeed or fail on different examples.  If I could create an ensemble and then aggregate their predictions in some way, I might end up with a more robust system.  The problem is choosing which prediction to use.  One method would be simply averaging the predictions of all the models, but what if there were some way of evaluating each individual prediction and picking the best?
 
-
 When a model makes a prediction, it predicts a vector in word space.  To convert this to readable text, I find the nearest word vector to the prediction.  I noticed that the distance between the predicted vectors and the nearest work vectors is negatively correlated with the quality of the prediction.
-
 
 So if it seems that in cases where the distance between the prediction and the nearest word is high, the quality of the prediction is low, I’ll just gather predictions from a number of different models and take the prediction with the lowest cosine distances to the nearest words in the vocabulary.  This had a large positive effect on the quality of definitions produced.
 
@@ -109,6 +102,8 @@ I’m quite pleased with the enseble model’s performance on the validation set
 ## future work
 
 I think these results could be greatly improved by collecting more data.  The set of examples I have is only about 50,000 strong.  
+
+Only a fraction of definitions in the corpus are of the form I mentioned above.  It may be that some words’ hypernyms never show up in their definitions.  It might make sense to use hypernyms from wordnet even without corresponding adjectives.  This could help optimize the part of the network that determines hypernyms by having a separate loss function that only measures error on the noun prediction.
 
 The other obvious next step is to try to produce arbitrary dictionary definitions from a word.  By limiting the form of definitions I use to (adjective, noun), I greatly reduce the amount of useful information I can extract from a dictionary.  The definition corpus used for the paper by Hill et. al. has 800,000 examples.  Perhaps this could be used to train a recurrent model to predict a full definition from a word vector.
 
