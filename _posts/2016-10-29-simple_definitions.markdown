@@ -55,13 +55,7 @@ So if it seems that in cases where the distance between the prediction and the n
 
 ## results
 
-I’m pleased with the enseble model’s performance on the validation set.  My favorite is the definition of tracery as "botanical building."  Tracery is the flower-inspired stone openwork sometimes found on Gothic windows.
-
-
-![Tracery]({{ site.url }}/assets/tracery.jpg)
-
-
-Here are some other nice examples:
+I'm happy with the model's performance on the validation set.  Here are some hand-picked examples:
 
 * romanticism: philosophical movement
 * breakthrough: spectacular performance
@@ -72,7 +66,6 @@ Here are some other nice examples:
 * d: old symbol
 * salsa: colorful music
 * flamenco: strong music
-* revenant: military spirit
 * buttock: small end
 * sensualism: religious carnality
 * graduation: successful completion
@@ -87,6 +80,11 @@ Here are some other nice examples:
 * beet: swollen vegetable
 * turnip: red vegetable
 * skewer: small blade
+
+
+The result I liked the most while I was working on this model was the definitions of tracery.  Tracery is the flower-inspired stone openwork sometimes found on Gothic windows.  The model described it as "botanical building."  Though the final ensemble model predicts the more correct "decorative structure," this clearly shows that information about the symbolic, sensory quality of tracery is present in its word vector.
+
+![Tracery]({{ site.url }}/assets/tracery.jpg)
 
 
 ## future work
