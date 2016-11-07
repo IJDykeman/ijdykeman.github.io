@@ -21,7 +21,7 @@ We need a large set of definitions examples of the form (adjective, noun).  Many
 
 So we have that an ostrich is a type of bird that is flightless, swift-running, and African.  I’ll consider “flightless bird,” “swift-running bird,” and “African bird” to all be acceptable definitions for ostrich.
 
-To extract these definitions automatically, I use hypernyms from wordnet.  I use part of speech tagging and take all the adjectives up to the first occurrence of a hypernym of the word being defined, and treat each (adjective, hypernym) pair as an example of a valid definition for that word.
+To extract these definitions automatically, I use hypernyms from wordnet and part of speech tagging and take all the adjectives up to the first occurrence of a hypernym of the word being defined, and treat each (adjective, hypernym) pair as an example of a valid definition for that word.
 
 This is a pretty simple approach, and it tends to pick up low quality definitions like “certain bird,” if the original defintion was “a certain tropical bird...” To mitigate this, I made a small list of disallowed adjectives, like “certain,” “such,” and “several.”
 
@@ -30,25 +30,23 @@ I also need the word vectors themselves.  I’m using both the vectors and the d
 
 ## a multicolumn perceptron
 
-Since I’m predicting a fixed length response from fixed length input, and there’s no expectation of repeated local structure in the input vectors, I’ll simply use a deep, fully connected architecture.  I experimented with different numbers and widths of layers, and found that two 500 unit hidden layers works well.
+Since I’m predicting a fixed length response from fixed length input, and there’s no expectation of spacial structure in the input vectors, I’ll simply use a deep, fully connected architecture.  I experimented with different numbers and widths of layers, and found that two 500 unit hidden layers works well.
 
-I noticed that as I varied the number of layers, totally different sets examples from the validation set would work.  I wondered if perhaps more depth was helpful for some examples but not others.  In that case, it might help to have a network with subnetworks of various depth.  I used three columns of layers, one with 2 200 node layers, one with 3 100 node layers, and one with 4 100 node layers.  This model provided the best performance I managed over the course of the project.  
+I noticed that as I varied the number of layers, different sets examples from the validation data would work.  I wondered if perhaps more depth was helpful for some examples but not others.  In that case, it might help to have a network with subnetworks of various depth.  I used three columns of layers, one with 2 200 node layers, one with 3 100 node layers, and one with 4 100 node layers.  This model provided the best performance I managed over the course of the project.  
 
-Some work has been done with multicolumn deep convolutional neural networks, but my cursory search of the literature didn't turn anything up about multicolumn fully connected networks, so I can’t provide references to attest to the qualities of this architecture in general.
+Some work has been done with multicolumn deep convolutional neural networks, but a cursory search of the literature didn't turn anything up about multicolumn fully connected networks, so I can’t provide references to attest to the qualities of this architecture in general.
 
-I’ll train it using the Adam optimizer with a decaying learning rate starting at .001.  The loss function I’m using is 
+I’ll train it using the Adam optimizer with a decaying learning rate starting at .0005.  The loss function I’m using is 
 
-$$L = cos(a, a’)^2 + cos(n, n’)^2$$
+$$L = cos(a, a’)^2 + cos(n, n’)^2 + L2$$
 
-Where a and a’ are the predicted and correct adjective vector respectively, and the same for n and n’.  Cos is the cosine distance between two vectors.
+Where a and a’ are the predicted and correct adjective vector respectively, and the same for n and n’.  Cos is the cosine distance between two vectors.  L2 is the L2 regularization  term.
 
 ## ensemble method for filtering generated definitions
 
-Even with the mutlicolumn architecture, there’s still some noise in the generated definitions.  Training the same model multiple times produces models that succeed or fail on different examples.  If I could create an ensemble and then aggregate their predictions in some way, I might end up with a more robust system.  The problem is choosing which prediction to use.  One method would be simply averaging the predictions of all the models, but what if there were some way of evaluating each individual prediction and picking the best?
+Even with the mutlicolumn architecture, there’s still some noise in the generated definitions.  Training the same model multiple times produces models that succeed or fail on different examples.  If I could create an ensemble and then aggregate their predictions in some way, I might end up with a more robust system.  The problem is choosing which model's prediction to use.
 
-When a model makes a prediction, it predicts a vector in word space.  To convert this to readable text, I find the nearest word vector to the prediction.  I noticed that the distance between the predicted vectors and the nearest work vectors is negatively correlated with the quality of the prediction.
-
-So if it seems that in cases where the distance between the prediction and the nearest word is high, the quality of the prediction is low, I’ll just gather predictions from a number of different models and take the prediction with the lowest cosine distances to the nearest words in the vocabulary.  This had a large positive effect on the quality of definitions produced.
+To convert a model's predicted vector to readable text, I find the nearest word vector to the prediction.  I noticed that the cosine distance between the predicted vectors and the nearest word vectors is negatively correlated with the quality of the prediction.  So if the distance between the prediction and the nearest word is high, the quality of the prediction is low, I’ll just gather predictions from a number of different models and take the prediction with the lowest cosine distances to the nearest words in the vocabulary.  This made the system's results much more reliable.
 
 
 ## results
