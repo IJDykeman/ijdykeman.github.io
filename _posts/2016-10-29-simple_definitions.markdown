@@ -7,8 +7,6 @@ categories: ml
 
 ![Simple network diagram]({{ site.url }}/assets/turnip_net.png)
 
-I’ve trained a neural network to take a word vector and predict a two word definition for the word it encodes.  For instance, the network predicts “red vegetable” as the definition of “turnip.”
-
 ## introduction
 
 Word embeddings are a great way to represent words for NLP tasks, but the vectors themselves are hard to directly interpret.  One way to see what kind of concept a word vector represents is to look for similar vectors in the embedding space.   For example, the word “ostrich” is most similar to chicken.  The next most similar word is “elephant,” followed by “pig”, “giraffe”, and finally “ratite,” which is a term for a group of species of flightless birds to which the ostrich belongs.  It’s not clear from this information how much the word embedding space “understands” about the ostrich.  It’s true that chickens are also birds, and it’s promising that “ratite” appears on the list, but “elephant” and “pig” are both above it.  It’s clearly recorded the fact that an Ostrich is an animal, but how detailed is the word embedding’s idea of what an ostrich is?
