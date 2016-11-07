@@ -55,7 +55,13 @@ So if it seems that in cases where the distance between the prediction and the n
 
 ## results
 
-I’m quite pleased with the enseble model’s performance on the validation set.  Here are some nice examples:
+I’m quite pleased with the enseble model’s performance on the validation set.  My favorite is the definition of tracery as "botanical building."  Tracery is the stone openwork sometimes found on Gothic windows.
+
+
+![Tracery]({{ site.url }}/assets/tracery.jpg)
+
+
+Here are some other nice examples:
 
 * romanticism: philosophical movement
 * breakthrough: spectacular performance
