@@ -19,7 +19,7 @@ If you wanted to determine whether a person understood the meaning of a word, yo
 
 We need a large set of definitions examples of the form (adjective, noun).  Many dictionary definitions are of the form “adjective adjective hypernym ... “ where the hypernym is a category of which the word to define is an example.  For instance,
 
-> ostrich (noun) a flightless swift-running African bird with a long neck, long legs, and two toes on each foot. It is the largest living bird, with males reaching an average height of 8 feet (2.5 m).
+> ostrich (noun) a flightless swift-running African bird with a long neck, long legs, and two toes on each foot.
 
 So we have that an ostrich is a type of bird that is flightless, swift-running, and African.  I’ll consider “flightless bird,” “swift-running bird,” and “African bird” to all be acceptable definitions for ostrich.
 
