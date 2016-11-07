@@ -70,7 +70,6 @@ Here are some other nice examples:
 * cantaloupe: common fruit
 * philosopher: intellectual person
 * d: old symbol
-* soleus: strong muscle
 * salsa: colorful music
 * flamenco: strong music
 * revenant: military spirit
@@ -80,7 +79,6 @@ Here are some other nice examples:
 * phi: greek letter
 * ship: large vessel
 * canoe: small boat
-* galleon: large vessel
 * dumpling: small food
 * analysis: literary writing
 * computer: electronic device
@@ -88,11 +86,6 @@ Here are some other nice examples:
 * beat: regular motion
 * beet: swollen vegetable
 * turnip: red vegetable
-* stream: small fluidity
-* tarpan: european horse
-* update: forceful installation 
-* predator: carnivorous animal
-* sentimentality: dull philosophy
 * skewer: small blade
 
 
@@ -109,55 +102,124 @@ I have not addressed the question of polysemy in my data.  Many words have multi
 
 
 ### random examples from the validation set
-* rabbi: american clergyman
-* manometer: vertical device
-* barb: small scrape 
-* ligature: archness procedure 
-* sardine: american fish 
-* gradient: strong way 
-* croton: small tree 
-* stick: strong device 
-* picumnus: atypical subfamily 
-* peritoneum: thin membrane 
-* carton: small bag 
-* military: military priest 
-* legume: small fruit 
-* homegirl: male woman 
-* brownie: large bread 
-* iroquois: american indian
-* reception: common arrangement 
-* mullet: thin creature 
-* subsystem: traditional device 
-* fence: vertical structure 
-* vagrancy: casual woman 
-* medina: thin fabric 
-* titter: nasty utterance 
-* limb: small structure 
-* auricle: small procedure 
-* bait: powerful device 
-* cree: american indian
-* townsman: female person 
-* annelid: phylogenetic organism
-* bantamweight: professional boxer 
-* alkali: oily mineral 
-* bandanna: small scar
-* blitz: sudden anger 
-* galleon: large vessel 
-* ottoman: western chinese 
-* spelling: strong policy 
-* smash: powerful sound 
-* surcharge: special device 
-* soleus: large muscle 
-* lycosa: usual subfamily 
-* rheostat: electrical device 
-* hunger: extreme hatred 
-* pia: political herb
-* crappie: american fish 
-* period: indefinite time 
-* border: large room 
-* dialect: poetic english 
-* tracery: foliated flower 
-* crypt: small room 
-* macrophage: small leukocyte 
-* factoid: short decameron 
-* hysteroscopy: medical instrument 
+rabbi: religious person
+manometer: mechanical instrument
+barb: thick piece
+ligature: plural letter
+sardine: small fish
+gradient: vertical motion
+croton: unusual jawfish
+stick: heavy strap
+picumnus: atypical subfamily
+peritoneum: thin structure
+carton: small container
+military: military state
+legume: large plant
+homegirl: female woman
+brownie: small milk
+iroquois: western indian
+reception: official creation
+mullet: short hair
+subsystem: ventral device
+fence: narrow barrier
+vagrancy: political state
+medina: small tree
+titter: high sound
+limb: high strength
+auricle: small part
+bait: large device
+cree: american indian
+townsman: native inhabitant
+annelid: small organism
+bantamweight: professional boxer
+alkali: similar compound
+bandanna: small coat
+blitz: violent event
+galleon: narrow vessel
+ottoman: french inhabitant
+spelling: formal act
+smash: strong buzz
+surcharge: military fee
+soleus: large muscle
+lycosa: large subfamily
+rheostat: electrical instrument
+hunger: extreme fear
+pia: hard piece
+crappie: small fish
+period: definite time
+border: perceptible passage
+dialect: particular word
+tracery: decorative structure
+crypt: deep building
+macrophage: low tree
+factoid: revelatory essay
+hysteroscopy: medical instrument
+lungi: south fabric
+technocrat: sophisticated person
+hypocrisy: false dishonesty
+halfback: american position
+bird: old bird
+deflagration: violent explosion
+cleft: small rock
+node: large unit
+electrocution: mental destruction
+ripsaw: small car
+ladin: western german
+gravity: physical movement
+corticosteroid: synthetic antibiotic
+sentimentality: repetitive sentimentality
+amplitude: large quantity
+magneto: small bird
+medic: medical person
+real: ultimate structure
+tub: large vessel
+temperament: intrinsic person
+straight: curved part
+usurer: obnoxious person
+lindane: synthetic analgesic
+tarpan: native cattle
+dorsum: second direction
+anarchy: political state
+colony: legal district
+gulch: large hole
+profundity: splendid quality
+ovenbird: small bird
+sauerkraut: french pasta
+neritidae: morphological family
+micrococcus: red subfamily
+benelux: musical movement
+hymenoptera: phylogenetic order
+storminess: high weather
+predator: carnivorous animal
+cardboard: thin fabric
+clam: small crustacean
+street: large area
+coast: coarse boundary
+kris: bright leaf
+update: informal procedure
+lift: minimal motion
+treason: strong punishment
+impromptu: traditional music
+nu: official letter
+territorial: real person
+sidestep: astonishing return
+instability: strong state
+sapsucker: small bird
+vaccinia: large infection
+neurologist: medical doctor
+lollipop: small case
+prednisolone: quinoline antibiotic
+footnote: small part
+chic: black person
+nystatin: generic antibiotic
+newsletter: short book
+postage: french coin
+servitude: brutal loyalty
+odynophagia: extraordinary symptom
+associationism: political doctrine
+montrachet: white wine
+stanchion: small device
+public: informal person
+stream: strong region
+peat: low rock
+lathi: english knife
