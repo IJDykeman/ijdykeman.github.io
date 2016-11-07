@@ -110,7 +110,7 @@ I’m quite pleased with the enseble model’s performance on the validation set
 
 I think these results could be greatly improved by collecting more data.  The set of examples I have is only about 50,000 strong.  
 
-The other obvious next step is to try to produce arbitrary dictionary definitions from a word.  By limiting the form of definitions I use to (adjective, noun), I greatly reduce the amount of useful information I can extract from a dictionary.  The definition corpus used for BENGIO_PAPER has 800,000 examples.  Perhaps this could be used to train a recurrent model to predict a full definition from a word vector.
+The other obvious next step is to try to produce arbitrary dictionary definitions from a word.  By limiting the form of definitions I use to (adjective, noun), I greatly reduce the amount of useful information I can extract from a dictionary.  The definition corpus used for the paper by Hill et. al. has 800,000 examples.  Perhaps this could be used to train a recurrent model to predict a full definition from a word vector.
 
 I have not addressed the question of polysemy in my data.  Many words have multiple meanings, and so at training time, the network is seeing conflicting definitions for a given word.  One could remove definitions for non-dominant word senses, but word vectors are known to contain information about multiple senses of the word they represent, so there may be a way of creating reasonable definitions that cover various senses.  I plan to explore this.
 
