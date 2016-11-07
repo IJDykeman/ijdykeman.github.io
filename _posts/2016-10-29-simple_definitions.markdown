@@ -31,7 +31,7 @@ I also need the word vectors themselves.  I’m using both the vectors and the d
 
 ## a multicolumn perceptron
 
-Since I’m predicting a fixed length response from fixed length input, and there’s no expectation of spacial structure in the input vectors, I’ll simply use a deep, fully connected architecture.  I experimented with different numbers and widths of layers, and found that two 500 unit hidden layers works well.
+Since I’m predicting a fixed length response from fixed length input, and there’s no expectation of spatial structure in the input vectors, I’ll simply use a deep, fully connected architecture.  I experimented with different numbers and widths of layers, and found that two 500 unit hidden layers works well.
 
 I noticed that as I varied the number of layers, different sets examples from the validation data would work.  I wondered if perhaps more depth was helpful for some examples but not others.  In that case, it might help to have a network with subnetworks of various depth.  I used three columns of layers, one with 2 200 node layers, one with 3 100 node layers, and one with 4 100 node layers.  This model provided the best performance I managed over the course of the project.  
 
@@ -206,7 +206,6 @@ I have not addressed the question of polysemy in my data.  Many words have multi
 * lollipop: small case
 * prednisolone: quinoline antibiotic
 * footnote: small part
-* chic: black person
 * nystatin: generic antibiotic
 * newsletter: short book
 * postage: french coin
