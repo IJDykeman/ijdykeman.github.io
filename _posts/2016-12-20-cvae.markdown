@@ -81,7 +81,7 @@ To generate an image of a particular number, just feed that number into the deco
 The grid of images below was produced by fixing the desired number input to the decoder and taking a few random samples from the latent space to produce a handful of different versions of that number.  As you can see, the numbers vary in style, but all the images in a single row are clearly of the same number. 
 
 
--> ![cvae generated grid]({{ site.url }}/assets/cvae_figures/cvae_generated_grid.png) <-
+<center> ![cvae generated grid]({{ site.url }}/assets/cvae_figures/cvae_generated_grid.png) </center>
 
 
 # Conclusion
