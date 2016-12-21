@@ -21,23 +21,23 @@ A variational autoencoder is a generative model, meaning that we would like it t
 
 The goal of any autoencoder is to reconstruct its own input.  Usually, the autoencoder first compresses the input into a smaller form, then transforms it back into an approximation of the input.   The function used to compress the data is usually called an “encoder” and the function used to decompress the data is called a “decoder.”  Those functions can be neural networks, which is the case we’ll consider here.
 
-![autoencoder diagram]({{ site.url }}/assets/ae_diagram.png)
+![autoencoder diagram]({{ site.url }}/assets/ae_diagram.svg)
 
 
 This can work great if your goal is simply to reconstruct your input, but it won’t work as a generative model, because picking a random input V’ to the decoder won’t necessarily cause the decoder to produce a reasonable image.  V’ could be far away from any input the decoder has seen before, and so the decoder may never have been trained to produce reasonable digit images when given an input like V’.
 
 We need some way of ensuring that the decoder is prepared to decode any input we give it into a reasonable digit image.  To do this, we’ll need to predefine the distribution of inputs that the decoder should expect to see.  We’ll use a standard normal distribution to define the distribution of inputs the decoder will receive.
 
-![latent space diagram]({{ site.url }}/assets/latent_space.png)
+![latent space diagram]({{ site.url }}/assets/latent_space.svg)
 
 We would like to train the decoder to take any point sampled from this distribution and return a reasonable digit image.  
 
-![decoder diagram]({{ site.url }}/assets/vae_decoder_diagram.png)
+![decoder diagram]({{ site.url }}/assets/vae_decoder_diagram.svg)
 
 
 Now we need an encoder.  In a traditional autoencoder, the encoder takes a sample from the data and returns a single point in the latent space, which is then passed into the decoder.  In a variational autoencoder, the encoder instead produces a probability distribution in the latent space.
 
-![encoder diagram]({{ site.url }}/assets/encoder_vae_diagram.png)
+![encoder diagram]({{ site.url }}/assets/encoder_vae_diagram.svg)
 
 
 The latent distributions it predicts are gaussians of the same dimensionality as the latent space.  The encoder produces the parameters of these gaussians.
@@ -51,7 +51,7 @@ So we have an encoder that takes in images and produces probability distribution
 
 I said earlier that the decoder should expect to see points sampled from a standard normal distribution.  But now I’ve stated that the decoder receives samples from non-standard normal distributions produced by the encoder.  These two things aren’t at odds, though, if points sampled from the encoder still approximately fit a standard normal distribution.  We want a situation like this:
 
-![kl divergence diagram]({{ site.url }}/assets/kl_divergence_diagram.png)
+![kl divergence diagram]({{ site.url }}/assets/kl_divergence_diagram.svg)
 
 
 where the average of different distributions produced in response to different training examples approximate a standard normal.  Now the assumption that the decoder sees points drawn from a standard normal distribution holds.
@@ -67,14 +67,14 @@ In Figure WHICH, there is a random variable in the network between the input and
 
 So far, we’ve created an autoencoder that can reproduce its input, and a decoder that can produce reasonable handwritten digit images.  The decoder cannot, however, produce an image of a particular number on demand.  Enter the *conditional* variational autoencoder.  The conditional variational autoencoder has an extra input to both the encoder and the decoder.
 
-![cvae diagram]({{ site.url }}/assets/cvae_diagram.png)
+![cvae diagram]({{ site.url }}/assets/cvae_diagram.svg)
 
 
 At training time, the number whose image is being fed in is provided to the encoder and decoder.  In this case, it would be represented as a one-hot vector.  
 
 To generate an image of a particular number, just feed that number into the decoder along with a random point in the latent space sampled from a standard normal distribution.  Even if the same point is fed in to produce two different numbers, the process will work correctly, since the system no longer relies on the latent space to encode what number you are dealing with.  Instead, the latent space encodes other information, like stroke width or the angle at which the number is written.
 
-![cvae generation diagram]({{ site.url }}/assets/cvae_generation_diagram.png)
+![cvae generation diagram]({{ site.url }}/assets/cvae_generation_diagram.svg)
 
 
 The grid of images below was produced by fixing the desired number input to the decoder and taking a few random samples from the latent space to produce a handful of different versions of that number.  As you can see, the numbers vary in style, but all the images in a single row are clearly of the same number. 
