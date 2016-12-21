@@ -5,17 +5,13 @@ date:   2016-12-20 22:25:30 -0500
 categories: ml
 ---
 
-
-
-# Variational Autoencoders
-
 ## Introduction
 
 When I started working on understanding generative models, I didn’t find any resources that gave a good, high level, intuitive overview of variational autoencoders.  Some great resources exist for understanding them in detail and seeing the math behind them.  In paricular [“Tuorial on Variational Autoencoders” by Carl Doersch](https://arxiv.org/abs/1606.05908) covers the same topics as this post, but as the author notes, there is some abuse of notation in this article, and the treatment is generally more abstract then what I’ll go for here.  Here, I’ll carry the example of a variational autoencoder for the MNIST digits dataset throughout, using concrete examples to stand in for each concept.  Hopefully by reading this article you can get a general idea of how Variational Autoencoders work before tackling them in detail.
 
-## Goal of a VAE
+## Goal of a Variational Autoencoder
 
-A variational autoencoder is a generative model, meaning that we would like it to be able to generate plausible looking fake samples from our training data.  In the case of the MNIST data, these fake samples would be synthetic images of handwritten digits.  Our VAE will provide us with a space, which we will call the latent space, from which we can sample points.  Any of these points can be decoded into a reasonable image of a handwritten digit.
+A variational autoencoder (VAE) is a generative model, meaning that we would like it to be able to generate plausible looking fake samples from our training data.  In the case of the MNIST data, these fake samples would be synthetic images of handwritten digits.  Our VAE will provide us with a space, which we will call the latent space, from which we can sample points.  Any of these points can be decoded into a reasonable image of a handwritten digit.
 
 ## Structure of a VAE
 
@@ -68,7 +64,7 @@ In Figure WHICH, there is a random variable in the network between the input and
 
 ## Conditional Variational Autoencoder
 
-So far, we’ve created an autoencoder that can reproduce its input, and a decoder that can produce reasonable handwritten digit images.  The decoder cannot, however, produce an image of a particular number on demand.  Enter the *conditional* variational autoencoder.  The conditional variational autoencoder has an extra input to both the encoder and the decoder.
+So far, we’ve created an autoencoder that can reproduce its input, and a decoder that can produce reasonable handwritten digit images.  The decoder cannot, however, produce an image of a particular number on demand.  Enter the *conditional* variational autoencoder (CVAE).  The conditional variational autoencoder has an extra input to both the encoder and the decoder.
 
 ![cvae diagram]({{ site.url }}/assets/cvae_figures/cvae_diagram.svg)
 *A conditional variational autoencoder*
