@@ -39,7 +39,7 @@ Now we need an encoder.  In a traditional autoencoder, the encoder takes a sampl
 ![encoder diagram]({{ site.url }}/assets/cvae_figures/encoder_vae_diagram.svg)
 *The encoder of a variational autoencoder*
 
-The latent distributions it predicts are gaussians of the same dimensionality as the latent space.  The encoder produces the parameters of these gaussians.
+The latent distributions it outputs are gaussians of the same dimensionality as the latent space.  The encoder produces the parameters of these gaussians.
 
 So we have an encoder that takes in images and produces probability distributions in the latent space, and a decoder that takes points in the latent space and returns artificial images.  So for a given image, the encoder produces a distribution, a point in the latent space is sampled from that distribution, and then that point is fed into the decoder which produces an artificial image.
 
