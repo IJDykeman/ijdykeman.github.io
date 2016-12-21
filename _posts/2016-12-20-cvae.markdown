@@ -56,6 +56,8 @@ I said earlier that the decoder should expect to see points sampled from a stand
 
 where the average of different distributions produced in response to different training examples approximate a standard normal.  Now the assumption that the decoder sees points drawn from a standard normal distribution holds.
 
+Obviosly we need some way to measure whether the sum of distributions produced by the encoder "approximates" the standard normal distribution.  We can measure the quality of this approximation using Kullback-Leibler divergence.  Kullback-Leibler divergence essentially measures how different two probability distributions are.  This is treated in more depth in Doersch's tutorial.
+ 
 ## Training a VAE with The Reparametrization Trick
 
 In Figure WHICH, there is a random variable in the network between the input and output.  There’s no way to backpropagate through a random variable, which presents the obvious problem that you’re now unable to train the encoder.  To solve this problem, the VAE can be expressed in a different way such that the parameters of the latent distribution are factored out of the parameters of the random variable, so that backpropagation can proceed through the parameters of the latent distribution.  Thus, the encoder can be trained.  Concretely, N(μ,Σ) = μ + Σ N(0, I) when the covariance matrix Σ is diagonal, which it is in our case.  But this is treated in more depth in other articles.  The important takeaway is that a VAE can be trained end-to-end using backprop.  But since there is still an element of randomness involved, instead of being called stochastic gradient descent, the training process is called stochastic gradient variational Bayes (SGVB). CHECK THAT
@@ -74,7 +76,6 @@ To generate an image of a particular number, just feed that number into the deco
 
 ![cvae generation diagram]({{ site.url }}/assets/cvae_generation_diagram.png)
 
-cvae_generation_diagram
 
 The grid of images below was produced by fixing the desired number input to the decoder and taking a few random samples from the latent space to produce a handful of different versions of that number.  As you can see, the numbers vary in style, but all the images in a single row are clearly of the same number. 
 
@@ -82,3 +83,7 @@ The grid of images below was produced by fixing the desired number input to the 
 
 
 # Conclusion
+
+VAEs are powerful unsupervised learning tool.  The latent space of a standard VAE should capture useful patterns in your data reliably.  For example, as I wrote this post, I saw that a VAE trained without any labels successfully seperated MNIST images into 10 distinct regions in the latent space, where each region contained almost exclusively images of one number.  CVAEs are useful for generating artificial samples that match some label.  Note that nothing in this tutorial is specific to images.  For example, sequential data can be tackled with VAEs of the encoder and decoder are RNNs.
+
+I hope that this was an enlightening overview of the intuition behind VAEs.  I encourage you to seek out other resources that might help you understand them in more depth.
