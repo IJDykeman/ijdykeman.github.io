@@ -40,7 +40,7 @@ We would like to train the decoder to take any point sampled from this distribut
 
 Now we need an encoder.  In a traditional autoencoder, the encoder takes a sample from the data and returns a single point in the latent space, which is then passed into the decoder.  In a variational autoencoder, the encoder instead produces a probability distribution in the latent space.
 
-![encoder diagram]({{ site.url }}/assets/cvae_figures/encoder_vae_diagram.svg =250x)
+![encoder diagram]({{ site.url }}/assets/cvae_figures/encoder_vae_diagram.svg)
 *The encoder of a variational autoencoder*
 
 The latent distributions it predicts are gaussians of the same dimensionality as the latent space.  The encoder produces the parameters of these gaussians.
