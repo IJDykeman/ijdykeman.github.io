@@ -44,7 +44,7 @@ The latent distributions it predicts are gaussians of the same dimensionality as
 
 So we have an encoder that takes in images and produces probability distributions in the latent space, and a decoder that takes points in the latent space and returns artificial images.  So for a given image, the encoder produces a distribution, a point in the latent space is sampled from that distribution, and then that point is fed into the decoder which produces an artificial image.
 
-![vae diagram]({{ site.url }}/assets/vae_diagram.png)
+![vae diagram]({{ site.url }}/assets/vae_diagram.svg)
 
 
 ## The Structure of the Latent Space
