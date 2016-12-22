@@ -21,7 +21,7 @@ The goal of any autoencoder is to reconstruct its own input.  Usually, the autoe
 *A standard autoencoder*
 
 
-This can work great if your goal is simply to reconstruct your input, but it won’t work as a generative model, because picking a random input V’ to the decoder won’t necessarily cause the decoder to produce a reasonable image.  V’ could be far away from any input the decoder has seen before, and so the decoder may never have been trained to produce reasonable digit images when given an input like V’.
+Standard autoencoders can work well if your goal is simply to reconstruct your input, but it won’t work as a generative model, because picking a random input V’ to the decoder won’t necessarily cause the decoder to produce a reasonable image.  V’ could be far away from any input the decoder has seen before, and so the decoder may never have been trained to produce reasonable digit images when given an input like V’.
 
 We need some way of ensuring that the decoder is prepared to decode any input we give it into a reasonable digit image.  To do this, we’ll need to predefine the distribution of inputs that the decoder should expect to see.  We’ll use a standard normal distribution to define the distribution of inputs the decoder will receive.
 
