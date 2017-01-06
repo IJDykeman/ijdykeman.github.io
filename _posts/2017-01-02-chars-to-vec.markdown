@@ -12,6 +12,11 @@ I’d like to use a recurrent neural network operating on characters to place th
 
 In this post, I’ll describe a model that takes the letters that make up a word and predicts the associated word vector.
 
+
+# Implementation and code
+
+I implemented this model in Tensorflow.  You can find the code in the form of a Jupyter notebook [here](https://github.com/IJDykeman/CharacterMeaningModel).
+
 # The model
 
 ![model diagram](/assets/chars-to-vec_figures/chars2vec.svg)
