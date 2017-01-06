@@ -74,7 +74,7 @@ The stated goal here was to extract “emotional or aesthetic cues” from a cha
 I also don’t have a way of quantifying the quality of the model’s predictions about fictional names.  Associating things like company names with certain cultures, like the Dromgoole’s example, relies on a highly subjective judgement that “Dromgoole’s” sounds like the kind of place a British aristocrat might like.  A dataset labeled with associations people make after seeing a name might help here.
 
 
-I think another interesting future project would be creating a generative model for creating names from word vectors.  It’s (known)[https://arxiv.org/pdf/1601.03764v2.pdf] that word vectors can contain a weighted combination of different concepts.  Perhaps by choosing a mix of known names and attributes, you could generate candidate names that would might fit a particular type of character, or even create plausible sounding words in general.
+I think another interesting future project would be creating a generative model for creating names from word vectors.  It’s [known](https://arxiv.org/pdf/1601.03764v2.pdf) that word vectors can contain a weighted combination of different concepts.  Perhaps by choosing a mix of known names and attributes, you could generate candidate names that would might fit a particular type of character, or even create plausible sounding words in general.
 
 
 
