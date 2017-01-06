@@ -5,6 +5,7 @@ date:   2017-01-02 22:25:30 -0500
 categories: ml
 ---
 
+# Motivation and Introduction
 
 In fiction, names are often designed to convey some suggestion of what a character might be like.  A clear example might be the name Voldemort, which to me sounds evil, and contains the “mort” subword, which is also in death-related words like mortal and mortuary.  Other names from fiction like Mordor, Sauron, Severus Snape, or Gothmog are meant to heighten the sense of the character’s evil.  Names like Dumbledore or Bilbo Baggins might instead suggest friendliness.  These types of associations are intentional on the part of the author, and can be reliably picked up by the reader.  Word embeddings are a powerful technique for representing word meaning, but these cues are lost on them since they generally represent all rare words with a single token, and since strange or creative names tend to be rare words, perhaps only appearing in a single document, they are ignored by these models.
 
