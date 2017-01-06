@@ -16,7 +16,7 @@ In this post, I’ll describe a model that takes the letters that make up a word
 
 # Implementation and code
 
-I implemented this model in Tensorflow.  You can find the code in the form of a Jupyter notebook [here](https://github.com/IJDykeman/CharacterMeaningModel).
+I implemented this model in Tensorflow.  You can find the code in a Jupyter notebook [here](https://github.com/IJDykeman/CharacterMeaningModel).
 
 # The model
 
