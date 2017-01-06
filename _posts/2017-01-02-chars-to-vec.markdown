@@ -23,9 +23,9 @@ In the diagram, 〈Chilperic〉 is meant to represent the word vector associated
 
 ## Where it Works and where it Doesn’t
 
-As expected, this model performs well on morphologically rich words, that is, words whose meaning is closely related to the meanings of subwords.  A common source of these types of words is medical terminology.  For instance, “tendinitis” is a swelling of the tendons.  The suffix “itis” indicates that this word describes a (swelling disease)[https://en.wiktionary.org/wiki/-itis#Suffix].  The prefix “tendin” obviously indicates that it is a disease that affects tendons.  The model consistently identifies disease names with other disease names already present in the word vector corpus.  
+As expected, this model performs well on morphologically rich words, that is, words whose meaning is closely related to the meanings of subwords.  A common source of these types of words is medical terminology.  For instance, “tendinitis” is a swelling of the tendons.  The suffix “itis” indicates that this word describes a [swelling disease](https://en.wiktionary.org/wiki/-itis#Suffix).  The prefix “tendin” obviously indicates that it is a disease that affects tendons.  The model consistently identifies disease names with other disease names already present in the word vector corpus.  
 
-The model associates the made-up disease name “sternumitis” to other diseases: paraparesis, scleritis, and radiculopathy.  I found a fake (drug name generator)[http://www.generatorland.com/glgenerator.aspx?id=55#] online, and the words it produces are consistently associated by the model to real drugs.  For instance, the fake name Glazioxx is mapped to Lescol, idarubicin, and Sandimmune.
+The model associates the made-up disease name “sternumitis” to other diseases: paraparesis, scleritis, and radiculopathy.  I found a fake [drug name generator](http://www.generatorland.com/glgenerator.aspx?id=55#) online, and the words it produces are consistently associated by the model to real drugs.  For instance, the fake name Glazioxx is mapped to Lescol, idarubicin, and Sandimmune.
 
 Some words aren’t so morphologically rich.  The word “cat” can’t be broken down into parts that indicate the meaning of the whole word.  As expected, the model performs poorly in guessing words similar to these.
 
