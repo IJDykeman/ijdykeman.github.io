@@ -10,7 +10,8 @@ In fiction, names are often designed to convey some suggestion of what a charact
 
 I’d like to use a recurrent neural network operating on characters to place these types of words into an embedding space.  Then, using comparisons between words in that space, I’m hoping to see what kinds of aesthetic or emotional cues a word carries.  The model ends up being able to pick up some of this type of information, as well as other information, such as whether a word is a chemical, disease, or drug name, or whether it is a name of a person, and if so, where and when they might have lived.
 
-In this post, I’ll describe a model that takes the letters that make up a word and predicts the associated word vector.  
+In this post, I’ll describe a model that takes the letters that make up a word and predicts the associated word vector.
+
 # The model
 
 ![model diagram](/assets/chars-to-vec_figures/chars2vec.svg)
