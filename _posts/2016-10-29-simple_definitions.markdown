@@ -14,9 +14,9 @@ Word embeddings are a great way to represent words for NLP tasks, but the vector
 
 If you wanted to determine whether a person understood the meaning of a word, you might ask them to define it.  Let’s apply the same intuition here, and train a model to produce definitions of words in its vocabulary.  For this early experiment, I’ll limit the definitions to a simple form: a single adjective followed by a single noun.  For example, “flightless bird” might be a good definition for ostrich.
 
-## gathering data
+## Gathering Data
 
-We need a large set of definitions examples of the form (adjective, noun).  Many dictionary definitions are of the form “adjective adjective hypernym ... “ where the hypernym is a category of which the word to define is an example.  For instance,
+We need a large set of definitions of the form (adjective, noun).  Many dictionary definitions are of the form “adjective adjective hypernym ... “ where the hypernym is a category of which the word to define is an example.  For instance,
 
 > ostrich (noun) a flightless swift-running African bird with a long neck, long legs, and two toes on each foot.
 
@@ -29,7 +29,7 @@ This is a pretty simple approach, and it tends to pick up low quality definition
 I also need the word vectors themselves.  I’m using both the vectors and the dictionary corpus from [this paper by Hill et. al.](http://www.aclweb.org/anthology/Q16-1002), which was a big factor in inspiring me to do this work, in addition to a good source of data.  You can get their data [here](http://www.cl.cam.ac.uk/~fh295/dicteval.html).
 
 
-## a multicolumn perceptron
+## A Multicolumn Perceptron
 
 Since I’m predicting a fixed length response from fixed length input, and there’s no expectation of spatial structure in the input vectors, I’ll simply use a deep, fully connected architecture.  I experimented with different numbers and widths of layers, and found that two 500 unit hidden layers works well.
 
@@ -43,14 +43,14 @@ $$L = (1-cos(a, a’))^2 + (1-cos(n, n’))^2 + L2$$
 
 Where a and a’ are the predicted and correct adjective vector respectively, and the same for n and n’.  Cos is the cosine similarity between two vectors.  L2 is the L2 regularization  term.
 
-## ensemble method for filtering generated definitions
+## Ensemble Method for Filtering Generated Definitions
 
 Even with the mutlicolumn architecture, there’s still some noise in the generated definitions.  Training the same model multiple times produces models that succeed or fail on different examples.  If I could create an ensemble and then aggregate their predictions in some way, I might end up with a more robust system.  The problem is choosing which model's prediction to use.
 
 To convert a model's predicted vector to readable text, I find the nearest word vector to the prediction.  I noticed that the cosine distance between the predicted vectors and the nearest word vectors is negatively correlated with the quality of the prediction.  So if the distance between the prediction and the nearest word is high, the quality of the prediction is low, I’ll just gather predictions from a number of different models and take the prediction with the lowest cosine distances to the nearest words in the vocabulary.  This made the system's results much more reliable.
 
 
-## results
+## Results
 
 I'm happy with the model's performance on the validation set.  Here are some hand-picked examples:
 

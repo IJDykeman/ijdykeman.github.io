@@ -1,12 +1,9 @@
 ---
 layout: post
 title:  "Capturing Word Meaning and Cultural Association with a Character Level Model"
-date:   2017-1-5 22:25:30 -0500
+date:   2017-01-02 22:25:30 -0500
 categories: ml
 ---
-
-
-# Capturing Word Meaning and Cultural Associations with Character Level Models
 
 
 In fiction, names are often designed to convey some suggestion of what a character might be like.  A clear example might be the name Voldemort, which to me sounds evil, and contains the “mort” subword, which is also in death-related words like mortal and mortuary.  Other names from fiction like Mordor, Sauron, Severus Snape, or Gothmog are meant to heighten the sense of the character’s evil.  Names like Dumbledore or Bilbo Baggins might instead suggest friendliness.  These types of associations are intentional on the part of the author, and can be reliably picked up by the reader.  Word embeddings are a powerful technique for representing word meaning, but these cues are lost on them since they generally represent all rare words with a single token, and since strange or creative names tend to be rare words, perhaps only appearing in a single document, they are ignored by these models.
@@ -16,7 +13,7 @@ I’d like to use a recurrent neural network operating on characters to place th
 In this post, I’ll describe a model that takes the letters that make up a word and predicts the associated word vector.  
 # The model
 
-ROUGH ARCHITECTURE DIAGRAM (see drawing)
+![model diagram](/assets/chars-to-vec_figures/chars2vec.svg)
 
 I’ll represent the letters as one-hot vectors.  The recurrent neural net receives these vectors as input and then feeds into two fully connected layers.  I found that adding dropout after the last LSTM output reduced overfitting.  Following the intuition presented in (this paper)[https://papers.nips.cc/paper/5346-sequence-to-sequence-learning-with-neural-networks.pdf], I reverse the order of the letters as I feed them into the RNN, though that isn’t reflected in the diagram above.  By reversing the letters as they are fed in, the PAD tokens are not the last ones the LSTM sees before its final state is created.  Instead, it sees the actual input data last, so there are fewer long term dependencies to handle at training time.  I represent the words in the model’s vocabulary using word vectors trained by the authors of (Learning to Understand Phrases by Embedding the Dictionary)[https://arxiv.org/pdf/1504.00548v4.pdf].
 
@@ -37,7 +34,7 @@ Some words aren’t so morphologically rich.  The word “cat” can’t be brok
 
 I think “Zorgon” is a sinister sounding name.  Given “Zorgon,” which is not present in the word embedding I used, the system predicts that Arthas, Beastman, and Gorath are similar words.  These are names of fictional characters who all look like they could all plausibly be named “Zorgon.”
 
-ZORGON_CHARACTERS
+![zorgon characters](/assets/chars-to-vec_figures/zorgon_characters.svg)
 
 Unfortunately, it’s a bit harder to find names of characters that sound particularly like names of good people.  In the Harry Potter books, which tend to take liberties with naming, morally upstanding characters tend to simply have common names: Harry, Ron, Molly, Albus, James, or Ginny.  I’ll take Dobby and Dumbledore as examples of good-sounding names of good characters.  The model associates these both to cute names like “Sweatpea,” or “Stompy,” which is the name of a cartoon baby elephant.  While these associations don’t quite capture the gravity Dumbledore is meant to have, they convey at least a positive connotation.
 
@@ -64,12 +61,9 @@ The model is also able to reliably associate the names of real monarchs to other
 
 In the examples of fictional character names above, the word vectors for the names themselves were always closest to names of other characters from the same stories, while the model picked out different types of associations, like matching Galadriel with other magical fantasy characters.
 
-# Conclusion and Future Work
+# Conclusion
 
-Using no hand-labeled data, this model is able to pick up subtle associations like name styles from a certain culture and time period.  It’s also able to associate evil sounding names with evil characters and make other similar associations.  
-
-https://arxiv.org/pdf/1607.04606v1.pdf
-https://www.aclweb.org/anthology/P/P16/P16-2044.pdf 
+This model is able to pick up subtle associations like name styles from a certain culture and time period.  It’s also able to associate evil sounding names with evil characters and make other, more subtle associations, like matching a magical sounding name to other magical characters, as in the Galadriel example.  The model uses no labeled data.  Its only data source is the raw text used to train the word embedding this model is trained on.  As far as I know, this is the first work toward building a model for associating fictional characters to each other based on their names.  
 
 
 # Future work
