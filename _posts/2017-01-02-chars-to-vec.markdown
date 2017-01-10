@@ -25,7 +25,7 @@ I implemented this model in Tensorflow.  You can find the code in a Jupyter note
 I’ll represent the letters as one-hot vectors.  The recurrent neural net receives these vectors as input and then feeds into two fully connected layers.  I found that adding dropout after the last LSTM output reduced overfitting.  Following the intuition presented in [this paper](https://papers.nips.cc/paper/5346-sequence-to-sequence-learning-with-neural-networks.pdf), I reverse the order of the letters as I feed them into the RNN, though that isn’t reflected in the diagram above.  By reversing the letters as they are fed in, the PAD tokens are not the last ones the LSTM sees before its final state is created.  Instead, it sees the actual input data last, so there are fewer long term dependencies to handle at training time.  I represent the words in the model’s vocabulary using word vectors trained by the authors of [Learning to Understand Phrases by Embedding the Dictionary](https://arxiv.org/pdf/1504.00548v4.pdf).
 
 
-In the diagram, 〈Chilperic〉 is meant to represent the word vector associated with the word “Chilperic.”  The ≈ symbol indicates that the output of the final layer of the model has a low cosine distance to 〈Chilperic〉.  When the model makes a prediction, it outputs a vector, then looks up word the word vectors closest to its output.  These nearest neighbors are the model’s opinion on what words are similar to its input.
+In the diagram, 〈Chilperic〉 is meant to represent the word vector associated with the word “Chilperic.”  The ≈ symbol indicates that the output of the final layer of the model has a low cosine distance to 〈Chilperic〉.  When the model makes a prediction, it outputs a vector, then looks up the word vectors closest to its output.  These nearest neighbors are the model’s opinion on what words are similar to its input.
 
 
 ## Where it Works and where it Doesn’t
@@ -81,7 +81,7 @@ The stated goal here was to extract “emotional or aesthetic cues” from a cha
 I also don’t have a way of quantifying the quality of the model’s predictions about fictional names.  Associating things like company names with certain cultures, like the Dromgoole’s example, relies on a highly subjective judgement that “Dromgoole’s” sounds like the kind of place a British aristocrat might like.  A dataset labeled with associations people make after seeing a name might help here.
 
 
-I think another interesting future project would be creating a generative model for creating names from word vectors.  It’s [known](https://arxiv.org/pdf/1601.03764v2.pdf) that word vectors can contain a weighted combination of different concepts.  Perhaps by choosing a mix of known names and attributes, you could generate candidate names that would might fit a particular type of character, or even create plausible sounding words in general.
+I think another interesting future project would be creating a generative model for creating names from word vectors.  It’s [known](https://arxiv.org/pdf/1601.03764v2.pdf) that word vectors can contain a weighted combination of different concepts.  Perhaps by choosing a mix of known names and attributes, you could generate candidate names that would fit a particular type of character, or even create plausible sounding words in general.
 
 
 
