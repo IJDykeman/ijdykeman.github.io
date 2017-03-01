@@ -21,7 +21,7 @@ The goal of any autoencoder is to reconstruct its own input.  Usually, the autoe
 *A standard autoencoder*
 
 
-Standard autoencoders can work well if your goal is simply to reconstruct your input, but it won’t work as a generative model, because picking a random input V’ to the decoder won’t necessarily cause the decoder to produce a reasonable image.  V’ could be far away from any input the decoder has seen before, and so the decoder may never have been trained to produce reasonable digit images when given an input like V’.
+Standard autoencoders can work well if your goal is simply to reconstruct your input, but it won’t work as a generative model, because picking a random input **V’** to the decoder won’t necessarily cause the decoder to produce a reasonable image.  **V’** could be far away from any input the decoder has seen before, and so the decoder may never have been trained to produce reasonable digit images when given an input like **V’**.
 
 We need some way of ensuring that the decoder is prepared to decode any input we give it into a reasonable digit image.  To do this, we’ll need to predefine the distribution of inputs that the decoder should expect to see.  We’ll use a standard normal distribution to define the distribution of inputs the decoder will receive.
 
@@ -62,6 +62,7 @@ Obviosly we need some way to measure whether the sum of distributions produced b
 In the VAE described above, there is a random variable in the network between the input and output.  There’s no way to backpropagate through a random variable, which presents the obvious problem that you’re now unable to train the encoder.  To solve this problem, the VAE is expressed in a different way such that the parameters of the latent distribution are factored out of the parameters of the random variable, so that backpropagation can proceed through the parameters of the latent distribution.  Concretely, N(μ,Σ) = μ + Σ N(0, I) when the covariance matrix Σ is diagonal, which it is in our case.  But this is treated in more depth in other articles.  The important takeaway is that a VAE can be trained end-to-end using backprop.  But since there is still an element of randomness involved, instead of being called stochastic gradient descent, the training process is called stochastic gradient variational Bayes (SGVB).
 
 
+
 ## Conditional Variational Autoencoder
 
 So far, we’ve created an autoencoder that can reproduce its input, and a decoder that can produce reasonable handwritten digit images.  The decoder cannot, however, produce an image of a particular number on demand.  Enter the *conditional* variational autoencoder (CVAE).  The conditional variational autoencoder has an extra input to both the encoder and the decoder.
@@ -88,6 +89,6 @@ The grid of images below was produced by fixing the desired number input to the 
 
 # Conclusion
 
-VAEs are powerful unsupervised learning tool.  The latent space of a standard VAE should capture useful patterns in your data reliably.  For example, as I wrote this post, I saw that a VAE trained without any labels successfully seperated MNIST images into 10 distinct regions in the latent space, where each region contained almost exclusively images of one number.  CVAEs are useful for generating artificial samples that match some label.  Note that nothing in this tutorial is specific to images.  For example, sequential data can be tackled with VAEs of the encoder and decoder are RNNs.
+VAEs are powerful unsupervised learning tool.  The latent space of a standard VAE should capture useful patterns in your data reliably.  For example, as I wrote this post, I saw that a VAE trained without any labels successfully seperated MNIST images into 10 distinct regions in the latent space, where each region contained almost exclusively images of one number.  CVAEs are useful for generating artificial samples that match some label.  Note that nothing in this tutorial is specific to images.  For example, sequential data can be generated with VAEs if the encoder and decoder are RNNs.
 
-I hope that this was an enlightening overview of the intuition behind VAEs.  I encourage you to seek out other resources that might help you understand them in more depth.
+
