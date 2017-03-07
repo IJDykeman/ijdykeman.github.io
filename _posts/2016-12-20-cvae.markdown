@@ -7,7 +7,7 @@ categories: ml
 
 ## Introduction
 
-When I started working on understanding generative models, I didn’t find any resources that gave a good, high level, intuitive overview of variational autoencoders.  Some great resources exist for understanding them in detail and seeing the math behind them.  In paricular [“Tuorial on Variational Autoencoders” by Carl Doersch](https://arxiv.org/abs/1606.05908) covers the same topics as this post, but as the author notes, there is some abuse of notation in that article, and the treatment is generally more abstract then what I’ll go for here.  Here, I’ll carry the example of a variational autoencoder for the MNIST digits dataset throughout, using concrete examples to stand in for each concept.  Hopefully by reading this article you can get a general idea of how Variational Autoencoders work before tackling them in detail.
+When I started working on understanding generative models, I didn’t find any resources that gave a good, high level, intuitive overview of variational autoencoders.  Some great resources exist for understanding them in detail and seeing the math behind them.  In paricular [“Tutorial on Variational Autoencoders” by Carl Doersch](https://arxiv.org/abs/1606.05908) covers the same topics as this post, but as the author notes, there is some abuse of notation in that article, and the treatment is generally more abstract then what I’ll go for here.  Here, I’ll carry the example of a variational autoencoder for the MNIST digits dataset throughout, using concrete examples to stand in for each concept.  Hopefully by reading this article you can get a general idea of how Variational Autoencoders work before tackling them in detail.
 
 ## Goal of a Variational Autoencoder
 
