@@ -14,7 +14,7 @@ I’d like to use a recurrent neural network operating on characters to place th
 In this post, I’ll describe a model that takes the letters that make up a word and predicts the associated word vector.
 
 
-# Implementation and code
+# Code
 
 I implemented this model in Tensorflow.  You can find the code in a Jupyter notebook [here](https://github.com/IJDykeman/CharacterMeaningModel).
 
@@ -45,10 +45,10 @@ I think “Zorgon” is a sinister sounding name.  Given “Zorgon,” which is 
 
 Unfortunately, it’s a bit harder to find names of characters that sound particularly like names of good people.  In the Harry Potter books, which tend to take liberties with naming, morally upstanding characters tend to simply have common names: Harry, Ron, Molly, Albus, James, or Ginny.  I’ll take Dobby and Dumbledore as examples of good-sounding names of good characters.  The model associates these both to cute names like “Sweatpea,” or “Stompy,” which is the name of a cartoon baby elephant.  While these associations don’t quite capture the gravity Dumbledore is meant to have, they convey at least a positive connotation.
 
-Galadriel, a sorceress in Lord of the rings who rules an enchanted forest, is associated most strongly with with Balor, an Irish mythical king of supernatural beings, and Melisandre, the sorceress from A Song of Ice and Fire. 
+Galadriel, a sorceress in Lord of the rings who rules an enchanted forest, is associated most strongly with with Balor, an Irish mythical king of supernatural beings, and Melisandre, the sorceress from A Song of Ice and Fire.
 
 
-If you hear of a company called Iteron and one called Dromgoole’s, you would likely make different assumptions about the type of business each one is.  In particular, Iteron sounds more like a tech company, while Dromgoole’s sounds like it’s trying to be associated with a more traditional aesthetic.  The model agrees with this intuition.  “Iteron” is associated with Aricent, Vixs, Cloudera, and Idirect.  These are all real companies whose businesses have to do with software, satellite communications, and semiconductors.  The name Iteron is the name of a spaceship from the game Eve Online, so I think this association with technology is very reasonable. 
+If you hear of a company called Iteron and one called Dromgoole’s, you would likely make different assumptions about the type of business each one is.  In particular, Iteron sounds more like a tech company, while Dromgoole’s sounds like it’s trying to be associated with a more traditional aesthetic.  The model agrees with this intuition.  “Iteron” is associated with Aricent, Vixs, Cloudera, and Idirect.  These are all real companies whose businesses have to do with software, satellite communications, and semiconductors.  The name Iteron is the name of a spaceship from the game Eve Online, so I think this association with technology is very reasonable.
 
 The model associates “Dromgoole’s” most strongly with “Theobalds” which is the name of an estate in england that was a royal palace in the 16th and 17th centuries.  It also associates the name “Trelissick,” which is an english garden.  Other strongly associated terms are also names of English towns and gardens.  Dromgoole’s is the name of a high-end fountain pen shop, so it’s likely that this is just the type of aesthetic that name was designed to evoke.
 
@@ -76,18 +76,9 @@ This model is able to pick up subtle associations like name styles from a certai
 # Future work
 
 
-The stated goal here was to extract “emotional or aesthetic cues” from a character sequence.  This has been achieved only partially, since the model isn’t able to say that it believes a name sounds evil.  It can only present other words that it thinks are similar to the input.  If we gave it an evil sounding name and it returns other evil sounding names, that’s a kind of success, but it’s not explicit extraction of the belief that the name sounds evil.  A dataset with fictional names labeled by moral alignment of the characters or other attributes of interest could serve as supervision for this task.  The model I’ve described here could perhaps be used as a feature extractor for that task.
+The stated goal here was to extract “emotional or aesthetic cues” from a character sequence.  This has been achieved only partially, since the model isn’t able to say that it believes a name sounds evil.  It can only present other words that it thinks are similar to the input.  If we gave it an evil sounding name and it returns other evil sounding names, that’s a kind of success, but it’s not explicit extraction of the belief that the name sounds evil.  A dataset with fictional names labeled by moral alignment of the characters or other attributes of interest could serve as supervision for this task.  A model like the one described here could perhaps be used for that task.
 
 I also don’t have a way of quantifying the quality of the model’s predictions about fictional names.  Associating things like company names with certain cultures, like the Dromgoole’s example, relies on a highly subjective judgement that “Dromgoole’s” sounds like the kind of place a British aristocrat might like.  A dataset labeled with associations people make after seeing a name might help here.
 
 
 I think another interesting future project would be creating a generative model for creating names from word vectors.  It’s [known](https://arxiv.org/pdf/1601.03764v2.pdf) that word vectors can contain a weighted combination of different concepts.  Perhaps by choosing a mix of known names and attributes, you could generate candidate names that would fit a particular type of character, or even create plausible sounding words in general.
-
-
-
-
-
-
-
-
-

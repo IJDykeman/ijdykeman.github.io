@@ -10,7 +10,7 @@ categories: ml
 
 
 
-Word embeddings are a great way to represent words for NLP tasks, but the vectors themselves are hard to directly interpret.  One way to see what kind of concept a word vector represents is to look for similar vectors in the embedding space.   For example, the word “ostrich” is most similar to chicken.  The next most similar word is “elephant,” followed by “pig”, “giraffe”, and finally “ratite,” which is a term for a group of species of flightless birds to which the ostrich belongs.  It’s not clear from this information how much the word embedding space “understands” about the ostrich.  It’s true that chickens are also birds, and it’s promising that “ratite” appears on the list, but “elephant” and “pig” are both above it.  It’s clearly recorded the fact that an Ostrich is an animal, but how detailed is the word embedding’s idea of what an ostrich is?
+Word embeddings are a great way to represent words for NLP tasks, but the vectors themselves are hard to directly interpret.  One way to see what kind of concept a word vector represents is to look for similar vectors in the embedding space.   For example, the word “ostrich” is most similar to chicken.  The next most similar word is “elephant,” followed by “pig”, “giraffe”, and finally “ratite,” which is a term for a group of species of flightless birds to which the ostrich belongs.  It’s not clear from this information how much the word embedding space “understands” about the ostrich.  It’s true that chickens are also birds, and it’s promising that “ratite” appears on the list, but “elephant” and “pig” are both considered more similar to "ostrich."  It’s clearly recorded the fact that an Ostrich is an animal, but how detailed is the word embedding’s idea of what an ostrich is?
 
 If you wanted to determine whether a person understood the meaning of a word, you might ask them to define it.  Let’s apply the same intuition here, and train a model to produce definitions of words in its vocabulary.  For this early experiment, I’ll limit the definitions to a simple form: a single adjective followed by a single noun.  For example, “flightless bird” might be a good definition for ostrich.
 
@@ -37,7 +37,7 @@ I noticed that as I varied the number of layers, different sets examples from th
 
 Some work has been done with multicolumn deep convolutional neural networks, but a cursory search of the literature didn't turn anything up about multicolumn fully connected networks, so I can’t provide references to attest to the qualities of this architecture in general.
 
-I’ll train it using the Adam optimizer with a decaying learning rate starting at .0005.  The loss function I’m using is 
+I’ll train it using the Adam optimizer with a decaying learning rate starting at .0005.  The loss function I’m using is
 
 $$L = (1-cos(a, a’))^2 + (1-cos(n, n’))^2 + L2$$
 

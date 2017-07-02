@@ -86,7 +86,7 @@ The grid of images below was produced by fixing the desired number input to the 
 ![cvae generated grid]({{ site.url }}/assets/cvae_figures/cvae_generated_grid.png)
 
 
-
+<!--
 # Conclusion
 
-VAEs are powerful unsupervised learning tool.  The latent space of a standard VAE should capture useful patterns in your data reliably.  For example, as I wrote this post, I saw that a VAE trained without any labels successfully seperated MNIST images into 10 distinct regions in the latent space, where each region contained almost exclusively images of one number.  CVAEs are useful for generating artificial samples that match some label.  Note that nothing in this tutorial is specific to images.  For example, sequential data can be generated with VAEs if the encoder and decoder are RNNs.
+VAEs are powerful unsupervised learning tool.  The latent space of a standard VAE should capture useful patterns in your data reliably.  For example, as I wrote this post, I saw that a VAE trained without any labels successfully seperated MNIST images into 10 distinct regions in the latent space, where each region contained almost exclusively images of one number.  CVAEs are useful for generating artificial samples that match some label.  Note that nothing in this tutorial is specific to images.  For example, sequential data can be generated with VAEs if the encoder and decoder are RNNs. -->
