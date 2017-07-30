@@ -18,14 +18,14 @@ Using word embeddings as input for a complex downstream task can only tell us ho
 We use a data set of 596,739 (*word*, *definition*) pairs compiled from various lexical resources.  Each word is paired with all definitions found in WordNet, The American Heritage Dictionary, The Collaborative International Dictionary of English, Wiktionary and Webster's Dictionary.
 We perform a 85/10/5 split on the training data to obtain our final training,  validation, and test sets (see the table below for dataset statistics). We split by word so that all the definitions for a given word appear in only one of the data sets.  We only use definitions of length less than 20 to avoid a long tail of definitions which contain detailed historical or biographical information.  
 
-
 |data set | words      |      definitions       |      definitions per word|
 | --- | --- | --- | ---: |
 |train      | 55888   | 507438 | 9.1                    |
 |validation | 6575    | 58388  | 8.9                    |
 |test       | 3288    | 30913  | 9.4                    |
 
-Data set statistics with total number of words and definitions, and average number of definitions per word.
+*Data set statistics with total number of words and definitions, and average number of definitions per word.*
+
 
 We use word vectors trained by [Hill et al.](http://www.aclweb.org/anthology/Q16-1002)  using word2vec to represent words as input to our models, and as target outputs when applicable.  We do not modify the embeddings during training.  This allows us to to exploit large training corpora used for those embeddings, and to increase our ability to generalize to words not present in the dictionary data.
 
@@ -117,7 +117,7 @@ A CVAE is the same as a VAE except that both the encoder and the decoder take in
 % sampled from a standard normal distribution
 % along with a word vector, and we expect to see a reasonable definition for that unseen word. -->
 
-To generate definitions for specific words, we use a conditional variational autoencoder with recurrent neural networks as its encoder and decoder.  This model is a conditional version of the VAE presented in [Bowman et al. 2016](https://arxiv.org/pdf/1511.06349.pdf) that outputs a discrete distribution over its vocabulary at each time step.  A single layer LSTM is used for both the encoder and decoder.  The encoder's final hidden state is passed through a linear projection to create the $$\vec \sigma$$ and $$\vec \mu$$ parameters for the Gaussian $Q$ in the latent space.  At each time step, the decoder's output is passed through a softmax layer.
+To generate definitions for specific words, we use a conditional variational autoencoder with recurrent neural networks as its encoder and decoder.  This model is a conditional version of the VAE presented in [Bowman et al. 2016](https://arxiv.org/pdf/1511.06349.pdf) that outputs a discrete distribution over its vocabulary at each time step.  A single layer LSTM is used for both the encoder and decoder.  The encoder's final hidden state is passed through a linear projection to create the $$\vec \sigma$$ and $$\vec \mu$$ parameters for the Gaussian $$Q$$ in the latent space.  At each time step, the decoder's output is passed through a softmax layer.
 
 # Conditional Variational Autoencoder with Word Vector Output
 
