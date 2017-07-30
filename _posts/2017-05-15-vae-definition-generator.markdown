@@ -11,7 +11,8 @@ In this blog post, I’ll describe a model I built in collaboration with Angel C
 Using word embeddings as input for a complex downstream task can only tell us how well that embedding does as a representation for that task.  Our model creates a direct view of word vector contents by creating an English representation of their contents.  This is analogous to asking a person to produce a definition of a word if you want to evaluate their understanding of that word.
 
 
-# Related work
+<!-- # Related work -->
+<!-- Unnat's paper and the other definitions paper -->
 
 # Data
 
@@ -25,6 +26,8 @@ We perform a 85/10/5 split on the training data to obtain our final training,  v
 |test       | 3288    | 30913  | 9.4                    |
 
 *Data set statistics with total number of words and definitions, and average number of definitions per word.*
+
+
 
 
 We use word vectors trained by [Hill et al.](http://www.aclweb.org/anthology/Q16-1002)  using word2vec to represent words as input to our models, and as target outputs when applicable.  We do not modify the embeddings during training.  This allows us to to exploit large training corpora used for those embeddings, and to increase our ability to generalize to words not present in the dictionary data.
