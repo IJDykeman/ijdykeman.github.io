@@ -201,14 +201,15 @@ The table below shows examples of definitions produced by each of our models. Th
 The discrete models (discrete CVAE and RNN decoder) often miss the meaning of the word completely, while still producing grammatically reasonable output, e.g. *bishop: a male given name*.
 <!-- %As expected, the two-word model generates simple, reasonable definitions.  The discrete output model is more able to create correct English, whereas the vector output model expresses more detail about the word being defined. e.g. for ``neurosis,'' ``feeling excessive desire of something'' is a more grammatically correct, but less accurate definition than ``an obsessional rather aimlessness or irrational anxiety.'' -->
 
-<!-- word,  vector CVAE   ,  discrete CVAE   ,  RNN decoder   ,  two-word  
-sizzling, showing the fiery sound (in cooking)                  , made by heat                 , a very; a person                   , fiery sound
-smuggling, transferring in illicit items (especially food goods) , making or other              , the act of  making or  taking      , illegal theft
-undated, lacking a date in manuscript)                         , existing or written          , not yet                            , original document
-Arabia, the mediterranean country (in the africa)             , country and north region     , the region of southern asia        , large area
-connoisseur, any discerning performer (in taste)                   , someone who is skilled       , one who is a person                , energetic person
-bishop, the biggest catholic priest in church                 , someone who makes or.        , a male given name                  , catholic priest
-tandoori, the indian uncooked dish (usually in curries)         , made with meat.              , a small, a small, a small.         , small dish -->
+| word        |  vector CVAE   |  discrete CVAE   |  RNN decoder   |  two-word  |
+|---       | ---  | ---  | --- | --- |
+|sizzling    | showing the fiery sound (in cooking)                  | made by heat                 | a very; a person                   | fiery sound|
+|smuggling   | transferring in illicit items (especially food goods) | making or other              | the act of  making or  taking      | illegal theft|
+|undated     | lacking a date in manuscript)                         | existing or written          | not yet                            | original document|
+|Arabia      | the mediterranean country (in the africa)             | country and north region     | the region of southern asia        | large area|
+|connoisseur | any discerning performer (in taste)                   | someone who is skilled       | one who is a person                | energetic person|
+|bishop      | the biggest catholic priest in church                 | someone who makes or.        | a male given name                  | catholic priest|
+|tandoori    | the indian uncooked dish (usually in curries)         | made with meat.              | a small, a small, a small.         | small dish|
 
 
 <style type="text/css">
@@ -219,36 +220,60 @@ tandoori, the indian uncooked dish (usually in curries)         , made with meat
 @media screen and (max-width: 767px) {.tg {width: auto !important;}.tg col {width: auto !important;}.tg-wrap {overflow-x: auto;-webkit-overflow-scrolling: touch;margin: auto 0px;}}</style>
 <div class="tg-wrap"><table class="tg">
   <tr>
-    <th class="tg-yw4l">word,  vector CVAE   ,  discrete CVAE   ,  RNN decoder   ,  two-word</th>
-    <th class="tg-yw4l"></th>
+    <th class="tg-yw4l">word</th>
+    <th class="tg-yw4l">vector CVAE</th>
+    <th class="tg-yw4l">discrete CVAE</th>
+    <th class="tg-yw4l">RNN decoder</th>
+    <th class="tg-yw4l">two-word</th>
   </tr>
   <tr>
-    <td class="tg-yw4l">sizzling, showing the fiery sound (in cooking)                  , made by heat                 , a very</td>
-    <td class="tg-yw4l">a person                   , fiery sound</td>
+    <td class="tg-yw4l">sizzling</td>
+    <td class="tg-yw4l">showing the fiery sound (in cooking)</td>
+    <td class="tg-yw4l">made by heat</td>
+    <td class="tg-yw4l">a verySEMI a person</td>
+    <td class="tg-yw4l">fiery sound</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">smuggling, transferring in illicit items (especially food goods) , making or other              , the act of  making or  taking      , illegal theft</td>
-    <td class="tg-yw4l"></td>
+    <td class="tg-yw4l">smuggling</td>
+    <td class="tg-yw4l">transferring in illicit items (especially food goods)</td>
+    <td class="tg-yw4l">making or other</td>
+    <td class="tg-yw4l">the act of making or taking</td>
+    <td class="tg-yw4l">illegal theft</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">undated, lacking a date in manuscript)                         , existing or written          , not yet                            , original document</td>
-    <td class="tg-yw4l"></td>
+    <td class="tg-yw4l">undated</td>
+    <td class="tg-yw4l">lacking a date in manuscript)</td>
+    <td class="tg-yw4l">existing or written</td>
+    <td class="tg-yw4l">not yet</td>
+    <td class="tg-yw4l">original document</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">Arabia, the mediterranean country (in the africa)             , country and north region     , the region of southern asia        , large area</td>
-    <td class="tg-yw4l"></td>
+    <td class="tg-yw4l">Arabia</td>
+    <td class="tg-yw4l">the mediterranean country (in the africa)</td>
+    <td class="tg-yw4l">country and north region</td>
+    <td class="tg-yw4l">the region of southern asia</td>
+    <td class="tg-yw4l">large area</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">connoisseur, any discerning performer (in taste)                   , someone who is skilled       , one who is a person                , energetic person</td>
-    <td class="tg-yw4l"></td>
+    <td class="tg-yw4l">connoisseur</td>
+    <td class="tg-yw4l">any discerning performer (in taste)</td>
+    <td class="tg-yw4l">someone who is skilled</td>
+    <td class="tg-yw4l">one who is a person</td>
+    <td class="tg-yw4l">energetic person</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">bishop, the biggest catholic priest in church                 , someone who makes or.        , a male given name                  , catholic priest</td>
-    <td class="tg-yw4l"></td>
+    <td class="tg-yw4l">bishop</td>
+    <td class="tg-yw4l">the biggest catholic priest in church</td>
+    <td class="tg-yw4l">someone who makes or.</td>
+    <td class="tg-yw4l">a male given name</td>
+    <td class="tg-yw4l">catholic priest</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">tandoori, the indian uncooked dish (usually in curries)         , made with meat.              , a small, a small, a small.         , small dish</td>
-    <td class="tg-yw4l"></td>
+    <td class="tg-yw4l">tandoori</td>
+    <td class="tg-yw4l">the indian uncooked dish (usually in curries)</td>
+    <td class="tg-yw4l">made with meat.</td>
+    <td class="tg-yw4l">a small, a small, a small.</td>
+    <td class="tg-yw4l">small dish</td>
   </tr>
 </table></div>
 
