@@ -19,11 +19,45 @@ Using word embeddings as input for a complex downstream task can only tell us ho
 We use a data set of 596,739 (*word*, *definition*) pairs compiled from various lexical resources.  Each word is paired with all definitions found in WordNet, The American Heritage Dictionary, The Collaborative International Dictionary of English, Wiktionary and Webster's Dictionary.
 We perform a 85/10/5 split on the training data to obtain our final training,  validation, and test sets (see the table below for dataset statistics). We split by word so that all the definitions for a given word appear in only one of the data sets.  We only use definitions of length less than 20 to avoid a long tail of definitions which contain detailed historical or biographical information.  
 
-|data set | words      |      definitions       |      definitions per word|
+<!-- |data set | words      |      definitions       |      definitions per word|
 | --- | --- | --- | ---: |
 |train      | 55888   | 507438 | 9.1                    |
 |validation | 6575    | 58388  | 8.9                    |
-|test       | 3288    | 30913  | 9.4                    |
+|test       | 3288    | 30913  | 9.4                    | -->
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:0px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:0px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-9hbo{font-weight:bold;vertical-align:top}
+.tg .tg-yw4l{vertical-align:top}
+</style>
+<table class="tg">
+  <tr>
+    <th class="tg-9hbo">data set</th>
+    <th class="tg-9hbo">words</th>
+    <th class="tg-9hbo">definitions</th>
+    <th class="tg-9hbo">definitions per word</th>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">train</td>
+    <td class="tg-yw4l">55888</td>
+    <td class="tg-yw4l">507438</td>
+    <td class="tg-yw4l">9.1</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">validation</td>
+    <td class="tg-yw4l">6575</td>
+    <td class="tg-yw4l">58388</td>
+    <td class="tg-yw4l">8.9</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">test</td>
+    <td class="tg-yw4l">3288</td>
+    <td class="tg-yw4l">30913</td>
+    <td class="tg-yw4l">9.4</td>
+  </tr>
+</table>
 
 *Data set statistics with total number of words and definitions, and average number of definitions per word.*
 
