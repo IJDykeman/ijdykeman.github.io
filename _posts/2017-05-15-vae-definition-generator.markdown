@@ -320,8 +320,8 @@ To see if our definitions can be understood by people we selected 200 words from
   </tr>
   <tr>
     <td class="tg-k4q0">vector CVAE</td>
-    <td class="tg-k4q0">71%</td>
-    <td class="tg-k4q0">30%</td>
+    <td class="tg-k4q0"><b>71%</b></td>
+    <td class="tg-k4q0"><b>30%</b></td>
   </tr>
   <tr>
     <td class="tg-k4q0">real definitions</td>
