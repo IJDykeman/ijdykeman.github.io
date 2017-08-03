@@ -75,8 +75,6 @@ Our simplest model is a multilayer perceptron for generating two-word definition
 
 ## Two word definitions
 
-In a previous blog post, I described a model for creating two word definitions from word vectors.  I’ll review it quickly here, and compare its output to that of the more complex models later on.  
-
 
 As a preliminary experiment, we generate two-word definitions of the form (*adjective*, *noun*), for example, *ostrich: flightless bird*.  As training data, we use two-word definitions extracted from our original data for this task.  To extract a two-word definition, we search the original definition for a hypernym of the word being defined, then find adjectives that appear before that hypernym.  Each one of those (*adjective*, *hypernym*) pairs forms a valid two-word definition.  For example, given the dictionary definition *ostrich: a flightless African bird with a long neck, long legs, and two toes on each foot.* we get *ostrich: flightless bird* and *ostrich: African bird* as two word definitions.  To detect hypernyms, we use WordNet, and we use NLTK to part-of-speech tag the definitions to find adjectives.
 
