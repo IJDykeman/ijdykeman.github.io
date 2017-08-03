@@ -201,7 +201,7 @@ The table below shows examples of definitions produced by each of our models. Th
 The discrete models (discrete CVAE and RNN decoder) often miss the meaning of the word completely, while still producing grammatically reasonable output, e.g. *bishop: a male given name*.
 <!-- %As expected, the two-word model generates simple, reasonable definitions.  The discrete output model is more able to create correct English, whereas the vector output model expresses more detail about the word being defined. e.g. for ``neurosis,'' ``feeling excessive desire of something'' is a more grammatically correct, but less accurate definition than ``an obsessional rather aimlessness or irrational anxiety.'' -->
 
-| word        |  vector CVAE   |  discrete CVAE   |  RNN decoder   |  two-word  |
+<!-- | word        |  vector CVAE   |  discrete CVAE   |  RNN decoder   |  two-word  |
 |---       | ---  | ---  | --- | --- |
 |sizzling    | showing the fiery sound (in cooking)                  | made by heat                 | a very; a person                   | fiery sound|
 |smuggling   | transferring in illicit items (especially food goods) | making or other              | the act of  making or  taking      | illegal theft|
@@ -209,71 +209,70 @@ The discrete models (discrete CVAE and RNN decoder) often miss the meaning of th
 |Arabia      | the mediterranean country (in the africa)             | country and north region     | the region of southern asia        | large area|
 |connoisseur | any discerning performer (in taste)                   | someone who is skilled       | one who is a person                | energetic person|
 |bishop      | the biggest catholic priest in church                 | someone who makes or.        | a male given name                  | catholic priest|
-|tandoori    | the indian uncooked dish (usually in curries)         | made with meat.              | a small, a small, a small.         | small dish|
-
+|tandoori    | the indian uncooked dish (usually in curries)         | made with meat.              | a small, a small, a small.         | small dish| -->
 
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;margin:0px auto;}
 .tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
 .tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
-.tg .tg-yw4l{vertical-align:top}
+.tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
 @media screen and (max-width: 767px) {.tg {width: auto !important;}.tg col {width: auto !important;}.tg-wrap {overflow-x: auto;-webkit-overflow-scrolling: touch;margin: auto 0px;}}</style>
 <div class="tg-wrap"><table class="tg">
   <tr>
-    <th class="tg-yw4l">word</th>
-    <th class="tg-yw4l">vector CVAE</th>
-    <th class="tg-yw4l">discrete CVAE</th>
-    <th class="tg-yw4l">RNN decoder</th>
-    <th class="tg-yw4l">two-word</th>
+    <th class="tg-k4q0">word</th>
+    <th class="tg-k4q0">vector CVAE</th>
+    <th class="tg-k4q0">discrete CVAE</th>
+    <th class="tg-k4q0">RNN decoder</th>
+    <th class="tg-k4q0">two-word</th>
   </tr>
   <tr>
-    <td class="tg-yw4l">sizzling</td>
-    <td class="tg-yw4l">showing the fiery sound (in cooking)</td>
-    <td class="tg-yw4l">made by heat</td>
-    <td class="tg-yw4l">a verySEMI a person</td>
-    <td class="tg-yw4l">fiery sound</td>
+    <td class="tg-k4q0">sizzling</td>
+    <td class="tg-k4q0">showing the fiery sound (in cooking)</td>
+    <td class="tg-k4q0">made by heat</td>
+    <td class="tg-k4q0">a very; a person</td>
+    <td class="tg-k4q0">fiery sound</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">smuggling</td>
-    <td class="tg-yw4l">transferring in illicit items (especially food goods)</td>
-    <td class="tg-yw4l">making or other</td>
-    <td class="tg-yw4l">the act of making or taking</td>
-    <td class="tg-yw4l">illegal theft</td>
+    <td class="tg-k4q0">smuggling</td>
+    <td class="tg-k4q0">transferring in illicit items (especially food goods)</td>
+    <td class="tg-k4q0">making or other</td>
+    <td class="tg-k4q0">the act of making or taking</td>
+    <td class="tg-k4q0">illegal theft</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">undated</td>
-    <td class="tg-yw4l">lacking a date in manuscript)</td>
-    <td class="tg-yw4l">existing or written</td>
-    <td class="tg-yw4l">not yet</td>
-    <td class="tg-yw4l">original document</td>
+    <td class="tg-k4q0">undated</td>
+    <td class="tg-k4q0">lacking a date in manuscript)</td>
+    <td class="tg-k4q0">existing or written</td>
+    <td class="tg-k4q0">not yet</td>
+    <td class="tg-k4q0">original document</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">Arabia</td>
-    <td class="tg-yw4l">the mediterranean country (in the africa)</td>
-    <td class="tg-yw4l">country and north region</td>
-    <td class="tg-yw4l">the region of southern asia</td>
-    <td class="tg-yw4l">large area</td>
+    <td class="tg-k4q0">Arabia</td>
+    <td class="tg-k4q0">the mediterranean country (in the africa)</td>
+    <td class="tg-k4q0">country and north region</td>
+    <td class="tg-k4q0">the region of southern asia</td>
+    <td class="tg-k4q0">large area</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">connoisseur</td>
-    <td class="tg-yw4l">any discerning performer (in taste)</td>
-    <td class="tg-yw4l">someone who is skilled</td>
-    <td class="tg-yw4l">one who is a person</td>
-    <td class="tg-yw4l">energetic person</td>
+    <td class="tg-k4q0">connoisseur</td>
+    <td class="tg-k4q0">any discerning performer (in taste)</td>
+    <td class="tg-k4q0">someone who is skilled</td>
+    <td class="tg-k4q0">one who is a person</td>
+    <td class="tg-k4q0">energetic person</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">bishop</td>
-    <td class="tg-yw4l">the biggest catholic priest in church</td>
-    <td class="tg-yw4l">someone who makes or.</td>
-    <td class="tg-yw4l">a male given name</td>
-    <td class="tg-yw4l">catholic priest</td>
+    <td class="tg-k4q0">bishop</td>
+    <td class="tg-k4q0">the biggest catholic priest in church</td>
+    <td class="tg-k4q0">someone who makes or.</td>
+    <td class="tg-k4q0">a male given name</td>
+    <td class="tg-k4q0">catholic priest</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">tandoori</td>
-    <td class="tg-yw4l">the indian uncooked dish (usually in curries)</td>
-    <td class="tg-yw4l">made with meat.</td>
-    <td class="tg-yw4l">a small, a small, a small.</td>
-    <td class="tg-yw4l">small dish</td>
+    <td class="tg-k4q0">tandoori</td>
+    <td class="tg-k4q0">the indian uncooked dish (usually in curries)</td>
+    <td class="tg-k4q0">made with meat.</td>
+    <td class="tg-k4q0">a small, a small, a small.</td>
+    <td class="tg-k4q0">small dish</td>
   </tr>
 </table></div>
 
@@ -284,13 +283,52 @@ To see if our definitions can be understood by people we selected 200 words from
 
 
 
-|model            |  random | similar |
+<!-- |model            |  random | similar |
 | ----            |  ------ | ------- |
 |two-word         | 63%     | 27%     |
 |RNN              | 50%     | 23%     |
 |discrete CVAE    | 55%     | 21%     |
 |vector CVAE      | __71%__ | __30%__ |
-|real definitions | 76%     | 50%     |
+|real definitions | 76%     | 50%     | -->
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;margin:0px auto;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
+@media screen and (max-width: 767px) {.tg {width: auto !important;}.tg col {width: auto !important;}.tg-wrap {overflow-x: auto;-webkit-overflow-scrolling: touch;margin: auto 0px;}}</style>
+<div class="tg-wrap"><table class="tg">
+  <tr>
+    <th class="tg-k4q0">model</th>
+    <th class="tg-k4q0">random</th>
+    <th class="tg-k4q0">similar</th>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">two-word</td>
+    <td class="tg-k4q0">63%</td>
+    <td class="tg-k4q0">27%</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">RNN</td>
+    <td class="tg-k4q0">50%</td>
+    <td class="tg-k4q0">23%</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">discrete CVAE</td>
+    <td class="tg-k4q0">55%</td>
+    <td class="tg-k4q0">21%</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">vector CVAE</td>
+    <td class="tg-k4q0">71%</td>
+    <td class="tg-k4q0">30%</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">real definitions</td>
+    <td class="tg-k4q0">76%</td>
+    <td class="tg-k4q0">50%</td>
+  </tr>
+</table></div>
 
 *Percent correct selected by users with random selection being 20% correct.*
 
@@ -300,12 +338,37 @@ To compare our models, we use the BLEU score to measure similarity between the g
 The vector CVAE model performs better than the discrete models, confirming our intuition that leveraging the vector representation as output helps with definition synthesis.
 
 
-|model             | test set BLEU |
+<!-- |model             | test set BLEU |
 | ----             | ------------- |
 |RNN decoder       | 0.5458        |
 |discrete CVAE     | 0.5023        |
-|vector CVAE       | __0.6319__    |
+|vector CVAE       | __0.6319__    | -->
 
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;margin:0px auto;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
+@media screen and (max-width: 767px) {.tg {width: auto !important;}.tg col {width: auto !important;}.tg-wrap {overflow-x: auto;-webkit-overflow-scrolling: touch;margin: auto 0px;}}</style>
+<div class="tg-wrap"><table class="tg">
+  <tr>
+    <th class="tg-k4q0">model</th>
+    <th class="tg-k4q0">test set BLEU</th>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">RNN decoder</td>
+    <td class="tg-k4q0">0.5458</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">discrete CVAE</td>
+    <td class="tg-k4q0">0.5023</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">vector CVAE</td>
+    <td class="tg-k4q0">0.6319</td>
+  </tr>
+</table></div>
 
 ## Defining Unseen Words
 We can produce definitions for words with no definition in the dictionary data we drew from.  The vector VAE definition of "Anthropologie," a "boho-chic" clothing chain is *anthropologie: an modern merchandiser to a boutique emporium.* For Voldemort, the evil wizard from Harry Potter: *voldemort: the evil one in the demon of magic in the war*.
