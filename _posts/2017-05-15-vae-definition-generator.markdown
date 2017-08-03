@@ -19,43 +19,42 @@ Using word embeddings as input for a complex downstream task can only tell us ho
 We use a data set of 596,739 (*word*, *definition*) pairs compiled from various lexical resources.  Each word is paired with all definitions found in WordNet, The American Heritage Dictionary, The Collaborative International Dictionary of English, Wiktionary and Webster's Dictionary.
 We perform a 85/10/5 split on the training data to obtain our final training,  validation, and test sets (see the table below for dataset statistics). We split by word so that all the definitions for a given word appear in only one of the data sets.  We only use definitions of length less than 20 to avoid a long tail of definitions which contain detailed historical or biographical information.  
 
-<!-- |data set | words      |      definitions       |      definitions per word|
-| --- | --- | --- | ---: |
-|train      | 55888   | 507438 | 9.1                    |
-|validation | 6575    | 58388  | 8.9                    |
-|test       | 3288    | 30913  | 9.4                    | -->
+<!-- data set, words, definitions, definitions per word
+train, 55888, 507438, 9.1
+validation, 6575, 58388, 8.9
+test, 3288, 30913, 9.4 -->
 
 <style type="text/css">
 .tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;}
 .tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:0px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
 .tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:0px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
-.tg .tg-9hbo{font-weight:bold;vertical-align:top}
-.tg .tg-yw4l{vertical-align:top}
+.tg .tg-vi9z{font-weight:bold;font-family:Georgia, serif !important;;vertical-align:top}
+.tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
 </style>
 <table class="tg">
   <tr>
-    <th class="tg-9hbo">data set</th>
-    <th class="tg-9hbo">words</th>
-    <th class="tg-9hbo">definitions</th>
-    <th class="tg-9hbo">definitions per word</th>
+    <th class="tg-vi9z">data set</th>
+    <th class="tg-vi9z">words</th>
+    <th class="tg-vi9z">definitions</th>
+    <th class="tg-vi9z">definitions per word</th>
   </tr>
   <tr>
-    <td class="tg-yw4l">train</td>
-    <td class="tg-yw4l">55888</td>
-    <td class="tg-yw4l">507438</td>
-    <td class="tg-yw4l">9.1</td>
+    <td class="tg-k4q0">train</td>
+    <td class="tg-k4q0">55888</td>
+    <td class="tg-k4q0">507438</td>
+    <td class="tg-k4q0">9.1</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">validation</td>
-    <td class="tg-yw4l">6575</td>
-    <td class="tg-yw4l">58388</td>
-    <td class="tg-yw4l">8.9</td>
+    <td class="tg-k4q0">validation</td>
+    <td class="tg-k4q0">6575</td>
+    <td class="tg-k4q0">58388</td>
+    <td class="tg-k4q0">8.9</td>
   </tr>
   <tr>
-    <td class="tg-yw4l">test</td>
-    <td class="tg-yw4l">3288</td>
-    <td class="tg-yw4l">30913</td>
-    <td class="tg-yw4l">9.4</td>
+    <td class="tg-k4q0">test</td>
+    <td class="tg-k4q0">3288</td>
+    <td class="tg-k4q0">30913</td>
+    <td class="tg-k4q0">9.4</td>
   </tr>
 </table>
 
@@ -202,16 +201,56 @@ The table below shows examples of definitions produced by each of our models. Th
 The discrete models (discrete CVAE and RNN decoder) often miss the meaning of the word completely, while still producing grammatically reasonable output, e.g. *bishop: a male given name*.
 <!-- %As expected, the two-word model generates simple, reasonable definitions.  The discrete output model is more able to create correct English, whereas the vector output model expresses more detail about the word being defined. e.g. for ``neurosis,'' ``feeling excessive desire of something'' is a more grammatically correct, but less accurate definition than ``an obsessional rather aimlessness or irrational anxiety.'' -->
 
-| word        |  vector CVAE   |  discrete CVAE   |  RNN decoder   |  two-word  |
-|---       | ---  | ---  | --- | --- |
-|sizzling    | showing the fiery sound (in cooking)                  | made by heat                 | a very; a person                   | fiery sound|
-|smuggling   | transferring in illicit items (especially food goods) | making or other              | the act of  making or  taking      | illegal theft|
-|undated     | lacking a date in manuscript)                         | existing or written          | not yet                            | original document|
-|Arabia      | the mediterranean country (in the africa)             | country and north region     | the region of southern asia        | large area|
-|connoisseur | any discerning performer (in taste)                   | someone who is skilled       | one who is a person                | energetic person|
-|bishop      | the biggest catholic priest in church                 | someone who makes or.        | a male given name                  | catholic priest|
-|tandoori    | the indian uncooked dish (usually in curries)         | made with meat.              | a small, a small, a small.         | small dish|
+<!-- word,  vector CVAE   ,  discrete CVAE   ,  RNN decoder   ,  two-word  
+sizzling, showing the fiery sound (in cooking)                  , made by heat                 , a very; a person                   , fiery sound
+smuggling, transferring in illicit items (especially food goods) , making or other              , the act of  making or  taking      , illegal theft
+undated, lacking a date in manuscript)                         , existing or written          , not yet                            , original document
+Arabia, the mediterranean country (in the africa)             , country and north region     , the region of southern asia        , large area
+connoisseur, any discerning performer (in taste)                   , someone who is skilled       , one who is a person                , energetic person
+bishop, the biggest catholic priest in church                 , someone who makes or.        , a male given name                  , catholic priest
+tandoori, the indian uncooked dish (usually in curries)         , made with meat.              , a small, a small, a small.         , small dish -->
 
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;margin:0px auto;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-yw4l{vertical-align:top}
+@media screen and (max-width: 767px) {.tg {width: auto !important;}.tg col {width: auto !important;}.tg-wrap {overflow-x: auto;-webkit-overflow-scrolling: touch;margin: auto 0px;}}</style>
+<div class="tg-wrap"><table class="tg">
+  <tr>
+    <th class="tg-yw4l">word,  vector CVAE   ,  discrete CVAE   ,  RNN decoder   ,  two-word</th>
+    <th class="tg-yw4l"></th>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">sizzling, showing the fiery sound (in cooking)                  , made by heat                 , a very</td>
+    <td class="tg-yw4l">a person                   , fiery sound</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">smuggling, transferring in illicit items (especially food goods) , making or other              , the act of  making or  taking      , illegal theft</td>
+    <td class="tg-yw4l"></td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">undated, lacking a date in manuscript)                         , existing or written          , not yet                            , original document</td>
+    <td class="tg-yw4l"></td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">Arabia, the mediterranean country (in the africa)             , country and north region     , the region of southern asia        , large area</td>
+    <td class="tg-yw4l"></td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">connoisseur, any discerning performer (in taste)                   , someone who is skilled       , one who is a person                , energetic person</td>
+    <td class="tg-yw4l"></td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">bishop, the biggest catholic priest in church                 , someone who makes or.        , a male given name                  , catholic priest</td>
+    <td class="tg-yw4l"></td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">tandoori, the indian uncooked dish (usually in curries)         , made with meat.              , a small, a small, a small.         , small dish</td>
+    <td class="tg-yw4l"></td>
+  </tr>
+</table></div>
 
 
 ## User Study
