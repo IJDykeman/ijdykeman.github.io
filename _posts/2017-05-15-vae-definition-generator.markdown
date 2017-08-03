@@ -366,7 +366,7 @@ The vector CVAE model performs better than the discrete models, confirming our i
   </tr>
   <tr>
     <td class="tg-k4q0">vector CVAE</td>
-    <td class="tg-k4q0">0.6319</td>
+    <td class="tg-k4q0"><b>0.6319</b></td>
   </tr>
 </table></div>
 
