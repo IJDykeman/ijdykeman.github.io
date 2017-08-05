@@ -170,7 +170,7 @@ At inference time, we feed in a latent vector $$z$$ and a word vector to be defi
 
 # Baseline RNN Decoder Model
 
-![RNN decoder diagram](/assets/vae-definition-generation/rnn_decoder_diagram.svg  =500x)
+![RNN decoder diagram](/assets/vae-definition-generation/rnn_decoder_diagram.svg =500x)
 
 <center><i>A diagram of the baseline RNN decoder model.</i></center>
 
