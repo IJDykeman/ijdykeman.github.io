@@ -6,9 +6,7 @@ categories: ml
 ---
 
 
-In this blog post, I’ll describe a model I built in collaboration with Angel Chang for generating dictionary definitions of word vectors.  Dense word embedding are known to capture the meaning of words in a way that is effective for many downstream NLP tasks.  However, it is difficult to observe directly what information they contain.  Word vectors can be arithmetically to solve analogy and word similarity problems, but these provide an indirect look at what meaning the embedding captures.  In particular, these tasks not reveal what use a complex model could make of these vectors.  We use the task of dictionary definition generation to measure the quality of word vectors in a way that is both closely related to the meaning captured by individual word vectors capture and can benefit from a model architecture with some understanding of language in general.  Our system is able to create plausible definitions for words that it has not seen a definition of before.
-
-Using word embeddings as input for a complex downstream task can only tell us how well that embedding does as a representation for that task.  Our model creates a direct view of word vector contents by creating an English representation of their contents.  This is analogous to asking a person to produce a definition of a word if you want to evaluate their understanding of that word.
+In this blog post, I’ll describe a model I built in collaboration with Angel Chang for generating dictionary definitions of word vectors.  Dense word embedding are known to capture the meaning of words in a way that is effective for many downstream NLP tasks.  However, it is difficult to observe directly what information they contain.  Word vectors can be manipulated arithmetically to solve analogy and word similarity problems, but these tasks provide an indirect look at what meaning the embedding captures.  In particular, these tasks do not reveal what use a complex model could make of these vectors.  On the other hand, using word embeddings as input for a complex downstream task can only tell us how well that embedding does as a representation for that task.  Our model creates a direct view of word vector contents by creating an English representation of their contents.  This is analogous to asking a person to produce a definition of a word if you want to evaluate their understanding of that word.  Our system is able to create plausible definitions for words for unseen words.
 
 
 <!-- # Related work -->
@@ -16,8 +14,7 @@ Using word embeddings as input for a complex downstream task can only tell us ho
 
 # Data
 
-We use a data set of 596,739 (*word*, *definition*) pairs compiled from various lexical resources.  Each word is paired with all definitions found in WordNet, The American Heritage Dictionary, The Collaborative International Dictionary of English, Wiktionary and Webster's Dictionary.
-We perform a 85/10/5 split on the training data to obtain our final training,  validation, and test sets (see the table below for dataset statistics). We split by word so that all the definitions for a given word appear in only one of the data sets.  We only use definitions of length less than 20 to avoid a long tail of definitions which contain detailed historical or biographical information.  
+We use a data set of 596,739 (*word*, *definition*) pairs compiled from various lexical resources.  Each word is paired with all definitions found in WordNet, The American Heritage Dictionary, The Collaborative International Dictionary of English, Wiktionary and Webster's Dictionary.  We perform a 85/10/5 split on the training data to obtain our final training,  validation, and test sets (see the table below for dataset statistics). We split by word so that all the definitions for a given word appear in only one of the data sets.  We only use definitions of length less than 20 to avoid a long tail of definitions which contain detailed historical or biographical information.
 
 <!-- data set, words, definitions, definitions per word
 train, 55888, 507438, 9.1
@@ -58,12 +55,10 @@ test, 3288, 30913, 9.4 -->
   </tr>
 </table>
 
-*Data set statistics with total number of words and definitions, and average number of definitions per word.*
-
-
-
+<center>*Data set statistics with total number of words and definitions, and average number of definitions per word.*</center>
 
 We use word vectors trained by [Hill et al.](http://www.aclweb.org/anthology/Q16-1002)  using word2vec to represent words as input to our models, and as target outputs when applicable.  We do not modify the embeddings during training.  This allows us to to exploit large training corpora used for those embeddings, and to increase our ability to generalize to words not present in the dictionary data.
+
 
 # Approaches
 
