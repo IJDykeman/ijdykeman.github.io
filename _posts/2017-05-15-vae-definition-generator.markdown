@@ -55,7 +55,7 @@ test, 3288, 30913, 9.4 -->
   </tr>
 </table>
 
-<center>*Data set statistics with total number of words and definitions, and average number of definitions per word.*</center>
+<center> *Data set statistics with total number of words and definitions, and average number of definitions per word.* </center>
 
 We use word vectors trained by [Hill et al.](http://www.aclweb.org/anthology/Q16-1002)  using word2vec to represent words as input to our models, and as target outputs when applicable.  We do not modify the embeddings during training.  This allows us to to exploit large training corpora used for those embeddings, and to increase our ability to generalize to words not present in the dictionary data.
 
@@ -63,8 +63,7 @@ We use word vectors trained by [Hill et al.](http://www.aclweb.org/anthology/Q16
 # Approaches
 
 
-We investigate models across a spectrum of size and complexity.
-Our simplest model is a multilayer perceptron for generating two-word definitions, e.g. *frog: amphibious animal*.  This model produces definitions that are reliably reasonable but limited in expressiveness.  To generate more complex and diverse definitions of unspecified length, we use variational autoencoders (VAEs) with RNN encoders and decoders.  We created one sequence VAE with softmax output, and one which outputs embedding space vectors at each time step. We compare all of these models to a baseline RNN decoder architecture.
+We investigate models across a spectrum of size and complexity.  Our simplest model is a multilayer perceptron for generating two-word definitions, e.g. *frog: amphibious animal*.  This model produces definitions that are reliably reasonable but limited in expressiveness.  To generate more complex and diverse definitions of unspecified length, we use variational autoencoders (VAEs) with RNN encoders and decoders.  We created one sequence VAE with softmax output, and one which outputs embedding space vectors at each time step. We compare all of these models to a baseline RNN decoder architecture.
 
 
 
@@ -152,7 +151,7 @@ To generate definitions for specific words, we use a conditional variational aut
 
 ![VAE diagram](/assets/vae-definition-generation/full_pathway_drawing.svg)
 
-*A diagram of the vector output model at training time.  The RNN on the left is the encoder, and the one on the right is the decoder.  For the vector model, we add a special STOP vector to the embedding space to indicate the end of output.  The discrete output model is the same except that instead of a nearest neighbor search on each output step, we take the argmax over the output.*
+<center> *A diagram of the vector output model at training time.  The RNN on the left is the encoder, and the one on the right is the decoder.  For the vector model, we add a special STOP vector to the embedding space to indicate the end of output.  The discrete output model is the same except that instead of a nearest neighbor search on each output step, we take the argmax over the output.* </center>
 
 
 In order to exploit the representational power of word vectors as output as well as input, we created a language decoder which outputs vectors in the embedding space at each time step instead of outputting a probability distribution over the entire vocabulary.  This is a logical extension of the two-word model, which also outputs word vectors and is able to consistently capture the meanings of words in its output.  To our knowledge, this is the first language generator to use word vectors as its output representation.  As we show in the results section, this model produces definitions that are substantially better than those from the discrete output models (the CVAE with discrete output and the RNN decoder baseline model).
@@ -173,7 +172,7 @@ At inference time, we feed in a latent vector $$z$$ and a word vector to be defi
 
 ![RNN decoder diagram](/assets/vae-definition-generation/rnn_decoder_diagram.svg)
 
-*A diagram of the baseline RNN decoder model.*
+<center> *A diagram of the baseline RNN decoder model.* </center>
 
 As a baseline, we created a simple RNN decoder architecture.  This architecture takes a word vector as input, and uses the same LSTM architecture as the discrete CVAE model decoder to predict a sequence of words for its definition.
 
@@ -323,7 +322,7 @@ To see if our definitions can be understood by people we selected 200 words from
   </tr>
 </table></div>
 
-*Percent correct selected by users with random selection being 20% correct.*
+<center> *Percent correct selected by users with random selection being 20% correct.* </center>
 
 ## Quantitative Comparison with BLEU Scores
 
