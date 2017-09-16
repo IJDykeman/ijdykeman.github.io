@@ -193,6 +193,27 @@ The table below shows examples of definitions produced by each of our models. Th
 The discrete models (discrete CVAE and RNN decoder) often miss the meaning of the word completely, while still producing grammatically reasonable output, e.g. *bishop: a male given name*.
 <!-- %As expected, the two-word model generates simple, reasonable definitions.  The discrete output model is more able to create correct English, whereas the vector output model expresses more detail about the word being defined. e.g. for ``neurosis,'' ``feeling excessive desire of something'' is a more grammatically correct, but less accurate definition than ``an obsessional rather aimlessness or irrational anxiety.'' -->
 
+<!-- 
+| word       |  vector CVAE   |  discrete CVAE   |
+|---         | ---            | ---  |
+|sizzling    | showing the fiery sound (in cooking)                  | made by heat                 |
+|smuggling   | transferring in illicit items (especially food goods) | making or other              |
+|undated     | lacking a date in manuscript)                         | existing or written          |
+|Arabia      | the mediterranean country (in the africa)             | country and north region     |
+|connoisseur | any discerning performer (in taste)                   | someone who is skilled       |
+|bishop      | the biggest catholic priest in church                 | someone who makes or.        |
+|tandoori    | the indian uncooked dish (usually in curries)         | made with meat.              |
+
+| word        |  RNN decoder                      |  two-word  |
+|---         | ---                                | --- |
+|sizzling    | a very; a person                   | fiery sound|
+|smuggling   | the act of  making or  taking      | illegal theft|
+|undated     | not yet                            | original document|
+|Arabia      | the region of southern asia        | large area|
+|connoisseur | one who is a person                | energetic person|
+|bishop      | a male given name                  | catholic priest|
+|tandoori    | a small, a small, a small.         | small dish|
+-->
 <!-- | word        |  vector CVAE   |  discrete CVAE   |  RNN decoder   |  two-word  |
 |---       | ---  | ---  | --- | --- |
 |sizzling    | showing the fiery sound (in cooking)                  | made by heat                 | a very; a person                   | fiery sound|
