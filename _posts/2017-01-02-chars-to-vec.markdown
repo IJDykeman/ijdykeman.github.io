@@ -43,6 +43,9 @@ I think “Zorgon” is a sinister sounding name.  Given “Zorgon,” which is 
 
 ![zorgon characters](/assets/chars-to-vec_figures/zorgon_characters.svg)
 
+*Image sources: Gortath: Marvel Premiere #5; Beastman: Mattel Masters of the Universe*
+
+
 Unfortunately, it’s a bit harder to find names of characters that sound particularly like names of good people.  In the Harry Potter books, which tend to take liberties with naming, morally upstanding characters tend to simply have common names: Harry, Ron, Molly, Albus, James, or Ginny.  I’ll take Dobby and Dumbledore as examples of good-sounding names of good characters.  The model associates these both to cute names like “Sweatpea,” or “Stompy,” which is the name of a cartoon baby elephant.  While these associations don’t quite capture the gravity Dumbledore is meant to have, they convey at least a positive connotation.
 
 Galadriel, a sorceress in Lord of the Rings who rules an enchanted forest, is associated most strongly with with Balor, an Irish mythical king of supernatural beings, and Melisandre, the sorceress from A Song of Ice and Fire.
