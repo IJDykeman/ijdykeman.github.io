@@ -14,6 +14,7 @@ In this post, I'll describe the two algorithms I came up with for creating compl
 A tile set is a collection of 3 by 3 grids of colors.  A collection of tiles might look like this:
 
 ![latent space diagram]({{ site.url }}/assets/wang_tiles/dungeon_tileset.png)
+
 *This set of tiles is the only information needed to describe the generation of the world in the video above.*
 
 
@@ -31,7 +32,7 @@ I think this is an interesting way to create worlds because very often, procedur
 
 ## Examples of Interesting Tile Sets
 
-To motivate this post, I'll show a few tile sets that I've come up with and some tilings that can be generated under the contraints they describe.  
+To motivate this post, I'll show a few tile sets that I've come up with and some tilings that can be generated under the constraints they describe.  
 
 
 ## Greedy Placement with Crude Undoing
@@ -44,7 +45,7 @@ There is obviously no guarantee that this algorithm will halt.  A simple tile se
 
 Next, I'll describe an algorithm which is guaranteed to halt and produces better looking results for all the tile sets I have tried.  It is also able to produce nearly-valid tilings for tile sets that are much more complicated than those which the previous algorithm can handle.  The tradeoff is that this algorithm does not guarantee that its output is always a valid tiling.
 
-The difficulty of creating a valid tiling is largely determined by the number of transitions necesarry to get between two tile types.  A simple tile set might contain only sand, water, and grass.  If grass and water cannot touch, then a transition to sand will be necesarry between the two.  This is a simple case that the greedy algorithm can solve easily.  A more complex case might involve many nested levels of tile types.  For instance, you might have deep water, water, sand, grass, high plain, mountain, and snow cap.  Seven transitions would need to be present in the map for all of these types to appear, assuming that these types cannot touch except in the order I stated them.  Further complexity can be introduced by creating tiles that naturally create long-distance dependencies between tiles.
+The difficulty of creating a valid tiling is largely determined by the number of transitions necessary to get between two tile types.  A simple tile set might contain only sand, water, and grass.  If grass and water cannot touch, then a transition to sand will be necessary between the two.  This is a simple case that the greedy algorithm can solve easily.  A more complex case might involve many nested levels of tile types.  For instance, you might have deep water, water, sand, grass, high plain, mountain, and snow cap.  Seven transitions would need to be present in the map for all of these types to appear, assuming that these types cannot touch except in the order I stated them.  Further complexity can be introduced by creating tiles that naturally create long-distance dependencies between tiles.
 
 
 
@@ -59,8 +60,10 @@ IMAGE OF A SPECTRUM OF 3 IMAGES AT DIFFERENT OCEAN PROBABILITIES
 
 ## Make Your Own Tile Sets
 
-### A Graphical Tile Set Specification
+Using the code (at your own risk; I wrote most of it in high school) I've put on github, you can create your own tilesets using an image editor, and see how the tiling solver creates worlds with them.  Simply clone the repo and edit the image named dungeon.png, then use Processing to run wangTiles.pde to see an animation of the map being generated. I'll now describe the "language" that the tiling solver expects.
 
-To 
+### The Tile Set Specification
+
+The tiles are laid out on a grid of 4x4 cells.  Each cell contains a colored tile in the upper left 3x3 region, and the remaining 7 pixel contain metadata about the tile.  
 
 
