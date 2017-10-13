@@ -5,27 +5,25 @@ date:   2017-10-16 22:25:30 -0500
 categories: ml
 ---
 
-In this post, I'll describe the two algorithms I came up with for creating complex procedural worlds from simple sets of colored tiles.  I will show that by carefully designing these tile sets, you can create interesting procedurally generated content, such as landscapes with cities, or dungeons with interesting internal structure.
+In this post, I'll describe the two algorithms I came up with for creating complex procedural worlds from simple sets of colored tiles.  I will show that by carefully designing these tile sets, you can create interesting procedurally generated content, such as landscapes with cities, or dungeons with interesting internal structure.  The video below shows the system creating a procedural world based on the rules encoded in 43 colored tiles.
 
 <iframe width="640" height="640" src="https://www.youtube.com/embed/XVIYY0AQF-8?rel=0&amp;controls=0&amp;showinfo=0"
 	frameborder="0" allowfullscreen
 	style="display: block; margin: auto;"></iframe>
 
-
+A tile set is a collection of 3 by 3 grids of colors.  A collection of tiles might look like this:
 
 ![latent space diagram]({{ site.url }}/assets/wang_tiles/dungeon_tileset.png)
 *This set of tiles is the only information needed to describe the generation of the world in the video above.*
-
-A tile set is a collection of 3 by 3 grids of colors.  A collection of tiles might look like this:
 
 
 We will define a tiling as a finite grid where one of those tiles lies in each grid square.  We will further define a valid world as one where the colors along the edges of adjacent tiles must be the same.  A valid tiling of the tile set above might look like this:
 
 An invalid tiling would include unmatched edges between tiles, as in the image below.
 
+<!-- In this post, I'll explore algorithms for efficiently taking large, complex tile sets and producing valid or nearly valid tilings that look like convincing landscapes, dungeons, and other commonly procedurally generated content.  When these algorithms work well, they can produce some very nice looking results: -->
 
-In this post, I'll explore algorithms for efficiently taking large, complex tile sets and producing valid or nearly valid tilings that look like convincing landscapes, dungeons, and other commonly procedurally generated content.  When these algorithms work well, they can produce some very nice looking results:
-<!-- Very often, procedural generation algorithms take a top-down approach.   -->
+I think this is an interesting way to create worlds because very often, procedural generation algorithms take a top-down approach.  L-systems, for instance, rely on a recursive description of an object where the top level, large details are determined before lower level ones.  There is nothing wrong with this approach, but I think that it is interesting to create tile sets that are only able to encode simple low level relationships (e.g., ocean water and grass must be separated by a beach, buildings can only have convex, 90 degree corners) and see high level patterns emerge (e.g. square buildings).
 
 <!-- ## Why Creating a Tiling is Hard -->
 
