@@ -13,10 +13,13 @@ In this post, I'll describe the two algorithms I came up with for creating compl
 
 A tile set is a collection of 3 by 3 grids of colors.  A collection of tiles might look like this:
 
-![latent space diagram]({{ site.url }}/assets/wang_tiles/dungeon_tileset.png)
+![dungeon tileset]({{ site.url }}/assets/wang_tiles/dungeon_tileset.png)
 
 *This set of tiles is the only information needed to describe the generation of the world in the video above.*
 
+To assist you in the exercise of imagination required to see this as a "world," see the helpful diagram below.
+
+![map explanation]({{ site.url }}/assets/wang_tiles/map_explanation.png)
 
 We will define a tiling as a finite grid where one of those tiles lies in each grid square.  We will further define a valid world as one where the colors along the edges of adjacent tiles must be the same.  A valid tiling of the tile set above might look like this:
 
@@ -30,10 +33,10 @@ I think this is an interesting way to create worlds because very often, procedur
 
 <!-- Intuitively, the problem of correctly creating a nontrivial tiling  -->
 
-## Examples of Interesting Tile Sets
+<!-- ## Examples of Interesting Tile Sets
 
 To motivate this post, I'll show a few tile sets that I've come up with and some tilings that can be generated under the constraints they describe.  
-
+ -->
 
 ## Greedy Placement with Crude Undoing
 
@@ -55,8 +58,8 @@ I've claimed that the problem of creating valid tilings is hard and provided two
 
 To be more concrete, we can decide on a probability that a given tile appears in a tiling, and then try to create algorithms which output tilings where each tile appears at about its predefined rate.  By adjusting the probabilities of various tiles appearing, one can adjust the sizes of various features on the tiling.
 
-IMAGE OF A SPECTRUM OF 3 IMAGES AT DIFFERENT OCEAN PROBABILITIES
-	could even make this a 3x3 showing different probabilities of two tiles.
+![water probability comparison]({{ site.url }}/assets/wang_tiles/water_probabilites.png)
+
 
 ## Make Your Own Tile Sets
 
