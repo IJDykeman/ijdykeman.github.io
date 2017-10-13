@@ -19,7 +19,7 @@ A tile set is a collection of 3 by 3 grids of colors.  A collection of tiles mig
 
 To assist you in the exercise of imagination required to see this as a "world," see the helpful diagram below.
 
-![map explanation]({{ site.url }}/assets/wang_tiles/map_explanation.png)
+![map explanation]({{ site.url }}/assets/wang_tiles/map_explanation.svg)
 
 We will define a tiling as a finite grid where one of those tiles lies in each grid square.  We will further define a valid world as one where the colors along the edges of adjacent tiles must be the same.  A valid tiling of the tile set above might look like this:
 
@@ -58,7 +58,7 @@ I've claimed that the problem of creating valid tilings is hard and provided two
 
 To be more concrete, we can decide on a probability that a given tile appears in a tiling, and then try to create algorithms which output tilings where each tile appears at about its predefined rate.  By adjusting the probabilities of various tiles appearing, one can adjust the sizes of various features on the tiling.
 
-![water probability comparison]({{ site.url }}/assets/wang_tiles/water_probabilites.png)
+![water probability comparison]({{ site.url }}/assets/wang_tiles/water_probabilites.svg)
 
 
 ## Make Your Own Tile Sets
@@ -66,6 +66,8 @@ To be more concrete, we can decide on a probability that a given tile appears in
 Using the code (at your own risk; I wrote most of it in high school) I've put on github, you can create your own tilesets using an image editor, and see how the tiling solver creates worlds with them.  Simply clone the repo and edit the image named dungeon.png, then use Processing to run wangTiles.pde to see an animation of the map being generated. I'll now describe the "language" that the tiling solver expects.
 
 ### The Tile Set Specification
+
+![tile spec]({{ site.url }}/assets/wang_tiles/tile_spec.svg)
 
 The tiles are laid out on a grid of 4x4 cells.  Each cell contains a colored tile in the upper left 3x3 region, and the remaining 7 pixel contain metadata about the tile.  
 
