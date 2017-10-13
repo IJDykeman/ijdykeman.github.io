@@ -58,7 +58,7 @@ I've claimed that the problem of creating valid tilings is hard and provided two
 
 To be more concrete, we can decide on a probability that a given tile appears in a tiling, and then try to create algorithms which output tilings where each tile appears at about its predefined rate.  By adjusting the probabilities of various tiles appearing, one can adjust the sizes of various features on the tiling.
 
-![water probability comparison]({{ site.url }}/assets/wang_tiles/water_probabiliy.svg)
+![water probability comparison]({{ site.url }}/assets/wang_tiles/water_probability.svg)
 
 
 ## Make Your Own Tile Sets
