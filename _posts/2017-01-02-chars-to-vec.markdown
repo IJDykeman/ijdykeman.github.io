@@ -64,6 +64,10 @@ The model has managed to extract likely information about Beowulf the person fro
 
 The model behaves the same way when given the name “Gawain,” who is a character from a poem set in Arthurian England.  The vector for “Gawain” is close to those of other characters in the poem, while the model associates the name “Gawain” with Irish names like “Domhnall,” “Conchobar”, and “Conall.”
 
+![Names associated with Gawain](/assets/chars-to-vec_figures/gawain_characters.svg)
+
+*Image sources: Gawain: Howard Pyle illustration from the 1903 edition of The Story of King Arthur and His Knights; Conall: theirishstories.com; Domnhall/Donald crest by English Wikipedia user Celtus; Conchobar: A portrait of Conchubhair MacNeasa by Cormac McCann, 3 November 2013 under CC BY-SA 3.0*
+
 The model is also able to reliably associate the names of real monarchs to other monarchs in their region or from their culture, but that’s a less impressive feat, since the word vectors for those names are likely to already be associated with other monarchs related to them, since there usually aren’t confounding factors like poems named after those people.
 
 In the examples of fictional character names above, the word vectors for the names themselves were always closest to names of other characters from the same stories, while the model picked out different types of associations, like matching Galadriel with other magical fantasy characters.
