@@ -7,7 +7,9 @@ categories: ml
 
 ## Procedural Generation from Tile Sets
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/XVIYY0AQF-8?rel=0&amp;controls=0&amp;showinfo=0" frameborder="0" allowfullscreen></iframe>
+<iframe width="640" height="640" src="https://www.youtube.com/embed/XVIYY0AQF-8?rel=0&amp;controls=0&amp;showinfo=0"
+	frameborder="0" allowfullscreen
+	style="display: block; margin: auto;"></iframe>
 
 In this post, I'll describe the two algorithms I've come up with for creating complex procedural worlds from simple sets of colored tiles.  I will show that by carefully designing these tile sets, you can create interesting procedurally generated content, such as landscapes with cities, or dungeons with interesting internal structure.  
 
