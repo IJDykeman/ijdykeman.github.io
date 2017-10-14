@@ -51,16 +51,18 @@ To motivate this post, I'll show a few tile sets that I've come up with and some
 
 ## Greedy Placement with Crude Undoing
 
+*Randomly place valid tiles.  If you get stuck, remove some and try again.*
+
 ```
 Initialize the entire map to UNDECIDED
 
 while UNDECIDED tiles remain on the map
-  if any valid tile can be places on the map
-    t <- collection of all possible valid tile placements
-    l <- random selection from t weighted by tile probabilities
-    place l on the map
-  else
-    select a random UNDECIDED tile and set all its neighbors to UNDECIDED
+    if any valid tile can be places on the map
+      t <- collection of all possible valid tile placements
+      l <- random selection from t weighted by tile probabilities
+      place l on the map
+    else
+      select a random UNDECIDED tile and set all its neighbors to UNDECIDED
 ```
 
 The first approach I took to creating a tiling from a tile set is to simply start with the entire grid in an undefined state, and to iteratively place a random tile in a location where it is valid, or, if no locations are valid, set a small region on near an undefined tile to be undefined and continue greedy placement.  The "greedy placement" is the strategy of placing a tile as long as all its edges line up with existing tiles, without regard for whether this placement will create a partial tiling that cannot be completed without removing existing tiles.  When such a situation arises, and we cannot place any more tiles, we must remove some previously placed tiles.  But we can't say which are ideal to remove, because if we could solve that problem, we could probably also have solved the problem of placing tiles in a smart way in the first place.  To give the algorithm another chance at finding a valid tiling for a given area, we set all the tiles around the location that undefined and continue with the greedy placement strategy.  Eventually, the hope is, a valid tiling will be found, but this is not guaranteed.  The algorithm will continue to run until a valid tiling is found, which may be forever.  It has no ability to detect when a tile set is unsolveable.
@@ -69,10 +71,13 @@ There is obviously no guarantee that this algorithm will halt.  A simple tile se
 
 ## Wave Collapse Tiling
 
+*Maintain a probability distribution over tiles at each location, making nonlocal updates to these distributions when a placement decision is made.  Never backtrack.*
+
 Next, I'll describe an algorithm which is guaranteed to halt and produces better looking results for all the tile sets I have tried.  It is also able to produce nearly-valid tilings for tile sets that are much more complicated than those which the previous algorithm can handle.  The tradeoff is that this algorithm does not guarantee that its output is always a valid tiling.
 
 The difficulty of creating a valid tiling is largely determined by the number of transitions necessary to get between two tile types.  A simple tile set might contain only sand, water, and grass.  If grass and water cannot touch, then a transition to sand will be necessary between the two.  This is a simple case that the greedy algorithm can solve easily.  A more complex case might involve many nested levels of tile types.  For instance, you might have deep water, water, sand, grass, high plain, mountain, and snow cap.  Seven transitions would need to be present in the map for all of these types to appear, assuming that these types cannot touch except in the order I stated them.  Further complexity can be introduced by creating tiles that naturally create long-distance dependencies between tiles.
 
+An algorithm should, therefore, have some ability to "look ahead" and consider at least a few transitions out what the consequences of its placement choices might be.
 
 
 ## Manipulating Tilings by Changing Tile Selection Probabilities.
