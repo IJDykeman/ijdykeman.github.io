@@ -91,7 +91,15 @@ To be more concrete, we can decide on a probability that a given tile appears in
 
 ## Make Your Own Tile Sets
 
+In short,
+* clone my repo on github
+* install Processing
+* in the data/ folder of the repo, modify tiles.png
+* use processing to open wangTiles.pde and click the play button
+
 Using the code (You can modify it, but do so at your own risk; I wrote most of it in high school) I've put on github, you can create your own tilesets using an image editor, and see how the tiling solver creates worlds with them.  Simply clone the repo and edit the image named dungeon.png, then use Processing to run wangTiles.pde to see an animation of the map being generated. I'll now describe the "language" that the tiling solver expects.
+
+ 
 
 ### The Tile Set Specification
 
@@ -100,4 +108,8 @@ Using the code (You can modify it, but do so at your own risk; I wrote most of i
 The tiles are laid out on a grid of 4x4 cells.  Each cell contains a colored tile in the upper left 3x3 region, and the remaining 7 pixel contain metadata about the tile.  The pixel below the center of the tile can be set to pure red to comment that tile out of the set.  The solvers will never include it in a map.  The upper pixel to the right of the tile can be set to pure black to add all 4 rotations of the tile to the tile set as well.  This is a nice shorthand when you want to add something like a corner, which can reasonably exist in 4 orientations.  Finally, the most important piece of markup is the pixel below and to the left of the tile.  This controls the base probability of that tile appearing in the map.  The darker the pixel is, the more likely that tile is to appear.  
 
 
-## Make Your Own Tile Sets
+## Conclusion and Acknowledgments
+
+Enforcing local rules to create high level structure, such as having a rule that roads have no dead ends enforcing the fact that roads must lead from some non-road location to another, is an interesting perspective on the problem of procedural generation.  A surprising range of interesting rules can be encoded this way.  The quality of the resulting tilings is highly dependent on the solver, however, so a fruitful direction for future work would be improving the algorithms that do the tiling.  I have not explored using genetic algorithms, simulated annealing, or general purpose constraint satisfaction algorithms for this task yet.  Any of these might yield a tile set solver that is able to handle a wide range of tile sets with minimal parameter tuning.
+
+I would like to thank Cannon Lewis and Ronnie McLaren for helpful discussions during this project.  Ronnie came up with many interesting ideas about how to encode interesting behavior in the tiles.  The wave collapse algorithm resulted from a conversation with Cannon, and his advise was instrumental in creating the efficient approximate algorithm that I described in here.
