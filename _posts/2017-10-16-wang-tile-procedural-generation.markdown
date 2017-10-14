@@ -21,7 +21,16 @@ To assist you in the exercise of imagination required to see this as a "world," 
 
 ![map explanation]({{ site.url }}/assets/wang_tiles/map_explanation.svg)
 
-We will define a tiling as a finite grid where one of those tiles lies in each grid square.  We will further define a valid world as one where the colors along the edges of adjacent tiles must be the same.  A valid tiling of the tile set above might look like this:
+We will define a tiling as a finite grid where one of those tiles lies in each grid square.  We will further define a valid world as one where the colors along the edges of adjacent tiles must be the same.
+
+![valid pairs]({{ site.url }}/assets/wang_tiles/pair_example.svg)
+
+*This is the only concrete rule for a tiling: tile edge colors must match up.  All the higher level structure flows from this.*
+
+
+A valid tiling of the tile set above might look like this:
+
+![valid tiling]({{ site.url }}/assets/wang_tiles/example_valid_tiling.png)
 
 An invalid tiling would include unmatched edges between tiles, as in the image below.
 
