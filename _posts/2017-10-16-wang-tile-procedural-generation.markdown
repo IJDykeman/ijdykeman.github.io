@@ -55,10 +55,6 @@ There is obviously no guarantee that this algorithm will halt.  A simple tile se
 
 ## Wave Collapse Tiling
 
-$$
-2 + 2 = \pi
-$$
-
 Next, I'll describe an algorithm which is guaranteed to halt and produces better looking results for all the tile sets I have tried.  It is also able to produce nearly-valid tilings for tile sets that are much more complicated than those which the previous algorithm can handle.  The tradeoff is that this algorithm does not guarantee that its output is always a valid tiling.
 
 The difficulty of creating a valid tiling is largely determined by the number of transitions necessary to get between two tile types.  A simple tile set might contain only sand, water, and grass.  If grass and water cannot touch, then a transition to sand will be necessary between the two.  This is a simple case that the greedy algorithm can solve easily.  A more complex case might involve many nested levels of tile types.  For instance, you might have deep water, water, sand, grass, high plain, mountain, and snow cap.  Seven transitions would need to be present in the map for all of these types to appear, assuming that these types cannot touch except in the order I stated them.  Further complexity can be introduced by creating tiles that naturally create long-distance dependencies between tiles.
