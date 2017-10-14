@@ -11,13 +11,8 @@ In this post, I'll describe the two algorithms I came up with for creating compl
 	frameborder="0" allowfullscreen
 	style="display: block; margin: auto;"></iframe>
 
-A tile set is a collection of 3 by 3 grids of colors.  A collection of tiles might look like this:
 
-![dungeon tileset]({{ site.url }}/assets/wang_tiles/dungeon_tileset.png)
-
-*This set of tiles is the only information needed to describe the generation of the world in the video above.*
-
-To assist you in the exercise of imagination required to see this as a "world," see the helpful diagram below.
+The image below shows the tile set that generated the world in the video above.  The world is annotated to assist in the exercise of imagination required to see it as an actual environment.
 
 ![map explanation]({{ site.url }}/assets/wang_tiles/map_explanation.svg)
 
