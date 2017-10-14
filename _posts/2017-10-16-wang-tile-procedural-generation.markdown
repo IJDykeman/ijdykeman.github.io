@@ -97,7 +97,7 @@ To be more concrete, we can decide on a probability that a given tile appears in
 ## Make Your Own Tile Sets
 
 In short,
-* clone my repo on github
+* clone my [repo on github](https://github.com/IJDykeman/wangTiles)
 * install Processing
 * in the data/ folder of the repo, modify tiles.png
 * use processing to open wangTiles.pde and click the play button
