@@ -81,6 +81,9 @@ An algorithm should, therefore, have some ability to "look ahead" and consider a
 
 For example, if a water tile is placed on the map, the tiles next to it must contain water.  The tiles next to those tiles might also contain water, but there are other possibilities, such as grass if a beach was placed next to the original water.  The farther we get from the placed tile, the more other tiles become possible to place.  We can go further and count the number of ways that we can arrive at each tile placement near the original tile.  In some cases, only a single sequence of transitions can cause one tile to transition to another over a given distance.  In other cases, there could be many possible transition sequences.  Once we have placed a tile, we can determine the probability distributions of tiles at nearby locations by counting the number of ways we can transition from the tile we have placed to nearby tiles.  The "look ahead" that the algorithm performs is tracking these transition counts and treating them as probability distributions from which to select future tiles to place.
 
+![tile transition counts]({{ site.url }}/assets/wang_tiles/tile_transition_counts.svg)
+
+
 
 ## Manipulating Tilings by Changing Tile Selection Probabilities.
 
