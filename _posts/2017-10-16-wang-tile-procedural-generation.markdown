@@ -23,7 +23,7 @@ To assist you in the exercise of imagination required to see this as a "world," 
 
 We will define a tiling as a finite grid where one of those tiles lies in each grid square.  We will further define a valid world as one where the colors along the edges of adjacent tiles must be the same.
 
-![valid pairs]({{ site.url }}/assets/wang_tiles/pair_example.svg)
+![valid pairs]({{ site.url }}/assets/wang_tiles/pair_examples.svg)
 
 *This is the only concrete rule for a tiling: tile edge colors must match up.  All the higher level structure flows from this.*
 
@@ -38,9 +38,9 @@ An invalid tiling would include unmatched edges between tiles, as in the image b
 
 I think this is an interesting way to create worlds because very often, procedural generation algorithms take a top-down approach.  L-systems, for instance, rely on a recursive description of an object where the top level, large details are determined before lower level ones.  There is nothing wrong with this approach, but I think that it is interesting to create tile sets that are only able to encode simple low level relationships (e.g., ocean water and grass must be separated by a beach, buildings can only have convex, 90 degree corners) and see high level patterns emerge (e.g. square buildings).
 
-<!-- ## Why Creating a Tiling is Hard -->
+## Why Creating a Tiling is Hard
 
-<!-- Intuitively, the problem of correctly creating a nontrivial tiling  -->
+Intuitively, the problem of correctly creating a nontrivial tiling is hard because the tile sets can encode arbitrary, long term dependencies.  Formally, this is an NP complete constraint satisfaction problem whne we consider tile sets in general.  The hope is that we can create interesting worlds using tile sets that are solvable using approximate methods.  I have found two algorithms that seem to work well in practice, and I describe them below.
 
 <!-- ## Examples of Interesting Tile Sets
 
@@ -78,6 +78,6 @@ Using the code (at your own risk; I wrote most of it in high school) I've put on
 
 ![tile spec]({{ site.url }}/assets/wang_tiles/tile_spec.svg)
 
-The tiles are laid out on a grid of 4x4 cells.  Each cell contains a colored tile in the upper left 3x3 region, and the remaining 7 pixel contain metadata about the tile.  
+The tiles are laid out on a grid of 4x4 cells.  Each cell contains a colored tile in the upper left 3x3 region, and the remaining 7 pixel contain metadata about the tile.  The pixel below the center of the tile can be set to pure red to comment that tile out of the set.  The solvers will never include it in a map.  The upper pixel to the right of the tile can be set to pure black to add all 4 rotations of the tile to the tile set as well.  This is a nice shorthand when you want to add something like a corner, which can reasonably exist in 4 orientations.  Finally, the most important piece of markup is the pixel below and to the left of the tile.  This controls the base probability of that tile appearing in the map.  The darker the pixel is, the more likely that tile is to appear.  
 
 
