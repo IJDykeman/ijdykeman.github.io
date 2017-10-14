@@ -54,6 +54,8 @@ The first approach I took to creating a tiling from a tile set is to simply star
 There is obviously no guarantee that this algorithm will halt.  A simple tile set with two tiles that share no colors would cause this algorithm to loop forever.  An even simpler case would be one tile with different colors on the top and bottom.  It might make sense to somehow check for tile sets that cannot produce valid tilings.  We might say that a tile set is certainly valid if it can tile an infinite plane.  In some cases it is clearly possible to prove or disprove whether a tile set can tile an infinite plane, but the problem turns out to be undecidable in general.  Therefore, it is up to the designer of the tile set to create one which can yield a valid tiling.  
 
 ## Wave Collapse Tiling
+
+$$
 \usepackage[]{algorithm2e}
 
 \begin{algorithm}[H]
