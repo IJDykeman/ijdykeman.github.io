@@ -51,7 +51,7 @@ To motivate this post, I'll show a few tile sets that I've come up with and some
 
 ## Greedy Placement with Crude Undoing
 
-'''
+```
 Initialize the entire map to UNDECIDED
 
 while UNDECIDED tiles remain on the map
@@ -59,7 +59,7 @@ while UNDECIDED tiles remain on the map
 		place a valid tile at that location chosen by a random choice weighted by tile probability
 	else
 		select a random UNDECIDED tile and set all its neighbors to UNDECIDED
-'''
+```
 
 The first approach I took to creating a tiling from a tile set is to simply start with the entire grid in an undefined state, and to iteratively place a random tile in a location where it is valid, or, if no locations are valid, set a small region on near an undefined tile to be undefined and continue greedy placement.  The "greedy placement" is the strategy of placing a tile as long as all its edges line up with existing tiles, without regard for whether this placement will create a partial tiling that cannot be completed without removing existing tiles.  When such a situation arises, and we cannot place any more tiles, we must remove some previously placed tiles.  But we can't say which are ideal to remove, because if we could solve that problem, we could probably also have solved the problem of placing tiles in a smart way in the first place.  To give the algorithm another chance at finding a valid tiling for a given area, we set all the tiles around the location that undefined and continue with the greedy placement strategy.  Eventually, the hope is, a valid tiling will be found, but this is not guaranteed.  The algorithm will continue to run until a valid tiling is found, which may be forever.  It has no ability to detect when a tile set is unsolveable.
 
