@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Procedural Worlds from Wang Tiles"
+title:  "Procedural Worlds from Simple Tiles"
 date:   2017-10-16 22:25:30 -0500
 categories: ml
 ---
