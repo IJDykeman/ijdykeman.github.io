@@ -31,7 +31,9 @@ We will define a tiling as a finite grid where one of those tiles lies in each g
 A valid tiling of the tile set above might look like this:
 
 <center>
+
 ![valid tiling]({{ site.url }}/assets/wang_tiles/example_valid_tiling.png)
+
 </center>
 
 *This is a tiling which is supposed to represent a map with water, beaches, grass, towns with buildings (blue rectangles), and snow capped mountains.  The black lines show borders between tiles.*
