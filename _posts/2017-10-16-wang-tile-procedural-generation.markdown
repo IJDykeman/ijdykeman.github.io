@@ -93,7 +93,7 @@ To be more concrete, we can decide on a probability that a given tile appears in
 
 ## Make Your Own Tile Sets
 
-Using the code (at your own risk; I wrote most of it in high school) I've put on github, you can create your own tilesets using an image editor, and see how the tiling solver creates worlds with them.  Simply clone the repo and edit the image named dungeon.png, then use Processing to run wangTiles.pde to see an animation of the map being generated. I'll now describe the "language" that the tiling solver expects.
+Using the code (You can modify it, but do so at your own risk; I wrote most of it in high school) I've put on github, you can create your own tilesets using an image editor, and see how the tiling solver creates worlds with them.  Simply clone the repo and edit the image named dungeon.png, then use Processing to run wangTiles.pde to see an animation of the map being generated. I'll now describe the "language" that the tiling solver expects.
 
 ### The Tile Set Specification
 
