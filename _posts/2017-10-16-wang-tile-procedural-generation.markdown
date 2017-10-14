@@ -55,8 +55,10 @@ To motivate this post, I'll show a few tile sets that I've come up with and some
 Initialize the entire map to UNDECIDED
 
 while UNDECIDED tiles remain on the map
-	if any UNDECIDED location can take a tile without violating an edge color match
-		place a valid tile at that location chosen by a random choice weighted by tile probability
+	if any valid tile can be places on the map
+		t <- collection of all possible valid tile placements
+		l <- random selection from t weighted by tile probabilities
+		place l on the map
 	else
 		select a random UNDECIDED tile and set all its neighbors to UNDECIDED
 ```
