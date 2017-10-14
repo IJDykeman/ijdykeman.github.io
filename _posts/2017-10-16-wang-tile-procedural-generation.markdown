@@ -7,7 +7,7 @@ categories: ml
 
 In this post, I'll describe the two algorithms I came up with for creating complex procedural worlds from simple sets of colored tiles.  I will show that by carefully designing these tile sets, you can create interesting procedurally generated content, such as landscapes with cities, or dungeons with interesting internal structure.  The video below shows the system creating a procedural world based on the rules encoded in 43 colored tiles.
 
-<iframe width="100%" height="500" src="https://www.youtube.com/embed/XVIYY0AQF-8?rel=0&amp;controls=0&amp;showinfo=0"
+<iframe width="100%" height="500" src="https://www.youtube.com/embed/XVIYY0AQF-8?rel=0&amp;showinfo=0"
 	frameborder="0" allowfullscreen
 	style="display: block; margin: auto;"></iframe>
 
