@@ -95,7 +95,7 @@ Using the code (at your own risk; I wrote most of it in high school) I've put on
 
 ### The Tile Set Specification
 
-![tile spec]({{ site.url }}/assets/wang_tiles/tile_spec.svg | width = 50%)
+![tile spec]({{ site.url }}/assets/wang_tiles/tile_spec.svg)
 
 The tiles are laid out on a grid of 4x4 cells.  Each cell contains a colored tile in the upper left 3x3 region, and the remaining 7 pixel contain metadata about the tile.  The pixel below the center of the tile can be set to pure red to comment that tile out of the set.  The solvers will never include it in a map.  The upper pixel to the right of the tile can be set to pure black to add all 4 rotations of the tile to the tile set as well.  This is a nice shorthand when you want to add something like a corner, which can reasonably exist in 4 orientations.  Finally, the most important piece of markup is the pixel below and to the left of the tile.  This controls the base probability of that tile appearing in the map.  The darker the pixel is, the more likely that tile is to appear.  
 
