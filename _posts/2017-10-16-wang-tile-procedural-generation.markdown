@@ -83,6 +83,9 @@ For example, if a water tile is placed on the map, the tiles next to it must con
 
 ![tile transition counts]({{ site.url }}/assets/wang_tiles/tile_transition_counts.svg)
 
+At each time step, the algorithm examines all non-decided tile locations, each of which is a probability distribution over tiles, and selects one location to "collapse" into a tile.  It selects the distribution from the map with the lowest entropy.  Low entropy multinomial distributions tend to have their probability concentrated in a few modes, so collapsing these first yields the effect of placing tiles we already have some constraints for.  This is why the algorithm fills in tiles near tiles that are already decided first.
+
+<!-- This algorithm can create tilings where the edge color matching constraint is not satisfied.  In the video at the top of this post, you can see some dead-end tunnels, which should not be possible given the tile set.  Locations on the map with unmatched edges end up getting populated with tiles that were the most likely before some tile was placed that made any correct placement impossible at that location. -->
 
 
 ## Manipulating Tilings by Changing Tile Selection Probabilities.
