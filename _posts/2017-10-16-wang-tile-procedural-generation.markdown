@@ -87,12 +87,13 @@ At each time step, the algorithm examines all non-decided tile locations, each o
 
 <!-- This algorithm can create tilings where the edge color matching constraint is not satisfied.  In the video at the top of this post, you can see some dead-end tunnels, which should not be possible given the tile set.  Locations on the map with unmatched edges end up getting populated with tiles that were the most likely before some tile was placed that made any correct placement impossible at that location. -->
 
+This is the most effective algorithm I have managed to implement for this problem.  It has the added advantage of lending itself to nice visualizations as it runs.  It may be possible to improve this algorithm by 
 
 ## Manipulating Tilings by Changing Tile Selection Probabilities.
 
-I've claimed that the problem of creating valid tilings is hard and provided two algorithms neither of which can both finish in bounded time and produce a result that is guaranteed to be correct.  Yet obviously a valid tiling can be created for any tile set that has a single tile of uniform color.  Placing that tile everywhere will always yield a valid tiling.  Furthermore, one would expect that most tile sets used to create procedural content would contain tiles of uniform color to represent floors or water, as I have done above.  Intuitively, we might want to make sure that the whole tile set is represented in a tiling.
+So far, I've talked about only about how to create valid tilings, but beyond being valid, there might be other properties we might like a tiling to have.  For instance, we might like it to have a certain ratio of one tile type to another, or we might like to ensure that it is not all one uniform type of tile, even if such a tiling is valid.  To accomplish this, both the algorithms I describe take as input a base probability associated with each tile.  The higher this probability, the more likely that tile should be in the final tiling.  Both algorithms make random choices over collections of tiles, and I simply weight these random choices by the base tile probabilities.
 
-To be more concrete, we can decide on a probability that a given tile appears in a tiling, and then try to create algorithms which output tilings where each tile appears at about its predefined rate.  By adjusting the probabilities of various tiles appearing, one can adjust the sizes of various features on the tiling.
+Below, you can see how this is used.  By adjusting the probability of the solid water tile appearing, I can adjust the size and frequency of water features on the map.  
 
 ![water probability comparison]({{ site.url }}/assets/wang_tiles/water_probability.svg)
 
