@@ -23,7 +23,7 @@ We will define a tiling as a finite grid where one of those tiles lies in each g
 *This is the only concrete rule for a tiling: tile edge colors must match up.  All the higher level structure flows from this.*
 
 
-A valid tiling of the tile set above might look like this:
+A valid tiling looks like this:
 
 ![valid tiling]({{ site.url }}/assets/wang_tiles/example_valid_tiling.png)
 
