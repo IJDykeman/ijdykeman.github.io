@@ -107,7 +107,13 @@ Imagine a tile were placed on an otherwise empty map.  This placement would upda
 
 To implement this, I imagine that when a tile is placed on an empty map, it induces a significant change in the distributions in the map nearby.  I call these updates the *sphere* of the tile, as in, the sphere of influence the tile projects around it when it is placed on an empty map.  When two tiles are placed near each other, their spheres interact to create the final distributions that are affected by both placements.  Considering that many tiles may be placed near a given undecided location, there could be a large number of interacting constraints that would make a counting based approach to finding the probability of different tiles appearing at that location slow.  What if we instead only consider a simple model of the interaction between the precomputed spheres of the tiles that have already been placed?
 
+![sphere diagram]({{ site.url }}/assets/wang_tiles/labeled_sphere.svg)
+
+
 When a tile is placed, I update the probability map by elementwise multiplying the distribution of that tile’s sphere at each location in the map with the distribution already stored in that location in the map.  It may be helpful to consider an example of what this might do to the distribution map.  Say a given location in the map currently has a distribution that considers grass and water likely, and we place a water tile next to that location.  The water tile’s sphere will have a high probability of water right next to the water tile, and a low probability of grass.  When we multiply these distributions together elementwise, the probability of water in the result is high, because it is the product of two large probabilities, but the probability of grass will become low, because it is the product of the high probability stored in the map with the low probability stored in the sphere.
+
+![spheres interacting diagram]({{ site.url }}/assets/wang_tiles/interacting_spheres.svg)
+
 
 This strategy allows us to efficiently approximate the effect that each tile placement should have on the probability map.
 
