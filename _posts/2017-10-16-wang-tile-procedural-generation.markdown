@@ -87,7 +87,12 @@ At each time step, the algorithm examines all non-decided tile locations, each o
 
 <!-- This algorithm can create tilings where the edge color matching constraint is not satisfied.  In the video at the top of this post, you can see some dead-end tunnels, which should not be possible given the tile set.  Locations on the map with unmatched edges end up getting populated with tiles that were the most likely before some tile was placed that made any correct placement impossible at that location. -->
 
-This is the most effective algorithm I have managed to implement for this problem.  It has the added advantage of lending itself to nice visualizations as it runs.  It may be possible to improve this algorithm by 
+  <!-- It may be possible to improve this algorithm by -->
+
+This solver is similar in spirit to the Wave Function Collapse project by [@ExUtumno](https://twitter.com/ExUtumno).  That algorithm maintains a map of "partially observed" pixel value assignments and samples from them to create a final image, which is similar to the distributions over tiles maintained here.  The approaches differ in a few ways.  First, that algorithm is example based, and extracts patches from an example image rather than having a template based approach like this one, where allowable pieces of the final map are defined by hand.  It handles its output at the pixel level, rather than at the level of groups of pixels, over which hard matching contraints can be defined.  My motivation for framing things in terms of tiles is to introduce the idea of a "valid" tiling as one where explicit, hand designd constraints are satified.  This allows interesting structures like rectangles (buildings can only be rectangular becuase only 90 degree corners and straight edges are defined) or nested tile types (buildings can only transition into a "town" background color) to be put into the final tiling reliably, assuming you have a valid tiling.
+
+This is the most effective algorithm I have managed to implement for this problem, and it has the added advantage of lending itself to nice visualizations as it runs.  It may be possible to improve this algorithm by adding some form of backtracking.  If an invalid location exists in the final tiling, undoing nearby tile placements and then resampling from the resulting distributions at their locations may allow a fix to be found for the final tiling.  Of course, if you were determined to always keep searching until a valid tiling is found, you would lose the bounded run time guarantee we have now.
+
 
 ## Manipulating Tilings by Changing Tile Selection Probabilities.
 
