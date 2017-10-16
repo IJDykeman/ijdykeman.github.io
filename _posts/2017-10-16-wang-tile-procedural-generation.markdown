@@ -96,7 +96,7 @@ This solver is similar to the Wave Function Collapse project by [@ExUtumno](http
 
 This is the most effective algorithm I have managed to implement for this problem, and it has the added advantage of lending itself to nice visualizations as it runs.  It may be possible to improve this algorithm by adding some form of backtracking.  If an invalid location exists in the final tiling, undoing nearby tile placements and then resampling from the resulting distributions at their locations may allow a fix to be found for the final tiling.  Of course, if you were determined to always keep searching until a valid tiling is found, you would lose the bounded run time guarantee we have now.
 
-## Optimizations
+### Optimizations
 
 The core operation of this method is updating the probabilities around a placed tile.  One approach would be to count the possible transitions outward from a placed tile each time a tile is placed.  This would be very slow, since many transition pairs would need to be considered for each map location to which the new probabilities are propagated.  One obvious optimization is not to propagate across the entire map.  A more interesting optimization is to cache the effect that each tile placement will have on the locations around it, so that each tile placement merely does a lookup to see what type of changes to the neighboring probabilities a placement makes, and then apply that change via some simple operation.  I will describe my technique for doing this below.
 
