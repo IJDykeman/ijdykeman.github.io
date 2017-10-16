@@ -96,6 +96,15 @@ This solver is similar to the Wave Function Collapse project by [@ExUtumno](http
 
 This is the most effective algorithm I have managed to implement for this problem, and it has the added advantage of lending itself to nice visualizations as it runs.  It may be possible to improve this algorithm by adding some form of backtracking.  If an invalid location exists in the final tiling, undoing nearby tile placements and then resampling from the resulting distributions at their locations may allow a fix to be found for the final tiling.  Of course, if you were determined to always keep searching until a valid tiling is found, you would lose the bounded run time guarantee we have now.
 
+## Optimizations
+
+The main different between my approach and this one is an method for approximating the probabilities that will propagate out from a tile placement.  One approach would be to count the possible transitions outward from a placed tile each tile a tile is placed.  This would be very slow, since many transition pairs would need to be considered for each map location to which the new probabilities are propagated.  One obvious optimization is not to propagate across the entire map.  A more interesting optimization is to cache the effect that each tile placement will have on the locations around it, so that each tile placement merely does a lookup to see what type of changes to the neighboring probabilities a placement makes, and then apply that change via some simple operation.
+
+Imagine a tile were placed on an otherwise empty map.  This placement would update the probabilities of tiles nearby.  We can think of these updated distributions as having a prior distribution which is informed by previous placements.  If multiple tiles are placed, this prior is a joint distribution.  I approximate the posterior given this joint prior as the product of the distributions given each placement in the past.
+
+
+![sphere example]({{ site.url }}/assets/wang_tiles/sphere_example.svg)
+
 
 ## Manipulating Tilings by Changing Tile Selection Probabilities.
 
