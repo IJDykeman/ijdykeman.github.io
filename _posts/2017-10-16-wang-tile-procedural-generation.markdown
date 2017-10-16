@@ -98,12 +98,19 @@ This is the most effective algorithm I have managed to implement for this proble
 
 ## Optimizations
 
-The main different between my approach and this one is an method for approximating the probabilities that will propagate out from a tile placement.  One approach would be to count the possible transitions outward from a placed tile each tile a tile is placed.  This would be very slow, since many transition pairs would need to be considered for each map location to which the new probabilities are propagated.  One obvious optimization is not to propagate across the entire map.  A more interesting optimization is to cache the effect that each tile placement will have on the locations around it, so that each tile placement merely does a lookup to see what type of changes to the neighboring probabilities a placement makes, and then apply that change via some simple operation.
+The main different between my approach and this one is an method for approximating the probabilities that will propagate out from a tile placement.  One approach would be to count the possible transitions outward from a placed tile each tile a tile is placed.  This would be very slow, since many transition pairs would need to be considered for each map location to which the new probabilities are propagated.  One obvious optimization is not to propagate across the entire map.  A more interesting optimization is to cache the effect that each tile placement will have on the locations around it, so that each tile placement merely does a lookup to see what type of changes to the neighboring probabilities a placement makes, and then apply that change via some simple operation.  I will describe my technique for doing this below.
 
 Imagine a tile were placed on an otherwise empty map.  This placement would update the probabilities of tiles nearby.  We can think of these updated distributions as having a prior distribution which is informed by previous placements.  If multiple tiles are placed, this prior is a joint distribution.  I approximate the posterior given this joint prior as the product of the distributions given each placement in the past.
 
 
 ![sphere example]({{ site.url }}/assets/wang_tiles/sphere_example.svg)
+
+To implement this, I imagine that when a tile is placed on an empty map, it induces a significant change in the distributions in the map nearby.  I call these updates the *sphere* of the tile, as in, the sphere of influence the tile projects around it when it is placed on an empty map.  When two tiles are placed near each other, their spheres interact to create the final distributions that are affected by both placements.  Considering that many tiles may be placed near a given undecided location, there could be a large number of interacting constraints that would make a counting based approach to finding the probability of different tiles appearing at that location slow.  What if we instead only consider a simple model of the interaction between the precomputed spheres of the tiles that have already been placed?
+
+When a tile is placed, I update the probability map by elementwise multiplying the distribution of that tile’s sphere at each location in the map with the distribution already stored in that location in the map.  It may be helpful to consider an example of what this might do to the distribution map.  Say a given location in the map currently has a distribution that considers grass and water likely, and we place a water tile next to that location.  The water tile’s sphere will have a high probability of water right next to the water tile, and a low probability of grass.  When we multiply these distributions together elementwise, the probability of water in the result is high, because it is the product of two large probabilities, but the probability of grass will become low, because it is the product of the high probability stored in the map with the low probability stored in the sphere.
+
+This strategy allows us to efficiently approximate the effect that each tile placement should have on the probability map.
+
 
 
 ## Manipulating Tilings by Changing Tile Selection Probabilities.
