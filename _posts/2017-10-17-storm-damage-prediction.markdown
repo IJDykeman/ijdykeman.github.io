@@ -69,6 +69,8 @@ When predicting the damage probability for a given home, we consider a $224 \tim
 
 We built a convolutional neural network (CNN) which takes in LIDAR images and wind data and classifies that case as damaged or undamaged.  This model also takes as input wind and tax related data.  We pretrain all but the final convolutional layer on the ImageNet task.  The output of the convolutional layers along with the wind and tax data is fed into a multilayer perceptron, which predicts the probability of damage for the given home.  See figure \ref{cnn_diagram} for a diagram of this architecture.
 
+![CNN diagram](cnn_diagram.png)
+
 ### Pretraining the CNN
 
 In the domain of image classification, it is common to pretrain a model on a large dataset of images which are not necessarily similar to those you are working with, and then use layers from that model as part of your final model.  This method has been used for other difficult vision tasks, such as detecting skin cancer \cite{SkinCancer}.  We use a VGG-16 \cite{Vgg16} model trained on the ImageNet ~\cite{ImageNet} classification task. 
@@ -77,6 +79,5 @@ In the domain of image classification, it is common to pretrain a model on a lar
 
 We use a the VGG-16 architecture's convolutional layers.  These layers are pretrained and their parameters are fixed during training.  We add a convolutional layer on top of these with $64~ 3\times 3$ filters.  
 This convolutional layer is trainable.  
-
 We do this to reduce the size of the $7\times 7\times 512$ activation volume to $7 \times 7 \times 64$. The output from that convolutional layer is concatenated with the wind and tax data and fed into a fully connected layer with 32 nodes.  The next fully connected layer also has 32 nodes.  The fully connected layer and the convolutional layer we add are ReLU activated  The output layer has a single node with sigmoid activation.  We use crossentropy loss to train this model.
 

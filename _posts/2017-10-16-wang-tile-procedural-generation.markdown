@@ -25,9 +25,7 @@ We will define a tiling as a finite grid where one of those tiles lies in each g
 
 A valid tiling looks like this:
 
-![valid tiling]({{ site.url }}/assets/wang_tiles/example_valid_tiling.png)
-
-*This is a tiling which is supposed to represent a map with water, beaches, grass, towns with buildings (blue rectangles), and snow capped mountains.  The black lines show borders between tiles.*
+![valid tiling]({{ site.url }}/assets/wang_tiles/example_valid_tiling.png "This is a tiling which is supposed to represent a map with water, beaches, grass, towns with buildings (blue rectangles), and snow capped mountains.  The black lines show borders between tiles.")
 
 <!-- In this post, I'll explore algorithms for efficiently taking large, complex tile sets and producing valid or nearly valid tilings that look like convincing landscapes, dungeons, and other commonly procedurally generated content.  When these algorithms work well, they can produce some very nice looking results: -->
 
