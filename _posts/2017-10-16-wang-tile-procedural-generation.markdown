@@ -89,9 +89,6 @@ At each time step, the algorithm examines all non-decided tile locations, each o
 
   <!-- It may be possible to improve this algorithm by -->
 
-
-This solver is similar to the Wave Function Collapse project by [@ExUtumno](https://twitter.com/ExUtumno).  That algorithm maintains a map of "partially observed" assignments and samples from them to create a final image, which is similar to the distributions over tiles maintained here.  The approaches differ in a few ways.  First, that algorithm is example based, and extracts patches from an example image rather than having a template based approach like this one, where allowable pieces of the final map are defined by hand.  It handles its output at the pixel level, rather than at the level of groups of pixels, over which hard matching constraints can be defined.  My motivation for framing things in terms of tiles is to introduce the idea of a "valid" tiling as one where explicit, hand designed constraints are satisfied.  This allows interesting structures like rectangles (buildings can only be rectangular because only 90 degree corners and straight edges are defined) or nested tile types (buildings can only transition into a "town" background color) to be put into the final tiling reliably, assuming you have a valid tiling.
-
 <!-- The main different between my approach and this one is an method for approximating the probabilities that will propigate out from a tile placement.  One approach would be to count the possible transitions outward from a placed tile each tile a tile is placed.  This would be very slow, since many transition pairs would need ot be considered for each map location to which the new probabilities are propagated.  One obvious optimizaiton is not to propigate accross the entire map.   -->
 
 This is the most effective algorithm I have managed to implement for this problem, and it has the added advantage of lending itself to nice visualizations as it runs.  It may be possible to improve this algorithm by adding some form of backtracking.  If an invalid location exists in the final tiling, undoing nearby tile placements and then resampling from the resulting distributions at their locations may allow a fix to be found for the final tiling.  Of course, if you were determined to always keep searching until a valid tiling is found, you would lose the bounded run time guarantee we have now.
@@ -145,6 +142,14 @@ Using the code (You can modify it, but do so at your own risk; I wrote most of i
 ![tile spec]({{ site.url }}/assets/wang_tiles/tile_spec.svg)
 
 The tiles are laid out on a grid of 4x4 cells.  Each cell contains a colored tile in the upper left 3x3 region, and the remaining 7 pixel contain metadata about the tile.  The pixel below the center of the tile can be set to pure red to comment that tile out of the set.  The solvers will never include it in a map.  The upper pixel to the right of the tile can be set to pure black to add all 4 rotations of the tile to the tile set as well.  This is a nice shorthand when you want to add something like a corner, which can reasonably exist in 4 orientations.  Finally, the most important piece of markup is the pixel below and to the left of the tile.  This controls the base probability of that tile appearing in the map.  The darker the pixel is, the more likely that tile is to appear.  
+
+## Related Work
+
+Many people have explored [Wang tiles](https://en.wikipedia.org/wiki/Wang_tile), which are tile sets with colored edges that must match in edge color with tiles they are placed next to, just like the tiles I have talked about here.  
+
+The "wave collapse" solver is similar to the Wave Function Collapse project by [@ExUtumno](https://twitter.com/ExUtumno).  That algorithm maintains a map of "partially observed" assignments and samples from them to create a final image, which is similar to the distributions over tiles maintained here.  The approaches differ in a few ways.  It maintains binary potentials rather than multinomial distributions per map location.  It also does not use the cached transition count "spheres" I talk about in the Optimixation section to speed computation.
+
+
 
 
 ## Conclusion and Acknowledgments
