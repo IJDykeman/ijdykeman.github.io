@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Predicting Wind Damge to Homes using Convolutional Neural Networks"
-date:   2017-10-17 22:25:30 -0500
+date:   2017-10-15 22:25:30 -0500
 categories: ml
 published: false
 ---
@@ -35,7 +35,8 @@ We have the approximate speed and direction of wind at an altitude of X meters a
 Harris County collects information about each home in it for purposes of tax assessment.  This information includes the value of the home, its age, its last year of renovation, and a rough estimate of its physical condition.  See figure \ref{market_price} for a map of prices of homes in Harris County.
 
 
-![market value](market_value.png)
+![market value]({{ site.url }}/assets/storm_damage_prediction/market_value.png){:height="30%" width="30%"}
+
 *A map of average market price of homes in Harris County.  Log scale.*
 
 
@@ -47,21 +48,25 @@ It is worth noting that while this data has 35 dimensions, the data is truly les
 In 2008, the Houston-Galveston Area Council commissioned a  high resolution LIDAR scan of Harris county and areas surrounding it.  These scans cover 3,700 square miles at a horizontal resolution of 1m and a vertical resolution of 7cm.  This data has been used in its full form for predicting flooding CITE, but only simplified versions of the data have been used for storm prediction CITE.
 
 
-![lidar image](large_lidar_image_2.png)
+![lidar image]({{ site.url }}/assets/storm_damage_prediction/large_lidar_image_2.png)
+
 *LIDAR elevation data for a large area in Houston.*
 
 
-![diverse terrain](diverse_terrain.png)
+![diverse terrain]({{ site.url }}/assets/storm_damage_prediction/diverse_terrain.png){:height="60%" width="60%"}
+
 *Examples of various conditions that exist around homes in Houston.*
 
 
 When predicting the damage probability for a given home, we consider a $224 \time 224$ pixel region of the LIDAR scan centered on that home.  The data is a 2D heightmap.  The image below is an example of one of these LIDAR images. 
 
-![lidar example](lidar_example.png)
+![lidar example]({{ site.url }}/assets/storm_damage_prediction/lidar_example.png)
+
 *An example of a LIDAR image as it is presented to our CNN architecture.  The brighter regions are higher in elevation.  The boxy objects are buildings.*
 
 
-![3d image](3d_image.png)
+![3d image]({{ site.url }}/assets/storm_damage_prediction/3d_image.png){:height="50%" width="50%"}
+
 *A 3D visualization of the LIDAR height map around a house.  The protruding objects are homes and trees.  Streets and a waterway are visible.*
 
 
@@ -69,7 +74,7 @@ When predicting the damage probability for a given home, we consider a $224 \tim
 
 We built a convolutional neural network (CNN) which takes in LIDAR images and wind data and classifies that case as damaged or undamaged.  This model also takes as input wind and tax related data.  We pretrain all but the final convolutional layer on the ImageNet task.  The output of the convolutional layers along with the wind and tax data is fed into a multilayer perceptron, which predicts the probability of damage for the given home.  See figure \ref{cnn_diagram} for a diagram of this architecture.
 
-![CNN diagram](cnn_diagram.png)
+![CNN diagram]({{ site.url }}/assets/storm_damage_prediction/cnn_diagram.png){:height="40%" width="40%"}
 
 ### Pretraining the CNN
 
