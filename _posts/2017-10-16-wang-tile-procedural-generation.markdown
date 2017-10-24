@@ -65,7 +65,8 @@ The first approach I took to creating a tiling from a tile set is to simply star
 
 There is obviously no guarantee that this algorithm will halt.  A simple tile set with two tiles that share no colors would cause this algorithm to loop forever.  An even simpler case would be one tile with different colors on the top and bottom.  It might make sense to somehow check for tile sets that cannot produce valid tilings.  We might say that a tile set is certainly valid if it can tile an infinite plane.  In some cases it is clearly possible to prove or disprove whether a tile set can tile an infinite plane, but the problem turns out to be undecidable in general.  Therefore, it is up to the designer of the tile set to create one which can yield a valid tiling.
 
-This algorithm is unable to find good solutions for the dungeon tile set in the video at the top of this post.  It performs better on the towns and mountains tile set.
+This algorithm is unable to find good solutions for the dungeon tile set in the video at the top of this post.  It performs well on simpler tile sets.  We would like to solve more complex tile sets where many types of transitions betwen tiles are possible and lots of rules (e.g. roads begin and end at buildings) are encoded.
+We need an algorithm that is able to look ahead and take make tile placements while being somehow aware of what options that placement will leave open for future placements.  This will allow us to efficiently solve complex tile sets.
 
 ## Wave Collapse Tiling
 
@@ -86,10 +87,6 @@ For example, if a water tile is placed on the map, the tiles next to it must con
 At each time step, the algorithm examines all non-decided tile locations, each of which is a probability distribution over tiles, and selects one location to "collapse" into a tile.  It selects the distribution from the map with the lowest entropy.  Low entropy multinomial distributions tend to have their probability concentrated in a few modes, so collapsing these first yields the effect of placing tiles we already have some constraints for.  This is why the algorithm fills in tiles near tiles that are already decided first.
 
 <!-- This algorithm can create tilings where the edge color matching constraint is not satisfied.  In the video at the top of this post, you can see some dead-end tunnels, which should not be possible given the tile set.  Locations on the map with unmatched edges end up getting populated with tiles that were the most likely before some tile was placed that made any correct placement impossible at that location. -->
-
-  <!-- It may be possible to improve this algorithm by -->
-
-<!-- The main different between my approach and this one is an method for approximating the probabilities that will propigate out from a tile placement.  One approach would be to count the possible transitions outward from a placed tile each tile a tile is placed.  This would be very slow, since many transition pairs would need ot be considered for each map location to which the new probabilities are propagated.  One obvious optimizaiton is not to propigate accross the entire map.   -->
 
 This is the most effective algorithm I have managed to implement for this problem, and it has the added advantage of lending itself to nice visualizations as it runs.  It may be possible to improve this algorithm by adding some form of backtracking.  If an invalid location exists in the final tiling, undoing nearby tile placements and then resampling from the resulting distributions at their locations may allow a fix to be found for the final tiling.  Of course, if you were determined to always keep searching until a valid tiling is found, you would lose the bounded run time guarantee we have now.
 
