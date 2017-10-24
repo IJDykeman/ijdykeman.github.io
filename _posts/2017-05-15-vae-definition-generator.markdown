@@ -25,7 +25,7 @@ test, 3288, 30913, 9.4 -->
 .tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;}
 .tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:0px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
 .tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:0px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
-.tg .tg-vi9z{font-weight:bold;font-family:Georgia, serif !important;;vertical-align:top}
+.tg .tg-vi9z{font-family:Georgia, serif !important;;vertical-align:top}
 .tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
 </style>
 <table class="tg">
