@@ -21,6 +21,8 @@ I implemented this model in Tensorflow.  You can find the code in a Jupyter note
 # The model
 
 ![model diagram](/assets/chars-to-vec_figures/chars2vec.svg)
+* Beowulf and Chilperic are both ancient Anglo-Saxon figures, and the model detects that they are similar.
+
 
 I’ll represent the letters as one-hot vectors.  The recurrent neural net receives these vectors as input and then feeds into two fully connected layers.  I found that adding dropout after the last LSTM output reduced overfitting.  Following the intuition presented in [this paper](https://papers.nips.cc/paper/5346-sequence-to-sequence-learning-with-neural-networks.pdf), I reverse the order of the letters as I feed them into the RNN, though that isn’t reflected in the diagram above.  By reversing the letters as they are fed in, the PAD tokens are not the last ones the LSTM sees before its final state is created.  Instead, it sees the actual input data last, so there are fewer long term dependencies to handle at training time.  I represent the words in the model’s vocabulary using word vectors trained by the authors of [Learning to Understand Phrases by Embedding the Dictionary](https://arxiv.org/pdf/1504.00548v4.pdf).
 
