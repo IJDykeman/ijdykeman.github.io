@@ -8,6 +8,8 @@ categories: ml
 
 In this blog post, I’ll describe a model I built in collaboration with Angel Chang for generating dictionary definitions of word vectors.  Dense word embedding are known to capture the meaning of words in a way that is effective for many downstream NLP tasks.  However, it is difficult to observe directly what information they contain.  Word vectors can be manipulated arithmetically to solve analogy and word similarity problems, but these tasks provide an indirect look at what meaning the embedding captures.  In particular, these tasks do not reveal what use a complex model could make of these vectors.  On the other hand, using word embeddings as input for a complex downstream task can only tell us how well that embedding does as a representation for that task.  Our model creates a direct view of word vector contents by creating an English representation of their contents.  This is analogous to asking a person to produce a definition of a word if you want to evaluate their understanding of that word.  Our system is able to create plausible definitions for words for unseen words.
 
+![full model diagram](/assets/vae-definition-generation/nested_dictionary_model_diagram.svg)
+
 
 <!-- # Related work -->
 <!-- Unnat's paper and the other definitions paper -->
