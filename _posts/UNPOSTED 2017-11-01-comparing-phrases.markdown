@@ -15,7 +15,9 @@ In the summer of 2016, my group at Tableau was working on building a system call
 
 My contribution to this project was the algorithm that matches short phrases to data columns.  In the case above, my system matches "expensive" to the price attribute and determines that the user wants items with the highest price.  My system is not responsible for identifying which phrases in the input need to be matched with data columns; that is handled separately.
 
-## Word Embedding Spaces
+<!-- ## Word Embedding Spaces
+
+The next section deals with  -->
 
 ## Mapping Phrases into a Word Embedding Space
 
@@ -32,3 +34,4 @@ I found that the Hill et al. model does in fact produce reasonable embedding spa
 
 ## Ranking Phrases by Similarity to a Query
 
+The task we are studying is not just measuring the similarity between phrases, but ranking a number of data columns in order or relevance to a query.  This means incorporating the phrase similarity measurement into some sort of ranking scheme, and hopefully also taking advantage of other information in the data column, such as words that appear in the data itself, not just in the column descriptors.  
