@@ -10,7 +10,7 @@ In this post, I will give a high level description an algorithm I created while 
 
 ![The model selects a mapping between phrases and columns](/assets/phrase_similarity_figures/data_table_with_query.svg)
 
-In the summer of 2016, my group at Tableau was working on building a system called Evizeon, which is natural language interface that takes in English queries and produces visualizations to answer the questions.  Say the user is examining a data set of pieces of real estate which contains information about location, neighborhood, square footage, price, and more.  The user might ask for the "most expensive houses in Queen Anne," where Queen Anne is a neighborhood.  The system must now figure out that "expensive" refers to price, and a high price in particular.  The system must also infer that Queen Anne refers to the neighborhood the house is in.  In the end, we would like the system to display the houses with the highest prices in the Queen Anne neighborhood.  Our system is able to correctly answer this query.
+In the summer of 2016, my group at Tableau was working on building a system called Evizeon, which is natural language interface that takes in English queries and produces visualizations in response.  Say the user is examining a data set of pieces of real estate which contains information with location, neighborhood, square footage, and price.  The user might ask for the "most expensive houses in Queen Anne," where Queen Anne is a neighborhood.  The system must now figure out that "expensive" refers to price, and a high price in particular.  The system must also infer that Queen Anne refers to the neighborhood the house is in.  In the end, we would like the system to display the houses with the highest prices in the Queen Anne neighborhood.  Our system is able to correctly answer this query.
 
 
 ![expensive houses in Evizeon](/assets/phrase_similarity_figures/most_expensive.png)
@@ -18,13 +18,13 @@ In the summer of 2016, my group at Tableau was working on building a system call
 <br>
 
 
-My contribution to this project was the algorithm that matches short phrases to data columns.  In the case above, my system matches "expensive" to the price attribute and determines that the user wants items with the highest price.  My system is not responsible for identifying which phrases in the input need to be matched with data columns; that is handled separately.
+My contribution to this project was the algorithm that matches short phrases to data columns.  In the case above, my system matches "expensive" to the home_price attribute and determines that the user wants items with the highest price.  My system is not responsible for identifying which phrases in the input need to be matched with data columns; that is handled separately.
 
 ## Word Embedding Spaces
 
 The next section assumes basic familiarity with word embedding spaces, so I will provide a brief overview of them here.  In essence, a word embedding space is a space, usually high dimensional, in which each word occupies a point.  This space is useful because, if the embedding space is well built, similar words will appear near each other and unrelated words will be far apart.  Word embedding spaces have many other interesting properties, such as providing representations of words that can make solving simple analogies like *man : woman :: king : queen* easy.  For the purposes of this article, it is sufficient to know that each word has a place in the embedding space, and similar words are close to each other.  Note that usually, proximity is measured with cosine distance instead of Euclidean distance.
 
-The particular embedding that I use in this paper is trained by Hill et al. using the word2vec algorithm.  In short, the word2vec algorithm takes in a large corpus of raw English text and returns a vector for each word in the corpus that appears a sufficient number of times.
+The particular embedding that I use in this paper is trained by [Hill et al.](http://aclweb.org/anthology/Q16-1002) using the word2vec algorithm.
 
 ![The model selects a mapping between phrases and columns](/assets/phrase_similarity_figures/word2vec.svg)
 
