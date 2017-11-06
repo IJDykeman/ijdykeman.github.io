@@ -5,7 +5,7 @@ date:   2016-10-29 22:25:30 -0500
 categories: ml
 ---
 
-![Simple network diagram]({{ site.url }}/assets/turnip_net.png)
+![Simple network diagram]({{ site.url }}/assets/turnip_net.svg)
 
 
 

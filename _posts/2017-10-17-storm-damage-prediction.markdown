@@ -21,8 +21,13 @@ between homes which other models fail to capture.
 
 The physical environment around a house is represented by a height map with 1 meter spatial resolution.  We use the output of a pretrained convolutional neural network with the VGG-16 architecture as one of the inputs to a multilayer perceptron which we also feed the age, value, and a time series of wind speeds and wind directions over the duration of a storm.
 
-## Data
+## Motivation
 
+
+
+## The HAZUS Physical Model of Storm Damage
+
+## Data
 
 We use four data sources to model hurricane damage risk: LIDAR scans of terrain; information about wind during hurricane Ike; and tax related information about each home, such as its age and value.  We also have data on whether each home was damaged or not in hurricane Ike.
 
@@ -33,18 +38,16 @@ We have the approximate speed and direction of wind at an altitude of X meters a
 ####Harris County Appraisal District Data
 
 
-Harris County collects information about each home in it for purposes of tax assessment.  This information includes the value of the home, its age, its last year of renovation, and a rough estimate of its physical condition.  See figure \ref{market_price} for a map of prices of homes in Harris County.
+Harris County collects information about each home in it for purposes of tax assessment.  This information includes the value of the home, its age, its last year of renovation, and a rough estimate of its physical condition.  See the figure below for a map of prices of homes in Harris County.
 
-
-![market value]({{ site.url }}/assets/storm_damage_prediction/market_value.png){:height="30%" width="30%"}
+![market value]({{ site.url }}/assets/storm_damage_prediction/market_value.png)<!-- {:height="30%" width="30%"} -->
 
 *A map of average market price of homes in Harris County.  Log scale.*
-
 
 It is worth noting that while this data has 35 dimensions, the data is truly less rich.  In fact, the data can be reduced to one dimension and reconstructed with little loss of information.  We tested this by ... 
 
 
-####LIDAR data for Harris County
+#### LIDAR data for Harris County
 
 In 2008, the Houston-Galveston Area Council commissioned a  high resolution LIDAR scan of Harris county and areas surrounding it.  These scans cover 3,700 square miles at a horizontal resolution of 1m and a vertical resolution of 7cm.  This data has been used in its full form for predicting flooding CITE, but only simplified versions of the data have been used for storm prediction CITE.
 
@@ -66,9 +69,13 @@ When predicting the damage probability for a given home, we consider a $224 \tim
 *An example of a LIDAR image as it is presented to our CNN architecture.  The brighter regions are higher in elevation.  The boxy objects are buildings.*
 
 
-![3d image]({{ site.url }}/assets/storm_damage_prediction/3d_image.png){:height="50%" width="50%"}
+![3d image]({{ site.url }}/assets/storm_damage_prediction/3d_image.png)<!-- {:height="50%" width="50%"} -->
 
 *A 3D visualization of the LIDAR height map around a house.  The protruding objects are homes and trees.  Streets and a waterway are visible.*
+
+## A Data Driven Approach with Random Forests
+
+
 
 
 ## A Convolutional Neural Network model that Incorporates LIDAR Data
