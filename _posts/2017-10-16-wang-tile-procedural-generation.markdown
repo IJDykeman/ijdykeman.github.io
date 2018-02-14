@@ -45,7 +45,7 @@ Intuitively, the problem of correctly creating a nontrivial tiling is hard becau
 To motivate this post, I'll show a few tile sets that I've come up with and some tilings that can be generated under the constraints they describe.  
  -->
 
-## Greedy Placement with Crude Undoing
+## Greedy Placement with Backjumping
 
 *Keep choosing random locations and place valid tiles there.  If you get stuck, remove some and try again.*
 
