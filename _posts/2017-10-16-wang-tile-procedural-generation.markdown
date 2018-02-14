@@ -5,7 +5,7 @@ date:   2017-10-12 22:25:30 -0500
 categories: ml
 ---
 
-In this post, I'll describe the two algorithms I implemented for creating complex procedural worlds from simple sets of colored tiles.  I will show that by carefully designing these tile sets, you can create interesting procedurally generated content, such as landscapes with cities, or dungeons with interesting internal structure.  The video below shows the system creating a procedural world based on the rules encoded in 43 colored tiles.
+In this post, I'll describe the two algorithms for creating complex procedural worlds from simple sets of colored tiles and constraints on the placements of those tiles.  I will show that by carefully designing these tile sets, you can create interesting procedurally generated content, such as landscapes with cities, or dungeons with complex internal structure.  The video below shows the system creating a procedural world based on the rules encoded in 43 colored tiles.
 
 <iframe width="100%" height="500" src="https://www.youtube.com/embed/XVIYY0AQF-8?rel=0&amp;showinfo=0"
 	frameborder="0" allowfullscreen
@@ -31,11 +31,14 @@ A valid tiling looks like this:
 
 <!-- In this post, I'll explore algorithms for efficiently taking large, complex tile sets and producing valid or nearly valid tilings that look like convincing landscapes, dungeons, and other commonly procedurally generated content.  When these algorithms work well, they can produce some very nice looking results: -->
 
-I think this is an interesting way to create worlds because very often, procedural generation algorithms take a top-down approach.  L-systems, for instance, rely on a recursive description of an object where the top level, large details are determined before lower level ones.  There is nothing wrong with this approach, but I think that it is interesting to create tile sets that are only able to encode simple low level relationships (e.g., ocean water and grass must be separated by a beach, buildings can only have convex, 90 degree corners) and see high level patterns emerge (e.g. square buildings).
+I think this is an interesting way to describe and create worlds because very often, procedural generation algorithms take a top-down approach.  L-systems, for instance, rely on a recursive description of an object where the top level, large details are determined before lower level ones.  There is nothing wrong with this approach, but I think that it is interesting to create tile sets that are only able to encode simple low level relationships (e.g., ocean water and grass must be separated by a beach, buildings can only have convex, 90 degree corners) and see high level patterns emerge (e.g. square buildings).
 
-## Why Creating a Tiling is Hard
 
-Intuitively, the problem of correctly creating a nontrivial tiling is hard because the tile sets can encode arbitrary, long term dependencies.  Formally, this is an NP complete constraint satisfaction problem when we consider tile sets in general.  The hope is that we can create interesting worlds using tile sets that are solvable using approximate methods.  I have found two algorithms that seem to work well in practice, and I describe them below.
+## Tiling is an NP complete Constraint Satisfaction Problem
+
+For the reader familiar with constraint satisfaction problems \(CSPs\), it will already be clear that tiling a finite world is a CSP.  In a CSP, we have a set of variables, a set of values that each variable can take on (called its domain), and a set of constraints.  For us, the variables are locations in the map, the domain of each variable is the tile set, and the constraints are that tiles must match along their edges with their neighbors.
+
+Intuitively, the problem of correctly creating a nontrivial tiling is hard because the tile sets can encode arbitrary, long range dependencies.  Formally, this is an NP complete constraint satisfaction problem when we consider tile sets in general.  A naive algorithm for creating tilings would exhaustively search the space of tilings and run in exponential time.  The hope is that we can create interesting worlds using tile sets that are solvable using search accelerated by heuristics.  The other option is to create tilings that are nearly correct, but may have a small number of incorrect placements.  I have found two algorithms that work well with some interesting tile sets, and I describe them below.
 
 <!-- ## Examples of Interesting Tile Sets
 
@@ -44,13 +47,13 @@ To motivate this post, I'll show a few tile sets that I've come up with and some
 
 ## Greedy Placement with Crude Undoing
 
-*Randomly place valid tiles.  If you get stuck, remove some and try again.*
+*Keep choosing random locations and place valid tiles there.  If you get stuck, remove some and try again.*
 
 ```
 Initialize the entire map to UNDECIDED
 
 while UNDECIDED tiles remain on the map
-    if any valid tile can be places on the map
+    if any valid tile can be placed on the map
       t <- collection of all possible valid tile placements
       l <- random selection from t weighted by tile probabilities
       place l on the map
@@ -63,12 +66,19 @@ while UNDECIDED tiles remain on the map
 
 The first approach I took to creating a tiling from a tile set is to simply start with the entire grid in an undefined state, and to iteratively place a random tile in a location where it is valid, or, if no locations are valid, set a small region on near an undefined tile to be undefined and continue greedy placement.  The "greedy placement" is the strategy of placing a tile as long as all its edges line up with existing tiles, without regard for whether this placement will create a partial tiling that cannot be completed without removing existing tiles.  When such a situation arises, and we cannot place any more tiles, we must remove some previously placed tiles.  But we can't say which are ideal to remove, because if we could solve that problem, we could probably also have solved the problem of placing tiles in a smart way in the first place.  To give the algorithm another chance at finding a valid tiling for a given area, we set all the tiles around the location that undefined and continue with the greedy placement strategy.  Eventually, the hope is, a valid tiling will be found, but this is not guaranteed.  The algorithm will continue to run until a valid tiling is found, which may be forever.  It has no ability to detect when a tile set is unsolvable.
 
-There is obviously no guarantee that this algorithm will halt.  A simple tile set with two tiles that share no colors would cause this algorithm to loop forever.  An even simpler case would be one tile with different colors on the top and bottom.  It might make sense to somehow check for tile sets that cannot produce valid tilings.  We might say that a tile set is certainly valid if it can tile an infinite plane.  In some cases it is clearly possible to prove or disprove whether a tile set can tile an infinite plane, but the problem turns out to be undecidable in general.  Therefore, it is up to the designer of the tile set to create one which can yield a valid tiling.
+There is no guarantee that this algorithm will halt.  A simple tile set with two tiles that share no colors would cause this algorithm to loop forever.  An even simpler case would be one tile with different colors on the top and bottom.  It might make sense to somehow check for tile sets that cannot produce valid tilings.  We might say that a tile set is certainly valid if it can tile an infinite plane.  In some cases it is clearly possible to prove or disprove whether a tile set can tile an infinite plane, but the problem turns out to be undecidable in general.  Therefore, it is up to the designer of the tile set to create one which can yield a valid tiling.
 
-This algorithm is unable to find good solutions for the dungeon tile set in the video at the top of this post.  It performs well on simpler tile sets.  We would like to solve more complex tile sets where many types of transitions betwen tiles are possible and lots of rules (e.g. roads begin and end at buildings) are encoded.
+This algorithm is unable to find good solutions for the dungeon tile set in the video at the top of this post.  It performs well on simpler tile sets.  We would like to solve more complex tile sets where many types of transitions between tiles are possible and lots of rules (e.g. roads begin and end at buildings) are encoded.
 We need an algorithm that is able to look ahead and take make tile placements while being somehow aware of what options that placement will leave open for future placements.  This will allow us to efficiently solve complex tile sets.
 
-## Wave Collapse Tiling
+
+### From a constraint satisfaction perspective
+
+This algorithm is equivalent to a backjumping search.  At each step, we attempt to assign a single variable.  If we cannot, we unasign a variable and all the variables which are connected by constraints to it.  This is called backjumping, which differs from backtracking where we unassign one variable at a time until we can continue making valid assignments.  In backtracking, we generally unassign variables in the reverse of the order we assigned them, but with backjumping we unassign variables according to the structure of the problem at hand.  It makes sense that if we can't place any tile at a particular location, we should change the placement of neighboring tiles, since their placement created an unsolvable situation.  Backtracking may instead cause us to unassign variables that are spatially far away but happened to be assigned recently.
+
+This search does not employ any local consistency method.  That is, we make no attempt to place tiles that won't cause an unsolvable situation later on, even as soon as one step of search in the future.  It may be possible to accelerate search by keeping track of the effects that a placement will have on possible placements a few tiles away.  Hopefully, this will keep our search from spending so much time undoing its work.  This is what the next algorithm does.
+
+## Tiling Search with Arc Consistency
 
 *Maintain a probability distribution over tiles at each location, making nonlocal updates to these distributions when a placement decision is made.  Never backtrack.*
 
