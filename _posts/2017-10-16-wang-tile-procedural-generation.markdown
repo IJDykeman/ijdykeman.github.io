@@ -48,7 +48,7 @@ Intuitively, the problem of correctly creating a nontrivial tiling is hard becau
 To motivate this post, I'll show a few tile sets that I've come up with and some tilings that can be generated under the constraints they describe.  
  -->
 
-## Greedy Placement with Backjumping
+## Method 1: Greedy Placement with Backjumping
 
 *Keep choosing random locations and place valid tiles there.  If you get stuck, remove some and try again.*
 
@@ -85,7 +85,7 @@ This search does not employ any local consistency method.  That is, we make no a
 
 
 
-## Most Constrained Placement with Fuzzy Arc Consistency
+## Method 2: Most Constrained Placement with Fuzzy Arc Consistency
 
 *Maintain a probability distribution over tiles at each location, making nonlocal updates to these distributions when a placement decision is made.  Never backtrack.*
 
