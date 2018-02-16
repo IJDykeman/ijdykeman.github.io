@@ -127,7 +127,7 @@ When a tile is placed, I update the probability map by elementwise multiplying t
 
 
 This strategy allows us to efficiently approximate the effect that each tile placement should have on the probability map.
-
+<!-- 
 ### From a constraint satisfaction perspective
 
 To solve constraint satisfaction problems efficiently, it often makes sense to keep track of what assignments of other variables become impossible when a particular variable is assigned.  This is known as enforcing local consistency conditions.  Enforcing some kind of local consistency helps prevent you from assigning a value to a variable then assigning an incompatible value to a nearby value right away and being forced to backtrack.  Such transformations are under the umbrella of constraint propagation methods in the CSP literature.  In this algorithm, we are propagating information through a small area of the map each time we place a tile about what tiles can or cannot appear nearby.  If we place a mountain tile, for instance, we know that there can't be an open ocean tile only two tiles away, so the probability of ocean at all locations on the map two tiles from the placement are set to zero.  This information is recorded in the spheres discussed above.  The spheres encode the local consistency we are interested in imposing.
@@ -135,7 +135,7 @@ To solve constraint satisfaction problems efficiently, it often makes sense to k
 By reducing the number of possible assignments of nearby tiles, we significantly reduce the search space the algorithm needs to handle after with each placement.  We know that in that small neighborhood, all probabilities of tiles appearing that are incompatible with the places tile are zero.  This is equivalent to removing those values from the domains of the variables at those locations.  This means that each pair of neighboring locations in the region around the placement has some tile in its domain that is compatible with some tile still in its neighbors domain.  When two variables are connected by a constraint in a CSP problem and their domains contain only values that could satisfy the constraint, they are said to be arc consistent, so this method is really an efficient arc consistency enforcing strategy.
 
 In a CSP, the "most constrained" variable in a given partial assignment is the one with the fewest possible values remaining in its domain.  The idea of placing a tile at the location of the lowest entropy distribution in the map is analogous to assigning a value to the most constrained variable in a CSP, which is a common variable ordering heuristic when solving CSPs by search.
-
+ -->
 ## Manipulating Tilings by Changing Tile Selection Probabilities.
 
 So far, I've talked about only about how to create valid tilings, but beyond being valid, there might be other properties we might like a tiling to have.  For instance, we might like it to have a certain ratio of one tile type to another, or we might like to ensure that it is not all one uniform type of tile, even if such a tiling is valid.  To accomplish this, both the algorithms I describe take as input a base probability associated with each tile.  The higher this probability, the more likely that tile should be in the final tiling.  Both algorithms make random choices over collections of tiles, and I simply weight these random choices by the base tile probabilities.
