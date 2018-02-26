@@ -34,6 +34,9 @@ A valid tiling looks like this:
 I think this is an interesting way to describe and create worlds because very often, procedural generation algorithms take a top-down approach.  L-systems, for instance, rely on a recursive description of an object where the top level, large details are determined before lower level ones.  There is nothing wrong with this approach, but I think that it is interesting to create tile sets that are only able to encode simple low level relationships (e.g., ocean water and grass must be separated by a beach, buildings can only have convex, 90 degree corners) and see high level patterns emerge (e.g. square buildings).
 
 
+
+
+
 ## Tiling is an NP complete Constraint Satisfaction Problem
 
 For the reader familiar with constraint satisfaction problems \(CSPs\), it will already be clear that tiling a finite world is a CSP.  In a CSP, we have a set of variables, a set of values that each variable can take on (called its domain), and a set of constraints.  For us, the variables are locations in the map, the domain of each variable is the tile set, and the constraints are that tiles must match along their edges with their neighbors.
@@ -45,7 +48,7 @@ Intuitively, the problem of correctly creating a nontrivial tiling is hard becau
 To motivate this post, I'll show a few tile sets that I've come up with and some tilings that can be generated under the constraints they describe.  
  -->
 
-## Greedy Placement with Backjumping
+## Method 1: Greedy Placement with Backjumping
 
 *Keep choosing random locations and place valid tiles there.  If you get stuck, remove some and try again.*
 
@@ -61,7 +64,7 @@ while UNDECIDED tiles remain on the map
       select a random UNDECIDED tile and set all its neighbors to UNDECIDED
 ```
 
-![randomized algorithm example]({{ site.url }}/assets/wang_tiles/randomized_algo_diagram.svg)
+ ![randomized algorithm example]({{ site.url }}/assets/wang_tiles/randomized_algo_diagram.svg)
 
 
 The first approach I took to creating a tiling from a tile set is to simply start with the entire grid in an undefined state, and to iteratively place a random tile in a location where it is valid, or, if no locations are valid, set a small region on near an undefined tile to be undefined and continue greedy placement.  The "greedy placement" is the strategy of placing a tile as long as all its edges line up with existing tiles, without regard for whether this placement will create a partial tiling that cannot be completed without removing existing tiles.  When such a situation arises, and we cannot place any more tiles, we must remove some previously placed tiles.  But we can't say which are ideal to remove, because if we could solve that problem, we could probably also have solved the problem of placing tiles in a smart way in the first place.  To give the algorithm another chance at finding a valid tiling for a given area, we set all the tiles around the location that undefined and continue with the greedy placement strategy.  Eventually, the hope is, a valid tiling will be found, but this is not guaranteed.  The algorithm will continue to run until a valid tiling is found, which may be forever.  It has no ability to detect when a tile set is unsolvable.
@@ -78,11 +81,15 @@ This algorithm is equivalent to a backjumping search.  At each step, we attempt 
 
 This search does not employ any local consistency method.  That is, we make no attempt to place tiles that won't cause an unsolvable situation later on, even as soon as one step of search in the future.  It may be possible to accelerate search by keeping track of the effects that a placement will have on possible placements a few tiles away.  Hopefully, this will keep our search from spending so much time undoing its work.  This is what the next algorithm does.
 
-## Tiling Search with Arc Consistency
+
+
+
+
+## Method 2: Most Constrained Placement with Fuzzy Arc Consistency
 
 *Maintain a probability distribution over tiles at each location, making nonlocal updates to these distributions when a placement decision is made.  Never backtrack.*
 
-![wave collapse example]({{ site.url }}/assets/wang_tiles/wave_collapse_example.svg)
+ ![wave collapse example]({{ site.url }}/assets/wang_tiles/wave_collapse_example.svg)
 
 Next, I'll describe an algorithm which is guaranteed to halt and produces better looking results for all the tile sets I have tried.  It is also able to produce nearly-valid tilings for tile sets that are much more complicated than those which the previous algorithm can handle.  The tradeoff is that this algorithm does not guarantee that its output is always a valid tiling.  I'll discuss optimizations that help this technique run fast even over large tile sets and maps.
 
@@ -92,7 +99,7 @@ An algorithm should, therefore, have some ability to "look ahead" and consider a
 
 For example, if a water tile is placed on the map, the tiles next to it must contain water.  The tiles next to those tiles might also contain water, but there are other possibilities, such as grass if a beach was placed next to the original water.  The farther we get from the placed tile, the more other tiles become possible to place.  We can go further and count the number of ways that we can arrive at each tile placement near the original tile.  In some cases, only a single sequence of transitions can cause one tile to transition to another over a given distance.  In other cases, there could be many possible transition sequences.  Once we have placed a tile, we can determine the probability distributions of tiles at nearby locations by counting the number of ways we can transition from the tile we have placed to nearby tiles.  The "look ahead" that the algorithm performs is tracking these transition counts and treating them as probability distributions from which to select future tiles to place.
 
-![tile transition counts]({{ site.url }}/assets/wang_tiles/tile_transition_counts.svg)
+ ![tile transition counts]({{ site.url }}/assets/wang_tiles/tile_transition_counts.svg)
 
 At each time step, the algorithm examines all non-decided tile locations, each of which is a probability distribution over tiles, and selects one location to "collapse" into a tile.  It selects the distribution from the map with the lowest entropy.  Low entropy multinomial distributions tend to have their probability concentrated in a few modes, so collapsing these first yields the effect of placing tiles we already have some constraints for.  This is why the algorithm fills in tiles near tiles that are already decided first.
 
@@ -107,22 +114,28 @@ The core operation of this method is updating the probabilities around a placed 
 Imagine a tile were placed on an otherwise empty map.  This placement would update the probabilities of tiles nearby.  We can think of these updated distributions as having a prior distribution which is informed by previous placements.  If multiple tiles are placed, this prior is a joint distribution.  I approximate the posterior given this joint prior as the product of the distributions given each placement in the past.
 
 
-![sphere example]({{ site.url }}/assets/wang_tiles/sphere_example.svg)
+ ![sphere example]({{ site.url }}/assets/wang_tiles/sphere_example.svg)
 
 To implement this, I imagine that when a tile is placed on an empty map, it induces a significant change in the distributions in the map nearby.  I call these updates the *sphere* of the tile, as in, the sphere of influence the tile projects around it when it is placed on an empty map.  When two tiles are placed near each other, their spheres interact to create the final distributions that are affected by both placements.  Considering that many tiles may be placed near a given undecided location, there could be a large number of interacting constraints that would make a counting based approach to finding the probability of different tiles appearing at that location slow.  What if we instead only consider a simple model of the interaction between the precomputed spheres of the tiles that have already been placed?
 
-![sphere diagram]({{ site.url }}/assets/wang_tiles/labeled_sphere.svg)
+ ![sphere diagram]({{ site.url }}/assets/wang_tiles/labeled_sphere.svg)
 
 
 When a tile is placed, I update the probability map by elementwise multiplying the distribution of that tile’s sphere at each location in the map with the distribution already stored in that location in the map.  It may be helpful to consider an example of what this might do to the distribution map.  Say a given location in the map currently has a distribution that considers grass and water likely, and we place a water tile next to that location.  The water tile’s sphere will have a high probability of water right next to the water tile, and a low probability of grass.  When we multiply these distributions together elementwise, the probability of water in the result is high, because it is the product of two large probabilities, but the probability of grass will become low, because it is the product of the high probability stored in the map with the low probability stored in the sphere.
 
-![spheres interacting diagram]({{ site.url }}/assets/wang_tiles/interacting_spheres.svg)
+ ![spheres interacting diagram]({{ site.url }}/assets/wang_tiles/interacting_spheres.svg)
 
 
 This strategy allows us to efficiently approximate the effect that each tile placement should have on the probability map.
+<!-- 
+### From a constraint satisfaction perspective
 
+To solve constraint satisfaction problems efficiently, it often makes sense to keep track of what assignments of other variables become impossible when a particular variable is assigned.  This is known as enforcing local consistency conditions.  Enforcing some kind of local consistency helps prevent you from assigning a value to a variable then assigning an incompatible value to a nearby value right away and being forced to backtrack.  Such transformations are under the umbrella of constraint propagation methods in the CSP literature.  In this algorithm, we are propagating information through a small area of the map each time we place a tile about what tiles can or cannot appear nearby.  If we place a mountain tile, for instance, we know that there can't be an open ocean tile only two tiles away, so the probability of ocean at all locations on the map two tiles from the placement are set to zero.  This information is recorded in the spheres discussed above.  The spheres encode the local consistency we are interested in imposing.
 
+By reducing the number of possible assignments of nearby tiles, we significantly reduce the search space the algorithm needs to handle after with each placement.  We know that in that small neighborhood, all probabilities of tiles appearing that are incompatible with the places tile are zero.  This is equivalent to removing those values from the domains of the variables at those locations.  This means that each pair of neighboring locations in the region around the placement has some tile in its domain that is compatible with some tile still in its neighbors domain.  When two variables are connected by a constraint in a CSP problem and their domains contain only values that could satisfy the constraint, they are said to be arc consistent, so this method is really an efficient arc consistency enforcing strategy.
 
+In a CSP, the "most constrained" variable in a given partial assignment is the one with the fewest possible values remaining in its domain.  The idea of placing a tile at the location of the lowest entropy distribution in the map is analogous to assigning a value to the most constrained variable in a CSP, which is a common variable ordering heuristic when solving CSPs by search.
+ -->
 ## Manipulating Tilings by Changing Tile Selection Probabilities.
 
 So far, I've talked about only about how to create valid tilings, but beyond being valid, there might be other properties we might like a tiling to have.  For instance, we might like it to have a certain ratio of one tile type to another, or we might like to ensure that it is not all one uniform type of tile, even if such a tiling is valid.  To accomplish this, both the algorithms I describe take as input a base probability associated with each tile.  The higher this probability, the more likely that tile should be in the final tiling.  Both algorithms make random choices over collections of tiles, and I simply weight these random choices by the base tile probabilities.
@@ -154,7 +167,7 @@ The tiles are laid out on a grid of 4x4 cells.  Each cell contains a colored til
 
 Many people have explored [Wang tiles](https://en.wikipedia.org/wiki/Wang_tile), which are tile sets with colored edges that must match in edge color with tiles they are placed next to, just like the tiles I have talked about here.  
 
-The "wave collapse" solver is similar to the Wave Function Collapse project by [@ExUtumno](https://twitter.com/ExUtumno).  That algorithm maintains a map of "partially observed" assignments and samples from them to create a final image, which is similar to the distributions over tiles maintained here.  The approaches differ in a few ways.  It maintains binary potentials rather than multinomial distributions per map location.  It also does not use the cached transition count "spheres" I talk about in the Optimixation section to speed computation.
+The "Most Constrained Placement with Fuzzy Arc Consistency" solver is similar to the Wave Function Collapse project by [@ExUtumno](https://twitter.com/ExUtumno).  That algorithm maintains a map of "partially observed" assignments and samples from them to create a final image, which is similar to the distributions over tiles maintained here.  The approaches differ in a few ways.  It maintains binary potentials rather than multinomial distributions per map location.  It also does not use the cached transition count "spheres" I talk about in the Optimization section to speed computation.
 
 
 
