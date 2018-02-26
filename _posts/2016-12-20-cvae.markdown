@@ -7,7 +7,7 @@ categories: ml
 
 ## Introduction
 
-When I started working on understanding generative models, I didn’t find any resources that gave a good, high level, intuitive overview of variational autoencoders.  Some great resources exist for understanding them in detail and seeing the math behind them.  In paricular [“Tutorial on Variational Autoencoders” by Carl Doersch](https://arxiv.org/abs/1606.05908) covers the same topics as this post, but as the author notes, there is some abuse of notation in that article, and the treatment is more abstract then what I’ll go for here.  Here, I’ll carry the example of a variational autoencoder for the MNIST digits dataset throughout, using concrete examples for each concept.  Hopefully by reading this article you can get a general idea of how Variational Autoencoders work before tackling them in detail.
+When I started working on understanding generative models, I didn’t find any resources that gave a good, high level, intuitive overview of variational autoencoders.  Some great resources exist for understanding them in detail and seeing the math behind them.  In particular [“Tutorial on Variational Autoencoders” by Carl Doersch](https://arxiv.org/abs/1606.05908) covers the same topics as this post, but as the author notes, there is some abuse of notation in that article, and the treatment is more abstract then what I’ll go for here.  Here, I’ll carry the example of a variational autoencoder for the MNIST digits dataset throughout, using concrete examples for each concept.  Hopefully by reading this article you can get a general idea of how Variational Autoencoders work before tackling them in detail.
 
 ## Goal of a Variational Autoencoder
 
@@ -55,7 +55,7 @@ I said earlier that the decoder should expect to see points sampled from a stand
 
 where the average of different distributions produced in response to different training examples approximate a standard normal.  Now the assumption that the decoder sees points drawn from a standard normal distribution holds.
 
-Obviosly we need some way to measure whether the sum of distributions produced by the encoder "approximates" the standard normal distribution.  We can measure the quality of this approximation using Kullback-Leibler divergence.  Kullback-Leibler divergence essentially measures how different two probability distributions are.  This is treated in more depth in Doersch's tutorial.
+Obviously we need some way to measure whether the sum of distributions produced by the encoder "approximates" the standard normal distribution.  We can measure the quality of this approximation using Kullback-Leibler divergence.  Kullback-Leibler divergence essentially measures how different two probability distributions are.  This is treated in more depth in Doersch's tutorial.
 
 ## Training a VAE with The Reparametrization Trick
 
@@ -90,3 +90,6 @@ The grid of images below was produced by fixing the desired number input to the 
 # Conclusion
 
 VAEs are powerful unsupervised learning tool.  The latent space of a standard VAE should capture useful patterns in your data reliably.  For example, as I wrote this post, I saw that a VAE trained without any labels successfully seperated MNIST images into 10 distinct regions in the latent space, where each region contained almost exclusively images of one number.  CVAEs are useful for generating artificial samples that match some label.  Note that nothing in this tutorial is specific to images.  For example, sequential data can be generated with VAEs if the encoder and decoder are RNNs. -->
+
+
+
