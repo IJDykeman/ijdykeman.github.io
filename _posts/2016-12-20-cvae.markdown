@@ -93,3 +93,4 @@ VAEs are powerful unsupervised learning tool.  The latent space of a standard VA
 
 
 
+g
