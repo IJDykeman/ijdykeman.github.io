@@ -3,7 +3,7 @@ layout: post
 title:  "rusp presentation"
 date:   2018-01-01 22:25:30 -0500
 categories: ml
-published: true
+published: false
 ---
 
 # Word Vectors
