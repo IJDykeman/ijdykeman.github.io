@@ -96,10 +96,35 @@ published: true
 
 
 
-<!-- |model            |  random | similar |
-| ----            |  ------ | ------- |
-|two-word         | 63%     | 27%     |
-|RNN              | 50%     | 23%     |
-|discrete CVAE    | 55%     | 21%     |
-|vector CVAE      | __71%__ | __30%__ |
-|real definitions | 76%     | 50%     | -->
+<div class="tg-wrap"><table class="tg">
+  <tr>
+    <th class="tg-k4q0">model</th>
+    <th class="tg-k4q0">random</th>
+    <th class="tg-k4q0">similar</th>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">two-word</td>
+    <td class="tg-k4q0">63%</td>
+    <td class="tg-k4q0">27%</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">RNN</td>
+    <td class="tg-k4q0">50%</td>
+    <td class="tg-k4q0">23%</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">discrete CVAE</td>
+    <td class="tg-k4q0">55%</td>
+    <td class="tg-k4q0">21%</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">vector CVAE</td>
+    <td class="tg-k4q0"><b>71%</b></td>
+    <td class="tg-k4q0"><b>30%</b></td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">real definitions</td>
+    <td class="tg-k4q0">76%</td>
+    <td class="tg-k4q0">50%</td>
+  </tr>
+</table></div>
