@@ -6,9 +6,13 @@ categories: ml
 published: true
 ---
 
-
+# Word Vectors
 
 ![lidar image]({{ site.url }}/assets/phrase_similarity_figures/word2vec.svg)
+
+
+# Two Word Definitions
+
 ![Simple network diagram]({{ site.url }}/assets/turnip_net.svg)
 
 
@@ -18,6 +22,8 @@ published: true
 * stockade: large building
 * cantaloupe: common fruit
 
+
+# Definitions of Arbitrary Length
 
 ![RNN decoder diagram](/assets/vae-definition-generation/rnn_decoder_diagram.svg)
 
