@@ -3,7 +3,6 @@ layout: post
 title:  "Producing Simple Definitions from Word Vectors"
 date:   2016-10-29
 categories: ml
-permalink: none
 ---
 
 ![Simple network diagram]({{ site.url }}/assets/turnip_net.svg)
