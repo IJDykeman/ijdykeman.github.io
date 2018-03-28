@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Producing Simple Definitions from Word Vectors"
-date:   2016-10-29 22:25:30 -0500
+date:   2016-10-29
 categories: ml
 ---
 

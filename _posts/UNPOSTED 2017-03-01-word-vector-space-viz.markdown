@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Visualizing a Very Simple Embedding Space"
-date:   2017-03-01 22:25:30 -0500
+date:   2017-03-01
 categories: ml
 ---
 

@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Capturing Word Meaning and Cultural Association with a Character Level Model"
-date:   2017-01-02 22:25:30 -0500
+date:   2017-01-02
 categories: ml
 ---
 
