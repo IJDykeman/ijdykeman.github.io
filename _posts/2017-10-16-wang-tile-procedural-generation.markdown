@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Procedural Worlds from Simple Tiles"
-date:   2017-10-12 22:25:30 -0500
+date:   2017-10-12
 categories: ml
 ---
 
