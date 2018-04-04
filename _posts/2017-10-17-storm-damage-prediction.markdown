@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Predicting Wind Damge to Homes using Convolutional Neural Networks"
-date:   2017-10-15 22:25:30 -0500
+date:   2017-10-15
 categories: ml
 published: false
 ---

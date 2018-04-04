@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Measuring the Similarity between Short English Phrases using Recurrent Neural Networks"
-date:   2017-10-30 10:30:00 -0500
+date:   2017-10-30
 categories: ml
 ---
 

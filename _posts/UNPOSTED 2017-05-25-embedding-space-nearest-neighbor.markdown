@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Efficient Nearest Neighbor Search Among Word Vectors"
-date:   2017-05-22 22:25:30 -0500
+date:   2017-05-22
 categories: ml
 ---
 

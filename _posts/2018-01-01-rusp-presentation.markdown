@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "rusp presentation"
-date:   2018-01-01 22:25:30 -0500
+date:   2018-01-01
 categories: ml
 published: false
 ---
