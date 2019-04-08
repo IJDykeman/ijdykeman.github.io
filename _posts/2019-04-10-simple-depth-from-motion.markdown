@@ -5,14 +5,18 @@ date:   2019-04-07
 categories: slam
 ---
 
+
+This post describes an algorithm for creating a depth image from a handful of RGB images taken of a scene.  I give an explanation of the system and provide a straightforward implementation of the algorithm using Tensorflow.  This algorithm is closely based on the depth map estimation step of [LSD-SLAM](https://vision.in.tum.de/_media/spezial/bib/engel14eccv.pdf), however I introduce a simplified optimization strategy that retains the key benefits of that algorithm while being easier to understand, implement, and extend.  This implementation is not meant to be competitive with existing methods, instead, it is meant to reveal the intuition behind some state-of-the-art methods.
+
+The goal is this post is only to clearly frame depth estimation as an optimization problem, and so I elide details on how exactly I represent poses and how image warping is implemented.  These details can be found in the LSD-SLAM paper, Ethan Eade’s document on Lie algebras, and in the tf_lie.py and image_warping.py source files I provide.
+
+
 <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/U89joc4KJrsys7T0Gs" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
 
 
 <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/ZEfBoPTODKz4H7XzaZ" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
 
-This post describes an algorithm for creating a depth image from a handful of RGB images taken of a scene.  I give an explanation of the system and provide a straightforward implementation of the algorithm using Tensorflow.  This algorithm is closely based on the depth map estimation step of LSD-SLAM (https://vision.in.tum.de/_media/spezial/bib/engel14eccv.pdf), however I introduce a simplified optimization strategy that retains the key benefits of that algorithm while being easier to understand, implement, and extend.  This implementation is not meant to be competitive with existing methods, instead, it is meant to reveal the intuition behind some state-of-the-art methods.
-
-The goal is this post is only to clearly frame depth estimation as an optimization problem, and so I elide details on how exactly I represent poses and how image warping is implemented.  These details can be found in the LSD-SLAM paper, Ethan Eade’s document on Lie algebras, and in the tf_lie.py and image_warping.py source files I provide.
+*Over the course of optimization, the algorithm jointly aligns the images and finds the scene depth*
 
 
 ## Assumed background
@@ -70,13 +74,21 @@ Given the the ability to represent camera poses and warp images, solving for the
 [My implementation can be found here.](https://github.com/IJDykeman/simple_depth_from_motion)
 
 That repo contains 
-An ipython notebook for setting up and running the optimization of a depth map.
-A directory of images of the rock and plant scene.
-tf_lie.py which is a small utility for handling transformations in SO(3) in tensorflow.  SE(3) is a Lie group that can be used to represent rotation and translation transforms in 3D space.  This file is based on the equations in Ethan Eade’s document on Lie algebras and is meant to transparently handle any tensors where the last dimension is Lie group elements.  This is useful if you have, for instance, a batch of images with a transform for each pixel.
-image_warping.py which implements the image warp from the LSD-SLAM paper.
+* An ipython notebook for setting up and running the optimization of a depth map.
+* A directory of images of the rock and plant scene.
+* tf_lie.py, which is a small utility for handling transformations in SO(3) in tensorflow.  SE(3) is a Lie group that can be used to represent rotation and translation transforms in 3D space.  This file is based on the equations in Ethan Eade’s document on Lie algebras and is meant to transparently handle any tensors where the last dimension is Lie group elements.  This is useful if you have, for instance, a batch of images with a transform for each pixel.
+* image_warping.py which implements the image warp from the LSD-SLAM paper.
 
 In this project, I have allowed myself one hack: I include a total variation term in the cost function.  This term measures the amount of discontinuity in the depth map and so encourages the depth map to be smooth.  This term makes the results look better and something like it is often used in depth estimation, but is not very principled.  For instance, it penalizes flat surfaces that are tilted with respect to the camera, and a surface like grass that truly has lots of depth discontinuity will be penalized.  A slightly better approach would be to penalize the curvature of the depth map, but that is a slippery slope of heuristics and hand-tuning that I will not journey down at this time.  
 
 There are more principled ways of imposing a prior on the depth map.  The LSD-SLAM paper estimates an uncertainty at each pixel and treats high uncertainty locations differently downstream.  While developing this code, I experimented with using a “deep image prior” on the depth map where instead of representing the depth map with one optimization variable for each pixel, I represent it using the output of a convolutional neural network which I optimize to produce the depth map for one scene.  
 
+# Conclusion
 
+
+For this scene of a plant and a rock on some leaf litter,
+![scene]({{ site.url }}/assets/simple_depth/reference_image.png)
+my code produces this depth map.
+![depth]({{ site.url }}/assets/simple_depth/depth_image.png)
+
+While that depth map is far from perfect, I think it's surprising that something so reasonable looking can be produced with such a simple optimization setup.  Once you have utilities for manipulating camera poses (tf_lie.py) and doing image warping (image_warping.py), the problem can be solved in about a dozen lines of tensorflow code.  
