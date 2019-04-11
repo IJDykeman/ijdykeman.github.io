@@ -96,10 +96,49 @@ Given the the ability to represent camera poses and warp images, solving for the
 [My implementation can be found here.](https://github.com/IJDykeman/simple_depth_from_motion)
 
 That repo contains 
-* An ipython notebook for setting up and running the optimization of a depth map.
+* An ipython notebook that generates a depth map using my approach.
 * A directory of images of the rock and plant scene.
-* tf_lie.py, which is a small utility for handling transformations in SO(3) in tensorflow.  SE(3) is a Lie group that can be used to represent rotation and translation transforms in 3D space.  This file is based on the equations in Ethan Eade’s document on Lie algebras and is meant to transparently handle any tensors where the last dimension is Lie group elements.  This is useful if you have, for instance, a batch of images with a transform for each pixel.
-* image_warping.py which implements the image warp from the LSD-SLAM paper.
+* tf_lie.py, which is a small utility for handling transformations in SE(3) in tensorflow.    This code is based on the equations in Ethan Eade’s document on Lie algebras and is meant to transparently handle any tensors where the last dimension represents SE(3) elements.
+* image_warping.py which implements the image warp above.
+
+
+The heart of the implementation is this snippet, which what is in the notebook, and here is pared down for clarity, ommitting some casting and other cruft.
+
+```python
+depth =  tf.abs(tf.Variable(tf.ones([400,400])) + 1) +.1
+
+cost = 0.0
+
+for scene_image in scene_images:
+    # pose representation for the cameras that took each scene image
+    translation_representation = tf.Variable([[0.01, 0.01, 0.01]])
+    rotation_representation = tf.Variable([[0.01, 0.01, 0.01]])
+
+    warped_scene_image = warp_image(scene_image, depth,
+                                    translation_representation,
+                                    rotation_representation)
+
+    cost += tf.losses.huber_loss(warped_scene_image, reference_image)
+    
+optimizer = tf.train.AdamOptimizer(learning_rate=.005).minimize(cost)
+
+init = tf.global_variables_initializer()
+sess = tf.Session()
+sess.run(init)
+for _ in range(2000):
+    sess.run(optimizer)
+
+```
+
+I think it's very surprising that in about a dozen lines of python, you can capture the essense of the depth map estimation algorithm:
+
+1) First, initialize the depth map to be all ones and constrain depth to be positive and greater than 0.
+
+2) Define the cost to be the robust Huber metric between the reference image and the scene image warped into the reference view.
+
+3) Minimize the loss by adjusting the camera poses and the depth map using simple gradient descent, though in this case I use Adam rather than vanilla gradient descent.
+
+The rest of the code in the notebook is data setup and visualization.
 
 In this project, I have allowed myself one hack: I include a total variation term in the cost function.  This term measures the amount of discontinuity in the depth map and so encourages the depth map to be smooth.  This term makes the results look better and something like it is often used in depth estimation, but is not very principled.  For instance, it penalizes flat surfaces that are tilted with respect to the camera, and a surface like grass that truly has lots of depth discontinuity will be penalized.  A slightly better approach would be to penalize the curvature of the depth map, but that is a slippery slope of heuristics and hand-tuning that I will not journey down at this time.  
 
