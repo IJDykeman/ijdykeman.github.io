@@ -81,9 +81,9 @@ $$\text{warp}(p, d, \textbf{T}) = \textbf{T} \begin{bmatrix}
 gives us the location of pixel $$p$$ in the view of the reference camera.
 
 
-Once $$I$$ is warped into the reference camera view, we need some way of measuring how well this warped image approximates the reference image, since this tells us how well our depth map and camera poses match the true values.  The photometric loss is a measure of the difference between two images.  There are many possible functions to use here.  I simply do a huber loss on the raw RGB values.  This is by no means optimal, but it was a couple nice properties.  First, it is dead simple.  Second, the huber loss is a robust loss, so if some pixels are way off due to occlusion or specular highlights in one image, our photometric loss will not be hugely affected.  A more enlightened algorithm would handle these cases explicitly.  If $$ref(p)$$ is the reference image's color at position $$p$$ and $$I(p)$$ is an image $$I$$'s color at position $$P$$, then our cost function is 
+Once $$I$$ is warped into the reference camera view, we need some way of measuring how well this warped image approximates the reference image, since this tells us how well our depth map and camera poses match the true values.  The photometric loss is a measure of the difference between two images.  There are many possible functions to use here.  I simply do a huber loss on the raw RGB values.  This is by no means optimal, but it was a couple nice properties.  First, it is dead simple.  Second, the huber loss is a robust loss, so if some pixels are way off due to occlusion or specular highlights in one image, our photometric loss will not be hugely affected.  A more enlightened algorithm would handle these cases explicitly.  If $$ref(p)$$ is the reference image's color at position $$p$$ and $$I(p)$$ is an image $$I$$'s color at position $$p$$, then our cost function is 
 
-$$ \sum_p huber(ref(p), I(warp(p, d, T))) $$
+$$ \sum_p huber(ref(p), I(\text{warp}(p, d, T))) $$
 
 For clarity, the function above elides iterating over the r, g, and b channels of the image as I do in my implementation.  The homogenous transform $$T$$ is computed from the SE(3) representation of the camera poses using the method in Ethan Eade's document, which I implement for Tensorflow in tf_lie.py.
 
@@ -132,11 +132,9 @@ for _ in range(2000):
 
 I think it's very surprising that in about a dozen lines of python, you can capture the essense of the depth map estimation algorithm:
 
-1) First, initialize the depth map to be all ones and constrain depth to be positive and greater than 0.
-
-2) Define the cost to be the robust Huber metric between the reference image and the scene image warped into the reference view.
-
-3) Minimize the loss by adjusting the camera poses and the depth map using simple gradient descent, though in this case I use Adam rather than vanilla gradient descent.
+1. First, initialize the depth map to be all ones and constrain depth to be positive and greater than 0.
+2. Define the cost to be the robust Huber metric between the reference image and the scene image warped into the reference view.
+3. Minimize the loss by adjusting the camera poses and the depth map using simple gradient descent, though in this case I use Adam rather than vanilla gradient descent.
 
 The rest of the code in the notebook is data setup and visualization.
 
