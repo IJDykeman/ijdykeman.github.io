@@ -154,4 +154,4 @@ my code produces this depth map.
 
 ![depth]({{ site.url }}/assets/simple_depth/depth_image.png)
 
-While that depth map is far from perfect, I think it's surprising that something so reasonable looking can be produced with such a simple optimization setup.  Once you have utilities for manipulating camera poses (tf_lie.py) and doing image warping (image_warping.py), the problem can be solved in about a dozen lines of tensorflow code.  
+While that depth map is not perfect, I think it's surprising that something so reasonable looking can be produced with such a simple optimization setup.  Once you have utilities for manipulating camera poses (tf_lie.py) and doing image warping (image_warping.py), the problem can be solved in about a dozen lines of tensorflow code.  
