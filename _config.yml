@@ -9,7 +9,7 @@
 title: Isaac Dykeman
 email: ijdykeman@gmail.com
 description: > # this means to ignore newlines until "baseurl:"
- Posts about machine learning.
+ 
 baseurl: "" # the subpath of your site, e.g. /blog
 url: "http://ijdykeman.github.io" # the base hostname & protocol for your site
 theme: jekyll-theme-minimal
