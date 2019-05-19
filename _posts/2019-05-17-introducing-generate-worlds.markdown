@@ -28,31 +28,15 @@ The key idea behind generate worlds is that instead of writing code that describ
 
 Imagine we want to create a simple dungeon world containing hallways and rectangular rooms.  We will make the world by assembling these six passageway and room pieces:
 
-![depth from motion graph]({{ site.url }}/assets/rule_based_procedural_generation/dungeon_parts.svg)
+![dungeon parts]({{ site.url }}/assets/rule_based_procedural_generation/dungeon_parts.svg)
 
  Here is a world made of those hallway and room pieces:
 
-![depth from motion graph]({{ site.url }}/assets/rule_based_procedural_generation/disorganized_dungeon.svg)
+![disorganized dungeon]({{ site.url }}/assets/rule_based_procedural_generation/disorganized_dungeon.svg)
 
-Clearly, we need to impose some structure.  Let’s add a constraint:
+Clearly, we need to impose some structure.  Let’s add a series of rules to put these pieces together into a coherent dungeon:
 
-**<center>Passageways can connect to other passageways.</center>**
-
-Given this constraint, the world now looks like this:
-
-![depth from motion graph]({{ site.url }}/assets/rule_based_procedural_generation/dungeon_w_coherent_halls.svg)
-
-We now see coherent passageways, but the rooms have no structure.  Let’s add another constraint:
-
-**<center>All floor space must be enclosed by walls.</center>** 
-
-![depth from motion graph]({{ site.url }}/assets/rule_based_procedural_generation/dungeon_w_coherent_halls_and_rooms.svg)
-
-Finally we need to specify that passageways should connect to rooms, so we add the constraint
-
-**<center>Passageways can connect to doors.</center>**
-
-![a nice looking dungeon]({{ site.url }}/assets/rule_based_procedural_generation/coherent_dungeon.svg)
+![dungeon construction]({{ site.url }}/assets/rule_based_procedural_generation/full_dungeon_sequence.svg)
 
 
 We now have a reasonable looking, simple dungeon layout.  To recap, the constraints are simply
