@@ -24,7 +24,7 @@ This video briefly describes Generate Worlds.  Read on for the details.
 
 
 
-## Generating Procedural Worlds with Rules instead of Code
+## Generate Worlds with Rules instead of Code
 
 The key idea behind Generate Worlds is that instead of writing code that describes how to build the world, you simply create a set of rules about how you want the world to work and Generate Worlds puts it together for you.  Let’s start with a simple example.
 
