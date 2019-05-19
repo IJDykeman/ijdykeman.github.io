@@ -7,7 +7,7 @@ categories: procedural_generation
 
 In this post, I’ll briefly argue that a rule-based approach is an effective way to quickly iterate on procedurally generated content without getting bogged down in implementation details.  I’ll give a few examples of worlds I’ve created using this technique. 
 
-I’ve built a few tools that let users apply these ideas themselves.  I’m finally happy enough with one, which I’m calling Generate Worlds, to release it.  If you’re interested in creating your own infinite worlds, ![head to the page on itch.io , where Generate Worlds is for sale.](https://ijdykeman.itch.io/generate-worlds)
+I’ve built a few tools that let users apply these ideas themselves.  I’m finally happy enough with one, which I’m calling Generate Worlds, to release it.  If you’re interested in creating your own infinite worlds, [head to the page on itch.io , where Generate Worlds is for sale.](https://ijdykeman.itch.io/generate-worlds)
 
 When procedurally generating environments and objects, you often want those objects to have certain global properties, “a dungeon’s hallways should not have dead-ends” or “the city walls should enclose all the city’s buildings.”  One way to make this happen is to invent an algorithm for placing city walls and buildings that guarantees that buildings are within the walls, and a separate algorithm that generates dungeons with no dead-ends.  However, it would be easier to have a system that can simply take in a set of rules and produce environments that conform to those rules.  
 
