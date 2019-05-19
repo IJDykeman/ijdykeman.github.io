@@ -26,7 +26,7 @@ This video briefly describes Generate Worlds.  Read on for the details.
 
 The key idea behind generate worlds is that instead of writing code that describes how to build the world, you simply create a set of rules about how you want the world to work and Generate Worlds puts it together for you.  Let’s start with a simple example.
 
-Imagine we want to create a procedurally generate a simple dungeon world containing hallways and rectangular rooms.  We will make the world by putting together little square sections containing room and hall pieces.  Here are the six pieces we’ll use:
+Imagine we want create a simple dungeon world containing hallways and rectangular rooms.  We will make the world by putting together little square sections containing room and hall pieces.  Here are the six pieces we’ll use:
 
 
 
