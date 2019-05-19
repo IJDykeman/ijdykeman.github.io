@@ -9,11 +9,11 @@ In this post, I’ll briefly argue that a rule-based approach is an effective wa
 
 I’ve built a few tools that let users apply these ideas themselves.  I’m finally happy enough with one, which I’m calling Generate Worlds, to release it.  If you’re interested in creating your own infinite worlds, [head to the page on itch.io , where Generate Worlds is for sale.](https://ijdykeman.itch.io/generate-worlds)
 
-When procedurally generating environments and objects, you often want those objects to have certain global properties, “a dungeon’s hallways should not have dead-ends” or “the city walls should enclose all the city’s buildings.”  One way to make this happen is to invent an algorithm for placing city walls and buildings that guarantees that buildings are within the walls, and a separate algorithm that generates dungeons with no dead-ends.  However, it would be easier to have a system that can simply take in a set of rules and produce environments that conform to those rules.  
+When procedurally generating environments and objects, you often want those objects to have certain global properties, such as “a dungeon’s hallways should not have dead-ends” or “the city walls should enclose all the city’s buildings.”  One way to make this happen is to invent an algorithm for placing city walls and buildings that guarantees that buildings are within the walls, and a separate algorithm that generates dungeons with no dead-ends.  However, it would be easier to have a system that can simply take in a set of rules and produce environments that conform to those rules.  
 
 ## A casual, visual introduction to rule-based world generation
 
-Imagine we want to create a procedurally generate a simple dungeon world containing hallways and rectangular rooms.  We will make the world by putting together little square sections containing room and hall pieces.  Here are the six pieces we’ll use:
+Imagine we want to create a simple dungeon world containing hallways and rectangular rooms.  We will make the world by assembling these six passageway and room pieces:
 
 ![depth from motion graph]({{ site.url }}/assets/rule_based_procedural_generation/dungeon_parts.svg)
 
