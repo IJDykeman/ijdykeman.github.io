@@ -42,6 +42,8 @@ We now have a reasonable looking, simple dungeon layout.  To recap, the constrai
 2. All floor space must be enclosed by walls.
 3. Passageways can connect to doors.
 
+## 3D Tiles Instead of Engish Rules
+
 Creating these rules is easy compared to writing a dungeon generation algorithm, but it’s hard to convert an english statement like “Passageways can connect to other passageways” to a world, so I’ll instead rely on a 3D visual language.  This language consists of voxel tiles that the user provides.  Imagine we want to create a world with walled cities and countryside.  Here’s what the tiles for that world might look like:
 
 
