@@ -11,9 +11,12 @@ The infinite procedurally generated worlds of games like Minecraft of Dwarf Fort
 
 My desire to design and explore fantasy landscapes inspired me to build the procedurally generated island worlds of [Brimming Sea](http://www.brimmingsea.com/) in 2014.  It was a difficult technical task, but imagining and walking around these islands was magical.  Since then, I’ve created several tools to help me design infinite procedural worlds *without writing any code*, and I’m finally happy enough with one of those tools to release it.  I’m calling it Generate Worlds, and it’s available on the itch.io store.
 
-As a teaser, here’s an infinite dungeon world I built and explored in Generate Worlds.  Read on for the details.
 <iframe frameborder="0" src="https://itch.io/embed/406212?linkback=true&amp;border_width=2&amp;bg_color=353535&amp;fg_color=ffffff&amp;link_color=fa5c5c&amp;border_color=333333" width="100%" height="169"></iframe>
 
+
+As a teaser, here’s an infinite dungeon world I built and explored in Generate Worlds.  Read on for the details.
+
+<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/L0lYvytfI6j7gS47hC" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
 
 
 
