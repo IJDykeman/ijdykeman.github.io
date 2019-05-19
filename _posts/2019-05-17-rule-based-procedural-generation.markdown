@@ -93,7 +93,7 @@ Loading these .vox files into Generate Worlds, I can explore this dungeon world 
 <div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/L0lYvytfI6j7gS47hC" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
 
 
-
+If you're intersted in creating your own worlds, look at the Generate Worlds page on itch.io for more information, or purchase it directly with the buy button below.
 
 
 <iframe frameborder="0" src="https://itch.io/embed/406212?linkback=true&amp;border_width=2&amp;bg_color=353535&amp;fg_color=ffffff&amp;link_color=fa5c5c&amp;border_color=333333" width="100%" height="169"></iframe>
