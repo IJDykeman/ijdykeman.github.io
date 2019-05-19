@@ -30,11 +30,8 @@ Imagine we want to create a simple dungeon world containing hallways and rectang
 
 ![dungeon parts]({{ site.url }}/assets/rule_based_procedural_generation/dungeon_parts.svg)
 
- Here is a world made of those hallway and room pieces:
 
-![disorganized dungeon]({{ site.url }}/assets/rule_based_procedural_generation/disorganized_dungeon.svg)
-
-Clearly, we need to impose some structure.  Let’s add a series of rules to put these pieces together into a coherent dungeon:
+I'll now add a series of rules to put these pieces together into a coherent dungeon, starting with an unstrucutred world made of those pieces but without any rules about how to put them together:
 
 ![dungeon construction]({{ site.url }}/assets/rule_based_procedural_generation/full_dungeon_sequence.svg)
 
