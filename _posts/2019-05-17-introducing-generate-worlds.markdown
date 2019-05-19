@@ -9,7 +9,7 @@ published: true
 
 The infinite procedurally generated worlds of games like Minecraft of Dwarf Fortress give those games a sense of exploration and variety that entirely hand-built game worlds cannot compete with.  However, designing and coding the algorithms to actually perform this generation is a specialized technical skill few possess.  At the same time, wide online communities exist around mapping, painting, and otherwise imagining fantasy landscapes, and some great products exist to help them do it, like [Wonderdraft](https://www.wonderdraft.net/) for drawing fantasy maps.  But something is missing: I want to experience these worlds from the inside, and drawing tools don’t let me do it.
 
-My desire to design and explore fantasy landscapes inspired me to build the procedurally generated island worlds of [Brimming Sea](http://www.brimmingsea.com/) in 2014.  It was a difficult technical task, but imagining and walking around these islands was magical.  Since then, I’ve created several tools to help me design infinite procedural worlds *without writing any code*, and I’m finally happy enough with one of those tools to release it.  I’m calling it Generate Worlds, and it’s available on the itch.io store.
+My desire to design and explore fantasy landscapes inspired me to build the procedurally generated island worlds of [Brimming Sea](http://www.brimmingsea.com/) in 2014.  It was a difficult technical task, but imagining and then walking around these islands was magical.  Since then, I’ve created several tools to help me design infinite procedural worlds *without writing any code*, and I’m finally happy enough with one of those tools to release it.  I’m calling it Generate Worlds, and it’s available on the itch.io store.
 
 <iframe frameborder="0" src="https://itch.io/embed/406212?linkback=true&amp;border_width=2&amp;bg_color=353535&amp;fg_color=ffffff&amp;link_color=fa5c5c&amp;border_color=333333" width="100%" height="169"></iframe>
 
@@ -20,7 +20,7 @@ As a teaser, here’s an infinite dungeon world I built and explored in Generate
 
 
 
-## Generating Procedural Worlds without Code
+## Generating Procedural Worlds with Rules instead of Code
 
 The key idea behind generate worlds is that instead of writing code that describes how to build the world, you simply create a set of rules about how you want the world to work and Generate Worlds puts it together for you.  Let’s start with a simple example.
 
@@ -89,7 +89,7 @@ Placing several tiles looks like this:
 
 These tiles are easy to create in a voxel editor like MagikaVoxel.  The tile set above is simply a directory of .vox files that Generate Worlds takes as input.
 
-## A more complex world
+## Generating a Dungeon
 
 Let’s say we want to generate a 3D dungeon that extends endlessly in all directions.  We can simply provide Generate Worlds with a new tile set of dungeon parts.  Nine of those tiles are shown below.  They contain pieces of passageways, rooms, and stairs.
 
