@@ -1,18 +1,29 @@
 ---
 layout: post
-title:  "Generating Worlds with Rule-Based Procedural Generation"
+title:  "Introducing Generate Worlds for Procedural Generation without Code"
 date:   2019-05-17
 categories: procedural_generation
-published: false
+published: true
 ---
 
-In this post, I’ll briefly argue that a rule-based approach is an effective way to quickly iterate on procedurally generated content without getting bogged down in implementation details.  I’ll give a few examples of worlds I’ve created using this technique. 
 
-I’ve built a few tools that let users apply these ideas themselves.  I’m finally happy enough with one, which I’m calling Generate Worlds, to release it.  If you’re interested in creating your own infinite worlds, [head to the page on itch.io , where Generate Worlds is for sale.](https://ijdykeman.itch.io/generate-worlds)
+The infinite procedurally generated worlds of games like Minecraft of Dwarf Fortress give those games a sense of exploration and variety that entirely hand-built game worlds cannot compete with.  However, designing and coding the algorithms to actually perform this generation is a specialized technical skill few possess.  At the same time, wide online communities exist around mapping, painting, and otherwise imagining fantasy landscapes, and some great products exist to help them do it, like [Wonderdraft](https://www.wonderdraft.net/) for drawing fantasy maps.  But something is missing: I want to experience these worlds from the inside, and drawing tools don’t let me do it.
 
-When procedurally generating environments and objects, you often want those objects to have certain global properties, such as “a dungeon’s hallways should not have dead-ends” or “the city walls should enclose all the city’s buildings.”  One way to make this happen is to invent an algorithm for placing city walls and buildings that guarantees that buildings are within the walls, and a separate algorithm that generates dungeons with no dead-ends.  However, it would be easier to have a system that can simply take in a set of rules and produce environments that conform to those rules.  
+My desire to design and explore fantasy landscapes inspired me to build the procedurally generated island worlds of [Brimming Sea](http://www.brimmingsea.com/) in 2014.  It was a difficult technical task, but imagining and walking around these islands was magical.  Since then, I’ve created several tools to help me design infinite procedural worlds *without writing any code*, and I’m finally happy enough with one of those tools to release it.  I’m calling it Generate Worlds, and it’s available on the itch.io store.
 
-## A casual, visual introduction to rule-based world generation
+As a teaser, here’s an infinite dungeon world I built and explored in Generate Worlds.  Read on for the details.
+<iframe frameborder="0" src="https://itch.io/embed/406212?linkback=true&amp;border_width=2&amp;bg_color=353535&amp;fg_color=ffffff&amp;link_color=fa5c5c&amp;border_color=333333" width="100%" height="169"></iframe>
+
+
+
+
+## Generating Procedural Worlds without Code
+
+The key idea behind generate worlds is that instead of writing code that describes how to build the world, you simply create a set of rules about how you want the world to work and Generate Worlds puts it together for you.  Let’s start with a simple example.
+
+Imagine we want to create a procedurally generate a simple dungeon world containing hallways and rectangular rooms.  We will make the world by putting together little square sections containing room and hall pieces.  Here are the six pieces we’ll use:
+
+
 
 Imagine we want to create a simple dungeon world containing hallways and rectangular rooms.  We will make the world by assembling these six passageway and room pieces:
 
@@ -49,7 +60,7 @@ We now have a reasonable looking, simple dungeon layout.  To recap, the constrai
 2. All floor space must be enclosed by walls.
 3. Passageways can connect to doors.
 
-Creating these rules is easy compared to writing a dungeon generation algorithm, but it’s hard to convert an english statement like “Passageways can connect to other passageways.” to a set of unambiguous rules, so I’ll instead rely on a 3D visual language.  This language consists of voxel tiles that the user provides.  Imagine we want to create a world with walled cities and countryside.  Here’s what the tiles for that world might look like:
+Creating these rules is easy compared to writing a dungeon generation algorithm, but it’s hard to convert an english statement like “Passageways can connect to other passageways” to a world, so I’ll instead rely on a 3D visual language.  This language consists of voxel tiles that the user provides.  Imagine we want to create a world with walled cities and countryside.  Here’s what the tiles for that world might look like:
 
 
 ![town and country tiles]({{ site.url }}/assets/rule_based_procedural_generation/labeled_woods_tiles.svg)
@@ -95,9 +106,6 @@ Loading these .vox files into Generate Worlds, I can explore this dungeon world 
 
 
 If you're intersted in creating your own worlds, look at the Generate Worlds page on itch.io for more information, or purchase it directly with the buy button below.
-
-
-<iframe frameborder="0" src="https://itch.io/embed/406212?linkback=true&amp;border_width=2&amp;bg_color=353535&amp;fg_color=ffffff&amp;link_color=fa5c5c&amp;border_color=333333" width="100%" height="169"></iframe>
 
 
 
