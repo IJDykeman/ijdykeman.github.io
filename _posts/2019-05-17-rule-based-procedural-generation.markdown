@@ -7,7 +7,7 @@ categories: procedural_generation
 
 In this post, I’ll briefly argue that a rule-based approach is an effective way to quickly iterate on procedurally generated content without getting bogged down in implementation details.  I’ll give a few examples of worlds I’ve created using this technique. 
 
-I’ve built a few tools that let users apply these ideas themselves.  I’m finally happy enough with one, which I’m calling Generate Worlds, to release it.  If you’re interested in creating your own infinite worlds, head to the page on itch.io , where Generate Worlds is for sale.
+I’ve built a few tools that let users apply these ideas themselves.  I’m finally happy enough with one, which I’m calling Generate Worlds, to release it.  If you’re interested in creating your own infinite worlds, ![head to the page on itch.io , where Generate Worlds is for sale.](https://ijdykeman.itch.io/generate-worlds)
 
 When procedurally generating environments and objects, you often want those objects to have certain global properties, “a dungeon’s hallways should not have dead-ends” or “the city walls should enclose all the city’s buildings.”  One way to make this happen is to invent an algorithm for placing city walls and buildings that guarantees that buildings are within the walls, and a separate algorithm that generates dungeons with no dead-ends.  However, it would be easier to have a system that can simply take in a set of rules and produce environments that conform to those rules.  
 
@@ -86,6 +86,7 @@ Putting them together in 3D looks like this:
 
 <div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/2kPO91XMLHeC1JCo4w" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
 
+
 Loading these .vox files into Generate Worlds, I can explore this dungeon world in first-person.  Generate Worlds lets you set lighting conditions, and place lights.
 
 
@@ -95,6 +96,7 @@ Loading these .vox files into Generate Worlds, I can explore this dungeon world 
 
 
 
+<iframe frameborder="0" src="https://itch.io/embed/406212?linkback=true&amp;border_width=2&amp;bg_color=353535&amp;fg_color=ffffff&amp;link_color=fa5c5c&amp;border_color=333333" width="100%" height="169"></iframe>
 
 
 
