@@ -3,6 +3,7 @@ layout: post
 title:  "Generating Worlds with Rule-Based Procedural Generation"
 date:   2019-05-17
 categories: procedural_generation
+published: false
 ---
 
 In this post, I’ll briefly argue that a rule-based approach is an effective way to quickly iterate on procedurally generated content without getting bogged down in implementation details.  I’ll give a few examples of worlds I’ve created using this technique. 
