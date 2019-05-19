@@ -7,16 +7,18 @@ published: true
 ---
 
 
-The infinite procedurally generated worlds of games like Minecraft and Dwarf Fortress give those games a sense of exploration and variety that entirely hand-built game worlds cannot compete with.  However, designing and coding the algorithms to actually perform this generation is a specialized technical skill few possess.  At the same time, wide online communities exist around mapping, painting, and otherwise imagining fantasy landscapes, and some great products exist to help them do it, like [Wonderdraft](https://www.wonderdraft.net/) for drawing fantasy maps.  But something is missing: I want to experience these worlds from the inside, and drawing tools don’t let me do it.
+I want to give everyone the ability to create and explore infinite, procedurally generated worlds without writing a single line of code.  The infinite procedurally generated worlds of games like Minecraft and Dwarf Fortress give those games a sense of exploration and variety that entirely hand-built game worlds cannot compete with.  However, designing and coding the algorithms to actually perform this generation is a specialized technical skill few possess.  At the same time, wide online communities exist around mapping, painting, and otherwise imagining fantasy landscapes, and some great products exist to help them do it, like [Wonderdraft](https://www.wonderdraft.net/) for drawing fantasy maps.  But something is missing: I want to experience these worlds from the inside, and drawing tools don’t let me do it.
 
 My desire to design and explore fantasy landscapes inspired me to build the procedurally generated island worlds of [Brimming Sea](http://www.brimmingsea.com/) in 2014.  It was a difficult technical task, but imagining and then walking around these islands was magical.  Since then, I’ve created several tools to help me design infinite procedural worlds *without writing any code*, and I’m finally happy enough with one of those tools to release it.  I’m calling it Generate Worlds, and it’s available on the itch.io store.
 
 <iframe frameborder="0" src="https://itch.io/embed/406212?linkback=true&amp;border_width=2&amp;bg_color=353535&amp;fg_color=ffffff&amp;link_color=fa5c5c&amp;border_color=333333" width="100%" height="169"></iframe>
 
 
-As a teaser, here’s an infinite dungeon world I built and explored in Generate Worlds.  Read on for the details.
+This video briefly describes Generate Worlds.  Read on for the details.
 
-<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/L0lYvytfI6j7gS47hC" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
+
+<iframe width="100%" height="370" src="https://www.youtube.com/embed/DrAtX-EsQM0?autoplay=0&amp;showinfo=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
+
 
 
 
@@ -106,9 +108,6 @@ Loading these .vox files into Generate Worlds, I can explore this dungeon world 
 
 
 <div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/L0lYvytfI6j7gS47hC" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
-
-
-If you're intersted in creating your own worlds, look at the Generate Worlds page on itch.io for more information, or purchase it directly with the buy button below.
 
 
 
