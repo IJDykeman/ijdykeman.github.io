@@ -78,7 +78,7 @@ These tiles are easy to create in a voxel editor like MagikaVoxel.  The tile set
 
 Let’s say we want to generate a 3D dungeon that extends endlessly in all directions.  We can simply provide Generate Worlds with a new tile set of dungeon parts.  Nine of those tiles are shown below.  They contain pieces of passageways, rooms, and stairs.
 
-![dungeon tiles]({{ site.url }}/assets/rule_based_procedural_generation/dungeon_tiles.jpg)
+![dungeon tiles]({{ site.url }}/assets/rule_based_procedural_generation/dungeon_tiles.svg)
 
 
 Putting them together in 3D looks like this:
