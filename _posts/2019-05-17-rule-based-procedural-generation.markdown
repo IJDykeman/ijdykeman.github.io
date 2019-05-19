@@ -39,7 +39,7 @@ Finally we need to specify that passageways should connect to rooms, so we add t
 
 *Passageways can connect to doors.*
 
-![depth from motion graph]({{ site.url }}/assets/rule_based_procedural_generation/coherent_dungeon.svg)
+![a nice looking dungeon]({{ site.url }}/assets/rule_based_procedural_generation/coherent_dungeon.svg)
 
 
 We now have a reasonable looking, simple dungeon layout.  To recap, the constraints are simply
@@ -51,7 +51,7 @@ We now have a reasonable looking, simple dungeon layout.  To recap, the constrai
 Creating these rules is easy compared to writing a dungeon generation algorithm, but it’s hard to convert an english statement like “Passageways can connect to other passageways.” to a set of unambiguous rules, so I’ll instead rely on a 3D visual language.  This language consists of voxel tiles that the user provides.  Imagine we want to create a world with walled cities and countryside.  Here’s what the tiles for that world might look like:
 
 
-![depth from motion graph]({{ site.url }}/assets/rule_based_procedural_generation/labeled_woods_tiles.svg)
+![town and country tiles]({{ site.url }}/assets/rule_based_procedural_generation/labeled_woods_tiles.svg)
 
 
 The world should have the following properties:
@@ -64,7 +64,7 @@ The world should have the following properties:
 
 To enforce these properties, Generate Worlds simply ensures that two tiles are only placed next to each other if the cubes that touch are all the same color, as in the example below.
 
-![depth from motion graph]({{ site.url }}/assets/rule_based_procedural_generation/road_assembling.svg)
+![two road tiles assembling]({{ site.url }}/assets/rule_based_procedural_generation/road_assembling.svg)
 
 *We can arrange these two tiles in this way because the tiles’ colors match where they touch.*
 
@@ -78,17 +78,18 @@ These tiles are easy to create in a voxel editor like MagikaVoxel.  The tile set
 
 Let’s say we want to generate a 3D dungeon that extends endlessly in all directions.  We can simply provide Generate Worlds with a new tile set of dungeon parts.  Nine of those tiles are shown below.  They contain pieces of passageways, rooms, and stairs.
 
-![depth from motion graph]({{ site.url }}/assets/rule_based_procedural_generation/dungeon_tiles.png)
+![dungeon tiles]({{ site.url }}/assets/rule_based_procedural_generation/dungeon_tiles.jpg)
 
 
 Putting them together in 3D looks like this:
 
-<iframe src="https://giphy.com/embed/2kPO91XMLHeC1JCo4w" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe><p><a href="https://giphy.com/gifs/2kPO91XMLHeC1JCo4w"></a></p>
+
+<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/2kPO91XMLHeC1JCo4w" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
 
 Loading these .vox files into Generate Worlds, I can explore this dungeon world in first-person.  Generate Worlds lets you set lighting conditions, and place lights.
 
-<iframe src="https://giphy.com/embed/L0lYvytfI6j7gS47hC" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe><p><a href="https://giphy.com/gifs/2kPO91XMLHeC1JCo4w"></a></p>
 
+<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/L0lYvytfI6j7gS47hC" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
 
 
 
