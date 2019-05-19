@@ -11,7 +11,7 @@ I’ve built a few tools that let users apply these ideas themselves.  I’m fin
 
 When procedurally generating environments and objects, you often want those objects to have certain global properties, “a dungeon’s hallways should not have dead-ends” or “the city walls should enclose all the city’s buildings.”  One way to make this happen is to invent an algorithm for placing city walls and buildings that guarantees that buildings are within the walls, and a separate algorithm that generates dungeons with no dead-ends.  However, it would be easier to have a system that can simply take in a set of rules and produce environments that conform to those rules.  
 
-A casual, visual introduction to rule-based world generation
+## A casual, visual introduction to rule-based world generation
 
 Imagine we want to create a procedurally generate a simple dungeon world containing hallways and rectangular rooms.  We will make the world by putting together little square sections containing room and hall pieces.  Here are the six pieces we’ll use:
 
