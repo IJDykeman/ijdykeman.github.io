@@ -23,7 +23,7 @@ Imagine we want to create a procedurally generate a simple dungeon world contain
 
 Clearly, we need to impose some structure.  Let’s add a constraint:
 
-*Passageways can connect to other passageways.*
+*<center>Passageways can connect to other passageways.</center>*
 
 Given this constraint, the world now looks like this:
 
@@ -31,13 +31,13 @@ Given this constraint, the world now looks like this:
 
 We now see coherent passageways, but the rooms have no structure.  Let’s add another constraint:
 
-*All floor space must be enclosed by walls.*
+*<center>All floor space must be enclosed by walls.</center>*
 
 ![depth from motion graph]({{ site.url }}/assets/rule_based_procedural_generation/dungeon_w_coherent_halls_and_rooms.svg)
 
 Finally we need to specify that passageways should connect to rooms, so we add the constraint
 
-*Passageways can connect to doors.*
+*<center>Passageways can connect to doors.</center>*
 
 ![a nice looking dungeon]({{ site.url }}/assets/rule_based_procedural_generation/coherent_dungeon.svg)
 
