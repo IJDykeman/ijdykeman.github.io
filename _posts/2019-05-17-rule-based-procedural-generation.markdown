@@ -29,7 +29,7 @@ Given this constraint, the world now looks like this:
 
 ![depth from motion graph]({{ site.url }}/assets/rule_based_procedural_generation/dungeon_w_coherent_halls.svg)
 
-We see coherent now see coherent passageways, but no structure on the rooms.  Let’s add another constraint:
+We now see coherent passageways, but the rooms have no structure.  Let’s add another constraint:
 
 *All floor space must be enclosed by walls.*
 
