@@ -7,7 +7,6 @@ published: true
 ---
 
 
-I want to give everyone the ability to create and explore infinite, procedurally generated worlds without writing a single line of code.  
 
 The infinite procedurally generated worlds of games like Minecraft and Dwarf Fortress create a sense of exploration and variety that entirely hand-built game worlds cannot compete with.  However, designing and coding the algorithms to actually perform this generation is a specialized technical skill few possess.  At the same time, numerous online communities exist around mapping, painting, and otherwise imagining fantasy environments, and some great products exist to help them do it, like [Wonderdraft](https://www.wonderdraft.net/) for drawing fantasy maps.  But something is missing: I want to experience these worlds from the inside, and drawing tools don’t let me do it.
 
@@ -16,8 +15,11 @@ My desire to design and explore fantasy landscapes inspired me to build the proc
 <iframe frameborder="0" src="https://itch.io/embed/406212?linkback=true&amp;border_width=2&amp;bg_color=353535&amp;fg_color=ffffff&amp;link_color=fa5c5c&amp;border_color=333333" width="100%" height="169"></iframe>
 
 
-This video briefly describes Generate Worlds.  Read on for the details.
 
+<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/2voMERQBpVXChSxGES" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
+<p><a href="https://giphy.com/gifs/2voMERQBpVXChSxGES"></a></p>
+
+The video above shows Generate Worlds in action building a landscape and dungeon environment.  The video below briefly describes Generate Worlds.  Read on for the details.
 
 <iframe width="100%" height="370" src="https://www.youtube.com/embed/DrAtX-EsQM0?autoplay=0&amp;showinfo=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
 
@@ -44,7 +46,7 @@ We now have a reasonable looking, simple dungeon layout.  To recap, the rules ar
 2. All floor space must be enclosed by walls.
 3. Passageways can connect to doors.
 
-## 3D Tiles Instead of Engish Rules
+## 3D Tiles Instead of English Rules
 
 Creating these rules is easy compared to writing a dungeon generation algorithm, but it’s hard to convert an english statement like “Passageways can connect to other passageways” to a world, so I’ll instead rely on a 3D visual language.  This language consists of voxel *tiles* that the user provides.  These tiles are simple .vox files that a user creates in some voxel editing software and loads into Generate Worlds.  Imagine we want to create a world with walled cities and countryside.  Here’s what the tiles for that world might look like:
 
@@ -69,7 +71,7 @@ Placing several tiles looks like this:
 
 <div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/3DHNvMhDA6FEun6keU" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
 
-These tiles are easy to create in a voxel editor like MagikaVoxel.  The tile set above is simply a directory of .vox files that Generate Worlds takes as input.
+These tiles are easy to create in a voxel editor like MagicaVoxel.  The tile set above is simply a directory of .vox files that Generate Worlds takes as input.
 
 ## Generating a Dungeon
 
@@ -88,7 +90,6 @@ Loading these .vox files into Generate Worlds, I can explore this dungeon world 
 
 
 <div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/L0lYvytfI6j7gS47hC" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
-
 
 ## Conclusion
 
