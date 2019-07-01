@@ -15,7 +15,10 @@ The animation below shows the algorithm aligning 4 images of the scene as it fin
 
 
 The next animation shows the depth map being refined over the course of optimization.
-<div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/ZEfBoPTODKz4H7XzaZ" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+<!-- <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/ZEfBoPTODKz4H7XzaZ" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div> -->
+
+
+<div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/lPMPu497g42fLRNnOb" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
 
 
 ## Background
@@ -90,7 +93,13 @@ For clarity, the function above elides iterating over the r, g, and b channels o
 
 As a note, the iteratively reweighted least squares optimization scheme proposed in the LSD-SLAM paper is really finding the minimum of the robust distance metric between images, although they don’t frame it this way.  Details on that can be found in Ethan Eade’s document on Gauss-Newton optimization.
 
-Given the the ability to represent camera poses and warp images, solving for the depth map and camera poses is a simple optimization problem to set up.  Given a few images $$I$$ and a reference image, we take a sum over the photometric loss for each $$I$$ given the depth estimate and camera pose estimate for that image.  Finding the poses and depth can now be done by using gradient descent to minimize the sum of photometric losses.
+Given the the ability to represent camera poses and warp images, solving for the depth map and camera poses is a simple optimization problem to set up.  Given a few images $$I$$ and a reference image, we take a sum over the photometric loss for each $$I$$ given the depth estimate and camera pose estimate for that image.  I can now jointly optimize the poses and depth using gradient descent to minimize the sum of photometric losses.
+
+The video below shows the whole optimization process in action.  The points on the lower right are the estimated locations of the cameras, and each pixel in the scene is represented as a point that moved closer or farther away from the reference camera (the blue point) according to its depth value over the course of optimization.  Notice how the camera images are in a smooth arc.  That's because I took these images from a video, during which I made a smooth sweeping motion with the camera.
+
+<div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/jQQbSydNSZhSWfLhU0" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+
 
 # An implementation in tensorflow
 
@@ -141,7 +150,20 @@ The rest of the code in the notebook is data setup and visualization.
 
 In this project, I have allowed myself one hack: I include a total variation term in the cost function.  This term measures the amount of discontinuity in the depth map and so encourages the depth map to be smooth.  This term makes the results look better and something like it is often used in depth estimation, but is not very principled.  For instance, it penalizes flat surfaces that are tilted with respect to the camera, and a surface like grass that truly has lots of depth discontinuity will be penalized.  A slightly better approach would be to penalize the curvature of the depth map, but that is a slippery slope of heuristics and hand-tuning that I will not journey down.  
 
-There are more principled ways of imposing a prior on the depth map.  For example,  I experimented with using a “deep image prior” on the depth map where instead of representing the depth map with one optimization variable for each pixel, I represent it using the output of a convolutional neural network which I optimize to produce the depth map for one scene.  This produced images which has fewer jagged artifacts, but greatly increased the complexity of the approach.
+This approach yields the depth map below.  It looks reasonable, but has obvious blocky artifacts caused by the total variation term encouraging regions of zero gradient to form.
+
+![depth]({{ site.url }}/assets/simple_depth/naive_depth_image.png)
+
+
+# Refining the deth map using a "deep image prior"
+
+In the approach above, I represent each pixel as a separate depth value, and introduce some regularity through a total variation term.  Inspired by the [deep image prior](https://arxiv.org/abs/1711.10925) paper, I experimented with instead representing the depth map as the output of a fully convolutional neural network.  The intuition in that paper is that a CNN has an easier time representing a "natural" image than one containing artifacts such as high-frequency noise or the blocky artifacts introdcued by image compression, or in my case by the total variation term.  In the deep image prior paper, a u-net style architecture is trained to take a corrupted image and simply reproduce it as the network's output.  This task is trivial since the network need only memorize a single data sample, but by using early stopping, the authors get images that are produced after the network has learned to predict the desired, "natural" structure in the image but before the network has memorized the undesireable noise or artifacts in the input image.  
+
+This approach produces a much nicer looking depth map:
+
+![depth]({{ site.url }}/assets/simple_depth/cnn_depth_image.png)
+
+
 
 # Conclusion
 
@@ -150,8 +172,8 @@ For this scene of a plant and a rock on some leaf litter,
 
 ![scene]({{ site.url }}/assets/simple_depth/reference_image.png)
 
-my code produces this depth map.
+my approach which represents the depth map using a u-net that takes the original image as input produces this depth map:
 
-![depth]({{ site.url }}/assets/simple_depth/depth_image.png)
+![depth]({{ site.url }}/assets/simple_depth/cnn_depth_image.png)
 
 While that depth map is not perfect, I think it's surprising that something so reasonable looking can be produced with such a simple optimization setup.  Once you have utilities for manipulating camera poses (tf_lie.py) and doing image warping (image_warping.py), the problem can be solved in about a dozen lines of tensorflow code.  
