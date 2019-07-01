@@ -97,7 +97,7 @@ Given the the ability to represent camera poses and warp images, solving for the
 
 The video below shows the whole optimization process in action.  The points on the lower right are the estimated locations of the cameras, and each pixel in the scene is represented as a point that moved closer or farther away from the reference camera (the blue point) according to its depth value over the course of optimization.  Notice how the camera images are in a smooth arc.  That's because I took these images from a video, during which I made a smooth sweeping motion with the camera.
 
-<div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/jQQbSydNSZhSWfLhU0" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+<div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/gjlenSUuxvjMqhHVoi" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
 
 
 <video width="320" height="240" controls>
