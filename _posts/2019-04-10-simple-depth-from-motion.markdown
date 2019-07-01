@@ -101,7 +101,7 @@ The video below shows the whole optimization process in action.  The points on t
 
 
 <video width="320" height="240" controls>
-  <source src="/assets/pointcloud_viz.mp4" type="video/mp4">
+  <source src="{{ site.url }}/assets/pointcloud_viz.mp4" type="video/mp4">
     Error displaying video
 </video>
 
