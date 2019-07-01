@@ -100,6 +100,10 @@ The video below shows the whole optimization process in action.  The points on t
 <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/jQQbSydNSZhSWfLhU0" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
 
 
+<video width="320" height="240" controls>
+  <source src="/assets/pointcloud_viz.mp4" type="video/mp4">
+    Error displaying video
+</video>
 
 # An implementation in tensorflow
 
