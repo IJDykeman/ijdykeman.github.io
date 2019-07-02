@@ -128,7 +128,7 @@ That repo contains
 The heart of the implementation is this snippet, which what is in the notebook, and here is pared down for clarity, omitting some casting and other cruft.
 
 ```python
-depth =  tf.abs(tf.Variable(tf.ones([400,400])) + 1) +.1
+depth =  tf.abs(tf.Variable(tf.ones([400,400]))) +.1
 
 cost = 0.0
 
