@@ -18,7 +18,7 @@ The animation below shows the algorithm aligning 4 images of the scene as it fin
 <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/U89joc4KJrsys7T0Gs" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
 
 
-The next animation shows the depth map being refined over the course of optimization.
+The next animation shows the depth map being refined over the course of optimization.  Brighter pixels are estimated to be closer to the camera.
 <!-- <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/ZEfBoPTODKz4H7XzaZ" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div> -->
 
 
