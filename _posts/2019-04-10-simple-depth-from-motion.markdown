@@ -20,6 +20,10 @@ The next animation shows the depth map being refined over the course of optimiza
 
 <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/lPMPu497g42fLRNnOb" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
 
+This image shows the recoveres camera positions on the right and a point cloud representation of the recovered scene geometry on the left.
+![depth from motion graph]({{ site.url }}/assets/simple_depth/point_cloud_with_poses.png)
+
+
 
 ## Background
 
