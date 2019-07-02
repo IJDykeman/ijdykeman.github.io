@@ -6,7 +6,11 @@ categories: slam
 ---
 
 
-This post describes an algorithm for creating a depth image from a handful of RGB images taken of a scene.  I give an explanation of the system and provide a straightforward implementation of the algorithm using Tensorflow.  This algorithm is closely based on the depth map estimation step of [LSD-SLAM](https://vision.in.tum.de/_media/spezial/bib/engel14eccv.pdf), however I introduce a simplified optimization strategy that retains the key benefits of that algorithm while being easier to understand, implement, and extend.  This implementation is not meant to be competitive with existing methods, instead, it is meant to reveal the intuition behind some state-of-the-art methods.
+This post describes an algorithm for creating a depth image from a handful of RGB images taken of a scene.  I give an explanation of the system and provide a straightforward implementation of the algorithm using Tensorflow.  This algorithm is closely based on the depth map estimation step of [LSD-SLAM](https://vision.in.tum.de/_media/spezial/bib/engel14eccv.pdf), however I introduce a simplified optimization strategy that retains the key benefits of that algorithm while being easier to understand, implement, and extend.  This implementation is not meant to be competitive with existing methods, instead, it is meant to reveal the intuition behind some state-of-the-art methods.  It yields results like these:
+
+
+![depth from motion graph]({{ site.url }}/assets/simple_depth/point_cloud_with_poses_labelled.svg)
+
 
 The goal is this post is only to clearly frame depth estimation as an optimization problem, and so I elide some details.  These details can be found in the LSD-SLAM paper, Ethan Eade’s document on Lie algebras, and in the  [source code](https://github.com/IJDykeman/simple_depth_from_motion) I provide.
 
@@ -19,9 +23,6 @@ The next animation shows the depth map being refined over the course of optimiza
 
 
 <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/lPMPu497g42fLRNnOb" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
-
-This image shows the recoveres camera positions on the right and a point cloud representation of the recovered scene geometry on the left.
-![depth from motion graph]({{ site.url }}/assets/simple_depth/point_cloud_with_poses.png)
 
 
 
