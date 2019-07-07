@@ -5,23 +5,16 @@ date:   2019-04-07
 categories: slam
 ---
 
+As a robot navigates in an unknown environment, it must take measurements and simultaneously estimate its own location and the shape of the world around it.  This is called the SLAM (simultaneous localization and mapping) problem  Here, I consider the *monocular SLAM* case, where the robot is armed with just a single RGB camera.  I simplify the problem further by only building a small map within the view of a single camera image.  My task, then, is to take in a few camera images of a scene and reconstruct its 3D geometry.
 
-This post describes an algorithm for creating a depth image from a handful of RGB images taken of a scene.  I give an explanation of the system and provide a straightforward implementation of the algorithm using Tensorflow.  This algorithm is closely based on the depth map estimation step of [LSD-SLAM](https://vision.in.tum.de/_media/spezial/bib/engel14eccv.pdf), however I introduce a simplified optimization strategy that retains the key benefits of that algorithm while being easier to understand, implement, and extend.  This implementation is not meant to be competitive with existing methods, instead, it is meant to reveal the intuition behind some state-of-the-art methods.  It yields results like these:
+It turns out that you can represent this 3D reconstruction task as an optimization problem and set it up in a few lines of Python.  My approach is based on the depth map estimation step of the [LSD-SLAM](https://vision.in.tum.de/_media/spezial/bib/engel14eccv.pdf) algorithm, but it is significantly simpler.  The cost of this simplicity is that my approach is slower to run.
 
+Given a scene of a rock and a plant, my algorithm recovers the 3D geometry of the scene and the positions of the cameras that photographed it from five different positions.  The algorithm jointly optimizes over the estimated camera poses and scene geometry to produce the scene below.
 
 ![depth from motion graph]({{ site.url }}/assets/simple_depth/point_cloud_with_poses_labelled.svg)
 
-
-The goal is this post is only to clearly frame depth estimation as an optimization problem, and so I elide some details.  These details can be found in the LSD-SLAM paper, Ethan Eade’s document on Lie algebras, and in the  [source code](https://github.com/IJDykeman/simple_depth_from_motion) I provide.
-
-The animation below shows the algorithm aligning 4 images of the scene as it finds the camera poses that took the images.  Toward the end of the animation, some scene elements shift as the algorithm adjusts their position in 3D space to match the geometry of the scene.
-<div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/U89joc4KJrsys7T0Gs" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
-
-
-The next animation shows the depth map being refined over the course of optimization.  Brighter pixels are estimated to be closer to the camera.
+This animation shows the depth map being refined over the course of optimization.  Brighter pixels are estimated to be closer to the camera.
 <!-- <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/ZEfBoPTODKz4H7XzaZ" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div> -->
-
-
 <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/lPMPu497g42fLRNnOb" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
 
 
@@ -31,35 +24,35 @@ The next animation shows the depth map being refined over the course of optimiza
 
 
 
-This post assumes that you are familiar with basic linear algebra and gradient descent.  You don’t need to know about any simultaneous localization and mapping (SLAM) algorithms to understand this post.  The source code is written in Python using Tensorflow.
+This post assumes that you are familiar with basic linear algebra and gradient descent.  You don’t need to know about any simultaneous localization and mapping (SLAM) algorithms to understand this post.  My algorithm uses a Lie Algebra representation of SE(3) to represent camera poses.  In this post, I treat that machinery as a black box, though if you want to understand it, I recommend [Ethan Eade’s document on Lie algebras](http://ethaneade.com/lie.pdf) for representing transformations.
 
-This algorithm uses SE(3) to represent camera poses.  In this post, I treat that as a black box, though if you want to understand it, I recommend [Ethan Eade’s document on Lie algebras](http://ethaneade.com/lie.pdf) for representing transformations.  That material is depleted uranium dense.
+## Why we care about depth
 
-
-## Aside: Why we care about depth
-
-Measuring or estimating the distance from the camera to each pixel in an image is a step in many SLAM (simultaneous localization and mapping)  pipelines.  A depth image is an image where each pixel contains the distance from the camera to that point in the scene.  This 3D model of the world in the camera's view lets you relatively easily determine the camera transformation between two depth images of the same scene.  The quickest way to get a depth image is to use an RGB-Depth camera like a Kinect or RealSense.  However, such hardware is more expensive than standard RGB cameras and not nearly as ubiquitous.  In low-cost robotics applications, for instance, we are interested in ways of getting the same 3D information about the world with clever algorithms rather than with specialized hardware.
+A depth image contains at each pixel the distance from the camera to that point in the scene.  This small 3D model of the world in the camera's is useful for building larger maps and localizing a robot within them.  The quickest way to get a depth image is to use an RGB-Depth camera like a Kinect or RealSense.  However, such hardware is more expensive than standard RGB cameras and not nearly as ubiquitous.  In low-cost robotics applications, for instance, we are interested in ways of getting the same 3D information about the world with clever algorithms and cheap RGB cameras.
 
 
 ## Depth from RGB images
 
-In the absence of hardware for instantly producing RGB-D images, you can produce depth images by imaging the same scene from several perspectives and then reconstructing its 3D geometry.  This method does not require knowledge of what exact position the different frames were taken from, which sets it apart from methods that assume you have a calibrated stereo pair of cameras.  As we will see, this method works with unknown camera poses on unknown scenes.
+In the absence of hardware for instantly producing RGB-D images, you can produce depth images by imaging the same scene from several perspectives and then reconstructing its 3D geometry.  This method does not require knowledge of the exact positions that the different frames were taken from.   This sets it apart from methods that assume you have a calibrated stereo pair of cameras.  As we will see, the algorithm works with unknown camera poses on unknown scenes.
 
-If we have a model of how the camera projects world points onto the camera plane, and if we assume the scene is rigid, we can reason about what the scene’s 3D structure must be given that we saw a certain set of images.  For instance, in the images in the figure below, the green cylinder moves more in the image between frames than the blue cube does because it is closer to the camera.   
+If we assume the scene is rigid, we can reason about what the scene’s 3D structure must be given that the camera saw a certain set of images.  For instance, in the images in the figure below, the green cylinder moves more in the image between frames than the blue cube does because it is closer to the camera.   
 
 ![depth from motion setup]({{ site.url }}/assets/simple_depth/depth_from_motion_setup.svg)
 
 
 ## The algorithm
 
-This algorithm takes as input a set of images like those in the scene above and arbitrarily designates one to be the “reference image.”  The algorithm outputs the distance from the reference camera plane to each point in the scene, along with the camera poses from which each photo was taken relative to the reference camera pose.  
+This algorithm takes as input a set of images like those in the scene above and arbitrarily designates one to be the “reference image.”  The algorithm outputs the distance from the reference camera plane to each point in the scene, along with the camera poses from which each photo was taken.
 
-The key to this algorithm is a warping operation that renders the scene from a given pose using given scene geometry.  If we have estimated the correct scene geometry and camera poses, we can warp the other images into the view of the reference camera, and we should get images that look the same as the reference image.  To produce depths maps, we optimize the depth and pose estimates until we are able to reconstruct the reference image given the other images.
+The heart of this algorithm is the *warp* operation that takes an image taken by one camera and renders it as though it were taken from another position.  It is aware of the scenes geometry and so captures effects like parallax.  If we correctly estimate scene geometry and all camera poses, we should be able to warp the images taken from one view to another view and end up with an image that looks the same.
+
+In my algorithm, I warp all the scene images into the view of the reference camera.  I then optimize the estimated camera poses and scene geometry until all the scene images look as similar as possible to the reference image. 
 
 The diagram below gives a high level overview of this approach.
 
 
 ![depth from motion graph]({{ site.url }}/assets/simple_depth/depth_from_motion_graph.svg)
+
 
 
 The image warp is a differentiable operation that takes as input
@@ -79,7 +72,7 @@ The formula for the warp given
 
 * $$p$$, a pixel location in the reference image
 * $$d(p)$$, a function mapping a pixel location $$p$$ in the reference image to the depth value at that location
-* $$\textbf{T}$$, a homogenous transformation matrix representing the transform from some camera's frame to that of the reference image
+* $$\textbf{T}$$, a homogeneous transformation matrix representing the transform from some camera's frame to that of the reference image
 
 is
 
@@ -91,28 +84,28 @@ $$\text{warp}(p, d, \textbf{T}) = \textbf{T} \begin{bmatrix}
          \end{bmatrix}
          $$
 
-gives us the location of pixel $$p$$ in the view of the reference camera.  The homogenous transform $$T$$ is computed from the SE(3) representation of the camera poses using the method in Ethan Eade's document, which I implement for Tensorflow in tf_lie.py.
+gives us the location of pixel $$p$$ in the view of the reference camera.  The homogeneous transform $$T$$ is computed from the representation of the camera poses using the method in Ethan Eade's document, which I implement for Tensorflow in tf_lie.py.
 
 
-Once $$I$$ is warped into the reference camera view, we need some way of measuring how well this warped image approximates the reference image, since this tells us how well our depth map and camera poses match the true values.  I sue a photometric loss to measure the difference between two images.  There are many possible functions to use here.  I simply do a huber loss on the raw RGB values.  This is by no means optimal, but it was a couple nice properties.  First, it is dead simple.  Second, the huber loss is a robust loss, so if some pixels are way off due to occlusion or specular highlights in one image, our photometric loss will not be hugely affected.  If $$ref(p)$$ is the reference image's color at position $$p$$ and $$I(p)$$ is an image $$I$$'s color at position $$p$$, then our cost function is 
+Once $$I$$ is warped into the reference camera view, we need some way of measuring how well this warped image approximates the reference image.  This will tell us how closely our depth map and camera poses match the true values.  I use a photometric loss to measure the difference between two images.  There are many possible functions we could use here.  I simply compute a Huber loss on the raw RGB values.  The Huber loss has a couple of nice properties.  First, it is dead simple.  Second, the Huber loss is a robust loss, so if some pixels are way off due to occlusion or specular highlights in one image, our total loss will not be hugely affected.  If $$ref(p)$$ is the reference image's color at position $$p$$ and $$I(p)$$ is an image $$I$$'s color at position $$p$$, then our cost function is 
 
-$$ \sum_p \text{huber}(ref(p), I(\text{warp}(p, d, T))) $$
+$$ \sum_p \text{Huber}(ref(p), I(\text{warp}(p, d, T))) $$
 
-For clarity, the function above elides iterating over the r, g, and b channels of each pixel.
+For clarity, the function above elides summing over the r, g, and b channels of each pixel.
 
-As a note, the iteratively reweighted least squares optimization scheme proposed in the LSD-SLAM paper is really finding the minimum of the robust distance metric between images, although they don’t frame it this way.  Details on that can be found in Ethan Eade’s document on Gauss-Newton optimization.
+As a note, the iteratively reweighted least squares optimization scheme proposed in the LSD-SLAM paper can be seen as finding the minimum of the robust distance metric between images, although they don’t frame it this way.  Details on that can be found in Ethan Eade’s document on Gauss-Newton optimization.
 
-Given the the ability to represent camera poses and warp images, solving for the depth map and camera poses is a simple optimization problem to set up.  Given a few images $$I$$ and a reference image, we take a sum over the photometric loss for each $$I$$ given the depth estimate and camera pose estimate for that image.  I can now jointly optimize the poses and depth using gradient descent to minimize the sum of photometric losses.
+Given the ability to represent camera poses and warp images, solving for the depth map and camera poses is a simple optimization problem to set up.  Given a few images $$I$$ and a reference image, we take a sum over the photometric loss for each $$I$$ given the depth estimate and camera pose estimate for that image.  We can now jointly optimize the poses and depth using gradient descent to minimize the sum of photometric losses.
 
-The video below shows the whole optimization process in action.  The points on the lower right are the estimated locations of the cameras, and each pixel in the scene is represented as a point that moved closer or farther away from the reference camera (the blue point) according to its depth value over the course of optimization.  Notice how the camera images are in a smooth arc.  That's because I took these images from a video, during which I made a smooth sweeping motion with the camera.
+The video below shows the whole optimization process in action.  The points on the lower right are the estimated locations of the cameras.  Each pixel in the scene is represented as a point that moves closer to or farther away from the reference camera (the blue point) according to its depth value over the course of optimization.  Notice how the camera images are arranged in a smooth arc.  That is because I took these images from a video, during which I made a smooth sweeping motion with the camera.
 
 <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/gjlenSUuxvjMqhHVoi" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
 
 
-<!-- <video width="100%" autoplay loop>
-  <source src="{{ site.url }}/assets/simple_depth/pointcloud_viz.mp4" type="video/mp4">
-    Error displaying video
-</video> -->
+This animation below shows 4 scene images being warped into progressively better estimates of the reference image.  First, the images are roughly aligned with the reference camera’s view by adjusting the pose estimates.  Toward the end of the animation, some scene elements shift subtly as the algorithm adjusts its 3D geometry estimate.  Try zooming in on the top left image and watching the animation.
+<div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/U89joc4KJrsys7T0Gs" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+
 
 # An implementation in tensorflow
 
@@ -125,7 +118,7 @@ That repo contains
 * image_warping.py which implements the image warp described above
 
 
-The heart of the implementation is this snippet, which what is in the notebook, and here is pared down for clarity, omitting some casting and other cruft.
+The heart of the implementation is this snippet, which is in the notebook.  Here it is pared down for clarity, omitting some casting and other cruft.
 
 ```python
 depth =  tf.abs(tf.Variable(tf.ones([400,400]))) +.1
@@ -153,7 +146,7 @@ for _ in range(2000):
 
 ```
 
-I think it's very surprising that in about a dozen lines of python, you can capture the essence of the depth map estimation algorithm:
+In about a dozen lines of python, you can capture the essence of the depth map estimation algorithm.
 
 1. First, initialize the depth map to be all ones and constrain depth to be positive.
 2. Define the cost to be the robust Huber metric between the reference image and the scene image warped into the reference view.
@@ -161,9 +154,9 @@ I think it's very surprising that in about a dozen lines of python, you can capt
 
 The rest of the code in the notebook is data setup and visualization.
 
-In this project, I have allowed myself one hack: I include a total variation term in the cost function.  This term measures the amount of discontinuity in the depth map and so encourages the depth map to be smooth.  This term makes the results look better and something like it is often used in depth estimation, but is not very principled.  For instance, it penalizes flat surfaces that are tilted with respect to the camera, and a surface like grass that truly has lots of depth discontinuity will be penalized.  A slightly better approach would be to penalize the curvature of the depth map, but that is a slippery slope of heuristics and hand-tuning that I will not journey down.  
+In this project, I have allowed myself one hack: I include a total variation term in the cost function.  Total variation measures the amount of discontinuity in the depth map and so encourages the depth map to be smooth.  This term makes the results look better and something like it is often used in depth estimation, but is not very principled.  For instance, it penalizes flat surfaces that are tilted with respect to the camera, and a surface like grass that truly has lots of depth discontinuity will be penalized.  A slightly better approach would be to penalize the curvature of the depth map, but that is a slippery slope of heuristics and hand-tuning.  
 
-This approach yields the depth map below.  It looks reasonable, but has obvious blocky artifacts caused by the total variation term encouraging regions of zero gradient to form.
+This approach yields the depth map below.  It looks reasonable, but has obvious blocky artifacts caused by the total variation term encouraging flat regions to form.
 
 ![depth]({{ site.url }}/assets/simple_depth/naive_depth_image.png)
 
@@ -176,7 +169,7 @@ In the [deep image prior](https://arxiv.org/abs/1711.10925) paper, the authors c
 
 I experimented with representing the depth map as the output of a u-net rather than as independent values at each pixel.  The u-net architecture takes as input the reference image and downsamples it before resampling it up to its original resolution.  At each resolution, there is a residual path allowing some high-resolution spatial information to be preserved.  I found that this approach works surprisingly well and is insensitive to the exact hyperparameters of the u-net such as number of downsampling operations or the number of filters.
 
-An example of a depth map produced with this approach is shown below.  This depth map is overall much smoother, but also recovers fine details such as the twigs to the upper right of the rock.  Following the intuition of the deep image prior paper, I imagine that the network tends to default to producing smooth regions because they are easiest to represent, but the architecture is highly expressive, and so can output arbitrarily fine detail when forced to do so by the cost function.  This is closer to regularizing the depth map toward some abstract ideal of “parsimony” rather than toward a particular type of simplicity, such as geometric smoothness.
+An example of a depth map produced with this approach is shown below.  This depth map is overall much smoother, but also recovers fine details such as the twigs to the upper right of the rock.  Following the intuition of the deep image prior paper, I imagine that the network tends to default to producing smooth regions because they are easiest to represent.  However, the architecture is highly expressive, and so can output arbitrarily fine detail when forced to do so by the cost function.  This is closer to regularizing the depth map toward some abstract ideal of “parsimony” rather than toward a particular type of simplicity, such as geometric smoothness.
 
 ![depth]({{ site.url }}/assets/simple_depth/cnn_depth_image.png)
 
@@ -192,11 +185,15 @@ For this scene of a plant and a rock on some leaf litter,
 
 ![scene]({{ site.url }}/assets/simple_depth/reference_image.png)
 
-my approach which represents the depth map using a u-net that takes the original image as input produces this depth map:
+my approach which represents the depth map using a u-net produces this depth map:
 
 ![depth]({{ site.url }}/assets/simple_depth/cnn_depth_image.png)
 
-While that depth map is not perfect, I think it's surprising that something so reasonable looking can be produced with such a simple optimization setup.  Once you have utilities for manipulating camera poses (tf_lie.py) and doing image warping (image_warping.py), the problem can be solved in about a dozen lines of tensorflow code.  
+While that depth map is not perfect, it was produced with a very simple optimization setup.  Once you have utilities for manipulating camera poses (tf_lie.py) and doing image warping (image_warping.py), the depth problem can be solved in about a dozen lines of tensorflow code.  This stands in stark contrast to much of the work in the literature, where real-time requirements shift the focus from the fundamental simplicity of the optimization problem at hand to the complex approaches one needs to use in order to gain speed.
+
+My approach may have value as more than a slow-but-simple pedagogical exercise for one other reason: it clearly suggests that it is possible to take clusters of camera images and use them to directly train a neural network to predict depth given arbitrary images.
+
+
 
 
 
