@@ -28,7 +28,7 @@ This post assumes that you are familiar with basic linear algebra and gradient d
 
 ## Why we care about depth
 
-A depth image contains at each pixel the distance from the camera to that point in the scene.  This small 3D model of the world in the camera's is useful for building larger maps and localizing a robot within them.  The quickest way to get a depth image is to use an RGB-Depth camera like a Kinect or RealSense.  However, such hardware is more expensive than standard RGB cameras and not nearly as ubiquitous.  In low-cost robotics applications, for instance, we are interested in ways of getting the same 3D information about the world with clever algorithms and cheap RGB cameras.
+A depth image contains at each pixel the distance from the camera to that point in the scene.  This small 3D model of the world in the camera's view is useful for building larger maps and localizing a robot within them.  The quickest way to get a depth image is to use an RGB-Depth camera like a Kinect or RealSense.  However, such hardware is more expensive than standard RGB cameras and not nearly as ubiquitous.  In low-cost robotics applications, for instance, we are interested in ways of getting the same 3D information about the world with clever algorithms and cheap RGB cameras.
 
 
 ## Depth from RGB images
