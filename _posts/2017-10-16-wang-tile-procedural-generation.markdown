@@ -149,9 +149,9 @@ Below, you can see how this is used.  By adjusting the probability of the solid 
 
 In short,
 * clone my [repo on github](https://github.com/IJDykeman/wangTiles)
-* install Processing
+* install Processing 2
 * in the data/ folder of the repo, modify tiles.png
-* use processing to open wangTiles.pde and click the play button
+* use Processing to open wangTiles.pde and click the play button
 
 Using the code (You can modify it, but do so at your own risk; I wrote most of it in high school) I've put on github, you can create your own tilesets using an image editor, and see how the tiling solver creates worlds with them.  Simply clone the repo and edit the image named dungeon.png, then use Processing to run wangTiles.pde to see an animation of the map being generated. I'll now describe the "language" that the tiling solver expects.
 
