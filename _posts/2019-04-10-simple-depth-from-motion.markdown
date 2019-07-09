@@ -191,8 +191,6 @@ my approach which represents the depth map using a u-net produces this depth map
 
 While that depth map is not perfect, it was produced with a very simple optimization setup.  Once you have utilities for manipulating camera poses (tf_lie.py) and doing image warping (image_warping.py), the depth problem can be solved in about a dozen lines of tensorflow code.  This stands in stark contrast to much of the work in the literature, where real-time requirements shift the focus from the fundamental simplicity of the optimization problem at hand to the complex approaches one needs to use in order to gain speed.
 
-My approach may have value as more than a slow-but-simple pedagogical exercise for one other reason: it clearly suggests that it is possible to take clusters of camera images and use them to directly train a neural network to predict depth given arbitrary images.
-
 
 
 
