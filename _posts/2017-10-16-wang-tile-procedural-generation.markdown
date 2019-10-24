@@ -6,9 +6,8 @@ categories: ml
 ---
 
 
-### Generate Worlds
 
-In the two years after publishing this, I worked on refining this algorithm to power a real-time world generator, called Generate Worlds, and it lets you design your own 2D and 3D tile sets and explore the worlds they generate in first-person.  [ I have a post that describes it]({% link _posts/2019-05-17-introducing-generate-worlds.markdown %}), and it's available for purchase on itch.io.
+*In the two years after publishing this*, I worked on refining this algorithm to power a real-time world generator, called Generate Worlds, and it lets you design your own 2D and 3D tile sets and explore the worlds they generate in first-person.  [ I have a post that describes it]({% link _posts/2019-05-17-introducing-generate-worlds.markdown %}), and it's available for purchase on itch.io.
 
 
 
