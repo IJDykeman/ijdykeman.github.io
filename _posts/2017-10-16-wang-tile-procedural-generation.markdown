@@ -5,7 +5,26 @@ date:   2017-10-12
 categories: ml
 ---
 
-In this post, I'll describe the two algorithms for creating complex procedural worlds from simple sets of colored tiles and constraints on the placements of those tiles.  I will show that by carefully designing these tile sets, you can create interesting procedurally generated content, such as landscapes with cities, or dungeons with complex internal structure.  The video below shows the system creating a procedural world based on the rules encoded in 43 colored tiles.
+
+### Generate Worlds
+
+In the two years after publishing this, I worked on refining this algorithm to power a real-time world generator, called Generate Worlds, and it lets you design your own 2D and 3D tile sets and explore the worlds they generate in first-person.  [ I have a post that describes it]({% link _posts/2019-05-17-introducing-generate-worlds.markdown %}), and it's available for purchase on itch.io.
+
+
+
+<iframe frameborder="0" src="https://itch.io/embed/406212?linkback=true&amp;border_width=2&amp;bg_color=353535&amp;fg_color=ffffff&amp;link_color=fa5c5c&amp;border_color=333333" width="100%" height="169"></iframe>
+
+Here's Generate Worlds in action:
+
+<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/2voMERQBpVXChSxGES" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
+<p><a href="https://giphy.com/gifs/2voMERQBpVXChSxGES"></a></p>
+
+
+---
+
+# Introduction
+
+This post describes two algorithms for creating complex procedural worlds from simple sets of colored tiles and constraints on the placements of those tiles.  I will show that by carefully designing these tile sets, you can create interesting procedurally generated content, such as landscapes with cities, or dungeons with complex internal structure.  The video below shows the system creating a procedural world based on the rules encoded in 43 colored tiles.
 
 <iframe width="100%" height="500" src="https://www.youtube.com/embed/XVIYY0AQF-8?rel=0&amp;showinfo=0"
 	frameborder="0" allowfullscreen
