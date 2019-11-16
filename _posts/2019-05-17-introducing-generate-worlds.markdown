@@ -14,10 +14,10 @@ My desire to design and explore fantasy landscapes inspired me to build the proc
 
 <iframe frameborder="0" src="https://itch.io/embed/406212?linkback=true&amp;border_width=2&amp;bg_color=353535&amp;fg_color=ffffff&amp;link_color=fa5c5c&amp;border_color=333333" width="100%" height="169"></iframe>
 
-
-
-<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/2voMERQBpVXChSxGES" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
-<p><a href="https://giphy.com/gifs/2voMERQBpVXChSxGES"></a></p>
+<video width="100%" controls autoplay loop muted>
+  <source src="{{site.url}}/assets/rule_based_procedural_generation/generation_10s.mp4">
+Your browser does not support the video tag.
+</video>
 
 The video above shows Generate Worlds in action building a landscape and dungeon environment.  The video below briefly describes Generate Worlds.  Read on for the details.
 
@@ -69,7 +69,10 @@ To enforce these all these rules, Generate Worlds does only one simple thing:  i
 
 Placing several tiles looks like this:
 
-<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/3DHNvMhDA6FEun6keU" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
+<video width="100%" controls autoplay loop muted>
+  <source src="{{site.url}}/assets/rule_based_procedural_generation/woods_tile_assembly.mov">
+Your browser does not support the video tag.
+</video>
 
 These tiles are easy to create in a voxel editor like MagicaVoxel.  The tile set above is simply a directory of .vox files that Generate Worlds takes as input.
 
@@ -82,14 +85,20 @@ Let's try a more sophisticated world: a 3D dungeon that extends endlessly in all
 
 Putting them together in 3D looks like this:
 
-
-<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/2kPO91XMLHeC1JCo4w" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
+<video width="100%" controls autoplay loop muted>
+  <source src="{{site.url}}/assets/rule_based_procedural_generation/full_dungeon_generation.mov">
+Your browser does not support the video tag.
+</video>
 
 
 Loading these .vox files into Generate Worlds, I can explore this dungeon world in first-person.  Generate Worlds lets you set lighting conditions, and place lights.
 
 
-<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/L0lYvytfI6j7gS47hC" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
+<video width="100%" controls autoplay loop muted>
+  <source src="{{site.url}}/assets/rule_based_procedural_generation/generation_10s.mp4">
+Your browser does not support the video tag.
+</video>
+
 
 ## Conclusion
 

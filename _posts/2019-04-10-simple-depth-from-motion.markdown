@@ -14,8 +14,11 @@ Given a scene of a rock and a plant, my algorithm recovers the 3D geometry of th
 ![depth from motion graph]({{ site.url }}/assets/simple_depth/point_cloud_with_poses_labelled.svg)
 
 This animation shows the depth map being refined over the course of optimization.  Brighter pixels are estimated to be closer to the camera.
-<!-- <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/ZEfBoPTODKz4H7XzaZ" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div> -->
-<div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/lPMPu497g42fLRNnOb" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+
+<video width="100%" controls autoplay loop muted>
+  <source src="{{site.url}}/assets/simple_depth/deep_image_prior_map_optimization.mp4">
+Your browser does not support the video tag.
+</video>
 
 
 
@@ -99,11 +102,13 @@ Given the ability to represent camera poses and warp images, solving for the dep
 
 The video below shows the whole optimization process in action.  The points on the lower right are the estimated locations of the cameras.  Each pixel in the scene is represented as a point that moves closer to or farther away from the reference camera (the blue point) according to its depth value over the course of optimization.  Notice how the camera images are arranged in a smooth arc.  That is because I took these images from a video, during which I made a smooth sweeping motion with the camera.
 
-<div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/gjlenSUuxvjMqhHVoi" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+<video width="100%" controls autoplay loop muted>
+  <source src="{{site.url}}/assets/simple_depth/deep_prior_pointcloud_2.mp4">
+Your browser does not support the video tag.
+</video>
 
-
-This animation below shows 4 scene images being warped into progressively better estimates of the reference image.  First, the images are roughly aligned with the reference camera’s view by adjusting the pose estimates.  Toward the end of the animation, some scene elements shift subtly as the algorithm adjusts its 3D geometry estimate.  Try zooming in on the top left image and watching the animation.
-<div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/U89joc4KJrsys7T0Gs" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div>
+<!-- This animation below shows 4 scene images being warped into progressively better estimates of the reference image.  First, the images are roughly aligned with the reference camera’s view by adjusting the pose estimates.  Toward the end of the animation, some  --><!-- scene elements shift subtly as the algorithm adjusts its 3D geometry estimate.  Try zooming in on the top left image and watching the animation. -->
+<!-- <div style="width:100%;height:0;padding-bottom:100%;position:relative;"><iframe src="https://giphy.com/embed/U89joc4KJrsys7T0Gs" width="100%" height="100%" style="position:absolute" frameBorder="0" class="giphy-embed" allowFullScreen></iframe></div> -->
 
 
 

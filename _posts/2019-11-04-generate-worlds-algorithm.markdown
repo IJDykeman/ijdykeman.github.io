@@ -26,7 +26,10 @@ In Generate Worlds, each environment is assembled from a *tile set*.  Tiles are 
 
 If we put arrange these voxel models in a sensible way, we can make a little pastoral scene, as in the animation below. By “sensible” I mean that tiles fit together if their colors match along the touching edge.
 
-<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/3DHNvMhDA6FEun6keU" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
+<video width="100%" controls autoplay loop muted>
+  <source src="{{site.url}}/assets/generate_worlds_algorithm/woods_tile_assembly.mov">
+Your browser does not support the video tag.
+</video>
 
 
 The goal of the Generate Worlds algorithm is to perform this assembly quickly and automatically. Before considering the algorithm, let’s look at the problem setup.
@@ -97,7 +100,10 @@ The Generate Worlds algorithm extends naturally to worlds with height.  Instead 
 Assembling these tiles in 3D looks like this:
 
 
-<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/2kPO91XMLHeC1JCo4w" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
+<video width="100%" controls autoplay loop muted>
+  <source src="{{site.url}}/assets/generate_worlds_algorithm/dungeon_tile_assembly.mov">
+Your browser does not support the video tag.
+</video>
 
 
 In this case, the allowed neighborhoods are 3D grids instead of 2D grids, and the algorithm generates them in an analogous fashion to what I’ve illustrated above for the 2D case.
