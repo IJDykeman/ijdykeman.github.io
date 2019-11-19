@@ -15,8 +15,10 @@ categories: ml
 
 Here's Generate Worlds in action:
 
-<div style="width:100%;height:0;padding-bottom:56%;position:relative;"><iframe src="https://giphy.com/embed/2voMERQBpVXChSxGES" width="100%" height="100%" style="position:absolute" frameborder="0" class="giphy-embed" allowfullscreen=""></iframe></div>
-<p><a href="https://giphy.com/gifs/2voMERQBpVXChSxGES"></a></p>
+<video width="100%" controls autoplay loop muted>
+  <source src="{{site.url}}/assets/rule_based_procedural_generation/generation_10s.mp4">
+Your browser does not support the video tag.
+</video>
 
 
 ---
