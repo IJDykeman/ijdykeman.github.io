@@ -24,7 +24,7 @@ So we have that an ostrich is a type of bird that is flightless, swift-running, 
 
 To extract these definitions automatically, I use hypernyms from wordnet and part of speech tagging and take all the adjectives up to the first occurrence of a hypernym of the word being defined, and treat each (adjective, hypernym) pair as an example of a valid definition for that word.
 
-This is a pretty simple approach, and it tends to pick up low quality definitions like “certain bird,” if the original defintion was “a certain tropical bird...” To mitigate this, I made a small list of disallowed adjectives, like “certain,” “such,” and “several.”
+This is a pretty simple approach, and it tends to pick up low quality definitions like “certain bird,” if the original definition was “a certain tropical bird...” To mitigate this, I made a small list of disallowed adjectives, like “certain,” “such,” and “several.”
 
 I also need the word vectors themselves.  I’m using both the vectors and the dictionary corpus from [this paper by Hill et. al.](http://www.aclweb.org/anthology/Q16-1002), which was a big factor in inspiring me to do this work, in addition to a good source of data.  You can get their data [here](http://www.cl.cam.ac.uk/~fh295/dicteval.html).
 
