@@ -1,0 +1,3 @@
+before_install:
+  - npm install yaspeller -g
+script: yaspeller "{ path to posts }/*.md" && npx write-good { path to posts }/*.md
