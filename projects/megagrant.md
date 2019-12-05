@@ -1,3 +1,22 @@
+Script
+
+Hello, we are three software engineers who used to work on self-driving cars.  We teamed up to apply our skills to problems in other industries, and with your help, we’re going to make motion capture for games cheap and easy.  
+
+Existing motion capture systems are expensive and require custom capture hardware and outfits.  But computer vision and machine learning techniques have come a long way, and it’s time for this to change.
+
+Our motion capture system needs no specialized hardware.  It’s just two webcams and some clever algorithms.
+
+Here’s how it works:
+
+We use deep learning to estimate 2d poses information in both camera images.  The deep learning based pose estimation is very smart — it can even estimate the positions of joints they can’t see by looking at other parts of the body.  However, it doesn’t tell us where a person’s joints are in 3D.  But with two cameras, we can triangulate each joint’s exact 3D position.
+
+[PoseNet figuring out an occluded joint]
+
+We’re confident that this approach works, but we need your help because making this technology into a robust, free product will be a significant engineering effort.  We detail the challenge on our proposal’s website, and give a breakdown of the components involved and a projected timeline.  
+
+Thanks for your consideration.
+
+Website
 
 ## We’re making motion capture cheap and easy.
 
@@ -6,6 +25,7 @@ Existing motion capture methods require expensive custom hardware:
 We are creating a motion capture pipeline that instead uses cheap commodity hardware (webcams you already have lying around) and clever software.  The special hardware in today’s products is expensive because it gives very accurate, direct measurements of body positions.  Our cheaper solution relies instead on algorithms from robotics which can make sense of noisy sensor data.  
 
 
+![Simple network diagram]({{ site.url }}/assets/megagrant/pose_ui.png)
 *Our prototype interface with a human pose in blue and camera locations as magenta points*
 
 ## Today’s mocap systems are using more hardware than necessary 
@@ -80,5 +100,6 @@ We will make our motion capture system free to download rather than make it a pa
 It’s easy to make an interesting prototype, and much harder to make a usable product.  We will use the MegaGrant to pay living expenses while we take this final step.
 
 We are asking for $37,500, which will cover expenses for us for 3 months, and allow us to hire some outside talent for demo performances.  Below is a Gantt chart detailing our estimated timeline.
+
 
 
