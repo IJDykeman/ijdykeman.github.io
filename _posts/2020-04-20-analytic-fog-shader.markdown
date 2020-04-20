@@ -77,8 +77,7 @@ $$\int \frac{1}{\sqrt{h^2+x^2}} dx = \frac{tan^{-1}(\frac{x}{h})}{h}$$
 So to find the light coming from the fog for a given view line, I evaluate this integral from the camera to the world fragment.  If the camera is at $$x=a$$ and the world fragment is at $$x=b$$, the light arriving at a pixel from the illuminated fog along its view ray is
 
 
-$$\int_a^b \frac{1}{\sqrt{h^2+x^2}} dx$$ 
-$$ = \frac{tan^{-1}(\frac{b}{h})}{h} - \frac{tan^{-1}(\frac{a}{h})}{h}$$
+$$\int_a^b \frac{1}{\sqrt{h^2+x^2}} dx  = \frac{tan^{-1}(\frac{b}{h})}{h} - \frac{tan^{-1}(\frac{a}{h})}{h}$$
 
 
 ## Thoughts on Implementation
