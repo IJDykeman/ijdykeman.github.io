@@ -19,19 +19,19 @@ The key insight is that it’s possible to compute in closed form the light that
 
 ## Fog Model
 
-The shader makes a few assumptions about the fog we are dealing with.  	it essentially treats each piece of fog as a tiny semi transparent white diffuse surface.
-* The shader assumes that when fog scatters light uniformly in all directions.  Real fog or smoke does not necessarily have this property, but it’s a fine approximation for the look we’re going for.  
+The shader makes a few assumptions about the fog we are dealing with.  	It essentially treats each piece of fog as a tiny, semi transparent, white, diffuse surface.
+* The shader assumes that fog scatters light uniformly in all directions.  Real fog or smoke does not necessarily have this property, but it’s a fine approximation for the look we’re going for.  
 * The shader assumes that all wavelengths of light interact with the fog in the same way.  In reality, this is often not true.  For instance, Rayleigh scattering turns the sky blue by scattering blue light more than other wavelengths.
-* The light emanating from the fog varies with the inverse square of the distance from the light source.  This has no basis in reality, but looks fine.  Lots of resources exist that explain how fog really scatters light and I’m sure you could extend this method with those formulas.
+* The light emanating from the fog varies with the inverse square of the distance from the light source to the fog.  This has no basis in reality, but looks fine.  Lots of resources exist that explain how fog really scatters light and I’m sure you could extend this method with those formulas.
 
 The results are compelling even with these simplifications in place.
 
 
-## An Analytic Solution for Out Scattering
+## An Analytic Solution
 
 Given an infinitesimal fog fragment (imagine a little cube of fog), I’ll say that the light being emitted by that fog fragment is
 
-$$ \text{light} = \frac{1}{\text{distance from light to fog fragment}^2} $$
+$$ \text{light} = \frac{1}{(\text{distance from light to fog fragment})^2} $$
 
 This is saying that the light coming from each fog fragment falls off with the inverse-square of its distance to the light, just like the light coming from a diffuse surface would.
 
@@ -70,7 +70,7 @@ Now rather than a line integral through 3-space, I just integrate along the x-ax
 
 $$\int \frac{1}{\sqrt{h^2+x^2}} dx$$
 
-Solving by hand or with your favorite CAS system:
+Solving by hand or with your favorite computer algebra system:
 
 $$\int \frac{1}{\sqrt{h^2+x^2}} dx = \frac{tan^{-1}(\frac{x}{h})}{h}$$
 
@@ -83,7 +83,9 @@ $$\int_a^b \frac{1}{\sqrt{h^2+x^2}} dx  = \frac{tan^{-1}(\frac{b}{h})}{h} - \fra
 ## Thoughts on Implementation
 
 
-I was able to implement this shader in my deferred shading pipeline without making any serious modifications.  It involved adding around a dozen lines of GLSL code.  If you are computing diffuse+specular lighting with point lights already, your point light shader should already have access to camera position, light position, and the position of the world at the current pixel, and that’s all you need!  
+I was able to implement this shader in my deferred shading pipeline without making any serious modifications.  It involved adding around a dozen lines of GLSL code.  If you are computing diffuse+specular lighting with point lights already, your point light shader should already have access to camera position, light position, and the position of the world at the current pixel, and that’s all you need!
+
+Handling multiple lights is straightforward.  You simply sum the contributions of light scattering from fog for each light.  To make the system efficient for many lights, you should be sure to only compute the integral for pixels close enough to the light to have a chance at contributing a visible amount of light to the scene.  For instance, in a deferred shading pipeline you can render a spherical mesh around the light so that the shader computing the light contribution only runs for pixels near the light.
 
 I found that the hardest part of implementing this shader is correctly putting your camera and world fragment into light space so that you can take advantage of the simple integral.
 
