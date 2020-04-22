@@ -68,16 +68,16 @@ I’ll define a new space called *light space*  with
 
 Now rather than a line integral through 3-space, I just integrate along the x-axis from the camera to the world fragment.  Now I need to rewrite the integral.  The distance from a point $$x$$ on the x-axis to the light is $$\sqrt{h^2+x^2}$$.   So the integral over the view line becomes
 
-$$\int \frac{1}{\sqrt{h^2+x^2}} dx$$
+$$\int \frac{1}{h^2+x^2} dx$$
 
 Solving by hand or with your favorite computer algebra system:
 
-$$\int \frac{1}{\sqrt{h^2+x^2}} dx = \frac{tan^{-1}(\frac{x}{h})}{h}$$
+$$\int \frac{1}{h^2+x^2} dx = \frac{tan^{-1}(\frac{x}{h})}{h}$$
 
 So to find the light coming from the fog for a given view line, I evaluate this integral from the camera to the world fragment.  If the camera is at $$x=a$$ and the world fragment is at $$x=b$$, the light arriving at a pixel from the illuminated fog along its view ray is
 
 
-$$\int_a^b \frac{1}{\sqrt{h^2+x^2}} dx  = \frac{tan^{-1}(\frac{b}{h})}{h} - \frac{tan^{-1}(\frac{a}{h})}{h}$$
+$$\int_a^b \frac{1}{h^2+x^2} dx  = \frac{tan^{-1}(\frac{b}{h})}{h} - \frac{tan^{-1}(\frac{a}{h})}{h}$$
 
 
 ## Thoughts on Implementation
