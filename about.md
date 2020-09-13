@@ -32,6 +32,9 @@ Contact me at ijdykeman@gmail.com .
 
 ### Selected Professional Experience
 
+#### Main Street Autonomy, since 2019
+In 2019, I started Main Street Autonomy with a group of former self-driving engineers.  We provide high-quality autonomy software to companies building robots.
+
 #### Uber ATG, 2017-2019
 I worked as a software engineer on the perception system for Uber's autonomous vehicle.
 * Implemented improvements to the car’s core deep-learning-based, multi-sensor object
