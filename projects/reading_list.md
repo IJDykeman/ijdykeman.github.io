@@ -5,7 +5,6 @@ permalink: /reading_list/
 ---
 
 
-# Reading list
 
 These are the resources that have most helped me understand new topics.  This list
 * aims to be short
