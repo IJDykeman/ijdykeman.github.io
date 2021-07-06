@@ -11,15 +11,6 @@ These are the resources that have most helped me understand new topics.  This li
 * includes only what helped me personally
 * is biased toward things I reference often while working
 
-## optimization
-
-### unconstrained optimization
-
-[Ethan Eade's document on Gauss-Newton optimization](http://ethaneade.com/optimization.pdf)
-
-Includes a nice terse derivation of Gauss-Newton, and some practical information for how to ensure convergence.  A handy reference.
-
-
 ## physics
 
 If this seems like largely a list of Feynman lectures I have read, that's because it is.  They are the most helpful things I have found.  I imagine physics in college would have been more pleasant if I had thrown away my textbook and read one of these a week instead.
@@ -56,11 +47,20 @@ Packed with good insights, well-illustrated, and compact.  Includes surprisingly
 
 [radiosity]({{ site.baseurl }}{% link assets/reading/radiosity.pdf %}) 
 
-I am guessing better treatments exist.  This one is not very user-friendly, but if you wade through it line by line, you will know enough to implement radiosity from memory without referencing anything.  In particular, my group was caught up by not understanding the "projected solid angle" soon enough.  Please first look at [Lights and Shadows by Bartosz Ciechanowski](https://ciechanow.ski/lights-and-shadows/).  For the math, I recommend referencing:
+I am guessing better treatments exist.  This one is not very user-friendly, but if you wade through it line by line, you will know enough to implement radiosity from memory without referencing anything.  In particular, my group was caught up by not understanding the "projected solid angle" soon enough.  Please first look at [Lights and Shadows](https://ciechanow.ski/lights-and-shadows/).  For the math, I recommend referencing:
 
 [Wikipedia article on Radiosity in computer graphics](https://en.wikipedia.org/wiki/Radiosity_(computer_graphics))
 
 A nice reference on the Radiosity method.
+
+
+## optimization
+
+### unconstrained optimization
+
+[Ethan Eade's document on Gauss-Newton optimization](http://ethaneade.com/optimization.pdf)
+
+Includes a nice terse derivation of Gauss-Newton, and some practical information for how to ensure convergence.  A handy reference.
 
 ## constraint satisfaction
 
