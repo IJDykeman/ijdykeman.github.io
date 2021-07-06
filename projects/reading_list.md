@@ -41,8 +41,7 @@ Handy for graphics applications, and good for building intuition.  This belongs 
 
 ### fluids
 
-[Feynman: The Flow of Dry Water](https://www.feynmanlectures.caltech.edu/II_40.html)
-<br>
+[Feynman: The Flow of Dry Water](https://www.feynmanlectures.caltech.edu/II_40.html)\
 [Feynman: The Flow of Wet Water](https://www.feynmanlectures.caltech.edu/II_41.html)
 
 These together are a good exposition of Navier-Stokes.  
