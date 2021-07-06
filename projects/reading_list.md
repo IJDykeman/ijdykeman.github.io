@@ -11,6 +11,11 @@ These are the resources that have most helped me understand new topics.  This li
 * includes only what helped me personally
 * is biased toward things I reference often while working
 
+Why this might be an interesting resource for others
+* at least one person actually transitioned from ignorance to understanding using each resource.
+* these documents are not being judged as "useful to a novice" by an expert.  An expert is the last person who should make that judgement!
+* these resources are likely to play well together in terms of notation, because a particular individual prefers them all.
+
 ## physics
 
 If this seems like largely a list of Feynman lectures I have read, that's because it is.  They are the most helpful things I have found.  I imagine physics in college would have been more pleasant if I had thrown away my textbook and read one of these a week instead.
@@ -23,7 +28,7 @@ A magnificent introduction to some concepts in geometric optics like (projected)
 
 [Feynman: Optics: The Principle of Least Time](https://www.feynmanlectures.caltech.edu/I_26.html)
 
-This is very spicy and rewarding stuff.  It is approachable in a way that other least-X principles are not.
+This is very spicy and rewarding stuff.  It is approachable in a way that other least-something principles are not.  The idea that wave interference implements a least-time optimization is very cool.
 
 [PBR book's treatment of participating media](https://www.pbr-book.org/3ed-2018/Volume_Scattering/Volume_Scattering_Processes)
 
