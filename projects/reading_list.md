@@ -48,7 +48,7 @@ Packed with good insights, well-illustrated, and compact.  Includes surprisingly
 
 ## graphics
 
-[radiosity](assets/reading/radiosity.pdf) 
+[radiosity](% link /assets/files/doc.pdf %) 
 
 I am guessing better treatments exist.  This one is not very user-friendly, but if you wade through it line by line, you will know enough to implement radiosity from memory without referencing anything.  In particular, my group was caught up by not understanding the "projected solid angle" soon enough.  Please first look at [Lights and Shadows by Bartosz Ciechanowski](https://ciechanow.ski/lights-and-shadows/).  For the math, I recommend referencing:
 
@@ -74,3 +74,4 @@ A great, low-madness, practical introduction to a bunch of deep learning concept
 
 [Masala Lab](https://www.amazon.com/dp/B0756WQVKR/ref=dp-kindle-redirect?_encoding=UTF8&btkr=1)
 
+If there were a Feynman lecture on cooking rice, it would look like this.  This short book explains a bunch of physical and chemical ideas about cooking in the context of Indian food.  Why is the amount of water you use when cooking rice an affine, not linear, function of the amount of rice?
