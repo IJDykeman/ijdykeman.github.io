@@ -45,7 +45,7 @@ Packed with good insights, well-illustrated, and compact.  Includes surprisingly
 
 ## graphics
 
-[radiosity]({{ site.baseurl }}{% link assets/reading/radiosity.pdf %}) \
+[Radiosity Method]({{ site.baseurl }}{% link assets/reading/radiosity.pdf %}) (original link [here](http://www.fsz.bme.hu/~szirmay/radiosit.pdf))\
 I am guessing better treatments exist.  This one is not very user-friendly, but if you wade through it line by line, you will know enough to implement radiosity from memory without referencing anything.  In particular, my group was caught up by not understanding the "projected solid angle" soon enough.  Please first look at [Lights and Shadows](https://ciechanow.ski/lights-and-shadows/).  For the math, I recommend referencing:
 
 [Wikipedia article on Radiosity in computer graphics](https://en.wikipedia.org/wiki/Radiosity_(computer_graphics)) (accessed July 6 2021)\
