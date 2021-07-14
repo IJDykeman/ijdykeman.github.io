@@ -75,3 +75,11 @@ A great, low-madness, practical introduction to a bunch of deep learning concept
 
 [Masala Lab](https://www.amazon.com/dp/B0756WQVKR/ref=dp-kindle-redirect?_encoding=UTF8&btkr=1)\
 If there were a Feynman lecture on cooking rice, it would look like this.  This short book explains a bunch of physical and chemical ideas about cooking in the context of Indian food.  Why is the amount of water you use when cooking rice an affine, not linear, function of the amount of rice?
+
+
+
+<!---
+candidates
+Dijkstra on mathematical notation
+https://www.cs.utexas.edu/users/EWD/transcriptions/EWD13xx/EWD1300.html?fbclid=IwAR2eqZgLzAfnaKkaHMdY92s0T3nuIgo-aktO1dDWHMekm2_HvDU9f3XIUN8
+-->
