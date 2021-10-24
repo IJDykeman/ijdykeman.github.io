@@ -27,3 +27,7 @@ Made with Jake Panikulam.  A spider posed using an optimization that sticks feet
 A mesh (green surface) has its SDF approximated by the SDF of some spheres.  The spheres are optimized so that the SDF of the spheres matches well the SDF of the mesh in the rectangular region highlighted in green.  This kind of thing is useful for accelerating certain geometric operations on meshes.
 
 
+<video width="100%" controls autoplay loop muted>
+  <source src="{{site.url}}/assets/gallery/hut_6.mp4">
+Your browser does not support the video tag.
+</video>
