@@ -74,4 +74,4 @@ window.onresize = adjustHeight;
 adjustHeight();
 </script>
 
-A visualizer written in Rust.
+A 3D visualizer written in Rust.
