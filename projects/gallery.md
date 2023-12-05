@@ -45,7 +45,7 @@ An emissive mesh shader
 
 <script type="module">
   console.log("going to import.");
-  import init from "./target/generated/single_thread_viz_demo.js";
+  import init from "../assets/viz_demo/single_thread_viz_demo.js";
   init().then(() => {
     console.log("WASM Loaded!");
   });
