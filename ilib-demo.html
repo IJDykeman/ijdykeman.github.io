@@ -182,6 +182,21 @@
     const spinner = document.getElementById('spinner');
     const hint = document.getElementById('hint');
 
+    // Capture ilib's [TOUCH] console logs so the device can show them on-screen
+    // (no desktop Safari console needed). Must hook before the wasm boots.
+    window.__touchLog = [];
+    for (const m of ['info', 'log', 'debug']) {
+      const orig = console[m].bind(console);
+      console[m] = (...args) => {
+        const s = args.join(' ');
+        if (s.includes('[TOUCH]')) {
+          window.__touchLog.push(s.replace(/^.*\[TOUCH\]\s*/, ''));
+          if (window.__touchLog.length > 6) window.__touchLog.shift();
+        }
+        orig(...args);
+      };
+    }
+
     function fail(title, detail) {
       spinner.style.display = 'none';
       ovTitle.textContent = title;
@@ -226,8 +241,11 @@
         if (dbg) dbg.textContent =
           `touch  start ${counts.ts}  move ${counts.tm}  end ${counts.te}\n` +
           `pointer down ${counts.pd}  move ${counts.pm}  up ${counts.pu}\n` +
-          `last ${last}`;
+          `last ${last}\n` +
+          `--- ilib [TOUCH] ---\n` +
+          (window.__touchLog.length ? window.__touchLog.join('\n') : '(none yet)');
       };
+      setInterval(draw, 200);
       const opt = { capture: true, passive: true };
       canvas.addEventListener('touchstart', (e) => { counts.ts++; const t = e.touches[0]; last = t ? `(${t.clientX | 0},${t.clientY | 0}) n=${e.touches.length}` : ''; draw(); }, opt);
       canvas.addEventListener('touchmove', (e) => { counts.tm++; const t = e.touches[0]; last = t ? `(${t.clientX | 0},${t.clientY | 0}) n=${e.touches.length}` : ''; draw(); }, opt);
