@@ -1,0 +1,1561 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Isaac Dykeman</title>
+    <description></description>
+    <link>http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/</link>
+    <atom:link href="http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Sat, 13 Jun 2026 16:18:35 +0000</pubDate>
+    <lastBuildDate>Sat, 13 Jun 2026 16:18:35 +0000</lastBuildDate>
+    <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>A Simple Shader for Point Lights in Fog</title>
+        <description>&lt;p&gt;I want a simple, fast shader that gives me fog illuminated by point lights.  To do this, I created a screen-space effect that achieves the results below.  The pipeline is nearly as simple as for plain point lights.  It requires no volumetric data structures, no ray marching, and can be tacked on seamlessly to an existing point light shader.&lt;/p&gt;
+
+&lt;p&gt;The key insight is that it’s possible to compute in closed form the light that emanates from the fog as it is illuminated by a point light.  My approach is to find this formula and plug it into a shader.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/fog_shader/spaceship_in_omnidirectional_fog.png&quot; alt=&quot;A spaceship in omnidirectional fog&quot; /&gt;
+&lt;em&gt;A little spaceship scene rendered in fog with this technique&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/fog_shader/scene.svg&quot; alt=&quot;The basic setup&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;fog-model&quot;&gt;Fog Model&lt;/h2&gt;
+
+&lt;p&gt;The shader makes a few assumptions about the fog we are dealing with.  	It essentially treats each piece of fog as a tiny, semi transparent, white, diffuse surface.&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;The shader assumes that fog scatters light uniformly in all directions.  Real fog or smoke does not necessarily have this property, but it’s a fine approximation for the look we’re going for.&lt;/li&gt;
+  &lt;li&gt;The shader assumes that all wavelengths of light interact with the fog in the same way.  In reality, this is often not true.  For instance, Rayleigh scattering turns the sky blue by scattering blue light more than other wavelengths.&lt;/li&gt;
+  &lt;li&gt;The light emanating from the fog varies with the inverse square of the distance from the light source to the fog.  This has no basis in reality, but looks fine.  Lots of resources exist that explain how fog really scatters light and I’m sure you could extend this method with those formulas.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The results are compelling even with these simplifications in place.&lt;/p&gt;
+
+&lt;h2 id=&quot;an-analytic-solution&quot;&gt;An Analytic Solution&lt;/h2&gt;
+
+&lt;p&gt;Given an infinitesimal fog fragment (imagine a little cube of fog), I’ll say that the light being emitted by that fog fragment is&lt;/p&gt;
+
+\[\text{light} = \frac{1}{(\text{distance from light to fog fragment})^2}\]
+
+&lt;p&gt;This is saying that the light coming from each fog fragment falls off with the inverse-square of its distance to the light, just like the light coming from a diffuse surface would.&lt;/p&gt;
+
+&lt;p&gt;For neatness, rewrite&lt;/p&gt;
+
+\[d = \text{distance from light to fog fragment}\]
+
+\[\text{light} = \frac{1}{d^2}\]
+
+\[\int_{\text{view line}} \text{light at} \hspace{1ex} x \hspace{1em} dx\]
+
+&lt;p&gt;Or more formally:&lt;/p&gt;
+
+\[L = \text{light position}\]
+
+\[w = \text{world fragment position}\]
+
+\[c = \text{camera position}\]
+
+\[\text{light arriving at camera} = \int_{c}^{w} \frac{1}{|x - L|_2} dx\]
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/fog_shader/integral_scene.svg&quot; alt=&quot;The basic setup&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;This integral expresses what we want, but it’s more complicated to evaluate than it needs to be.  Since all the variables in the image above are 3-vectors, we effectively have 12 variables to deal with.  I’ll eliminate most of these by doing a simple reparametrization of the problem.&lt;/p&gt;
+
+&lt;p&gt;I’ll define a new space called &lt;em&gt;light space&lt;/em&gt;  with&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;The view line on the x-axis&lt;/li&gt;
+  &lt;li&gt;The light on the y-axis&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/fog_shader/light_space.svg&quot; alt=&quot;The basic setup&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Now rather than a line integral through 3-space, I just integrate along the x-axis from the camera to the world fragment.  Now I need to rewrite the integral.  The distance from a point \(x\) on the x-axis to the light is \(\sqrt{h^2+x^2}\).   So the integral over the view line becomes&lt;/p&gt;
+
+\[\int \frac{1}{h^2+x^2} dx\]
+
+&lt;p&gt;Solving by hand or with your favorite computer algebra system:&lt;/p&gt;
+
+\[\int \frac{1}{h^2+x^2} dx = \frac{tan^{-1}(\frac{x}{h})}{h}\]
+
+&lt;p&gt;So to find the light coming from the fog for a given view line, I evaluate this integral from the camera to the world fragment.  If the camera is at \(x=a\) and the world fragment is at \(x=b\), the light arriving at a pixel from the illuminated fog along its view ray is&lt;/p&gt;
+
+\[\int_a^b \frac{1}{h^2+x^2} dx  = \frac{tan^{-1}(\frac{b}{h})}{h} - \frac{tan^{-1}(\frac{a}{h})}{h}\]
+
+&lt;h2 id=&quot;thoughts-on-implementation&quot;&gt;Thoughts on Implementation&lt;/h2&gt;
+
+&lt;p&gt;I was able to implement this shader in my deferred shading pipeline without making any serious modifications.  It involved adding around a dozen lines of GLSL code.  If you are computing diffuse+specular lighting with point lights already, your point light shader should already have access to camera position, light position, and the position of the world at the current pixel, and that’s all you need!&lt;/p&gt;
+
+&lt;p&gt;Handling multiple lights is straightforward.  You simply sum the contributions of light scattering from fog for each light.  To make the system efficient for many lights, you should be sure to only compute the integral for pixels close enough to the light to have a chance at contributing a visible amount of light to the scene.  For instance, in a deferred shading pipeline you can render a spherical mesh around the light so that the shader computing the light contribution only runs for pixels near the light.&lt;/p&gt;
+
+&lt;p&gt;I found that the hardest part of implementing this shader is correctly putting your camera and world fragment into light space so that you can take advantage of the simple integral.&lt;/p&gt;
+
+&lt;h2 id=&quot;results&quot;&gt;Results&lt;/h2&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/fog_shader/small_gw_world.png&quot; alt=&quot;A small generate worlds environment&quot; /&gt;
+&lt;em&gt;A small level built with the Generate Worlds algorithm with subtle fog lighting&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/fog_shader/large_gw_world.png&quot; alt=&quot;A large generate worlds environment&quot; /&gt;
+&lt;em&gt;More lights create a stronger effect&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/fog_shader/spaceship_in_directional_fog.jpg&quot; alt=&quot;A spaceship with directional lights&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;By also tracking information about the direction that the light is pointing, you can create nice shaped lights in the fog&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;further-reading&quot;&gt;Further reading&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.cs.cmu.edu/afs/cs/academic/class/16823-s16/www/pdfs/appearance-modeling-19-20.pdf&quot;&gt;Introduction to Light Scattering: An Imaging Sciences Perspective&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;http://www.cs.columbia.edu/~bosun/images/research/sig05/download/rtsc.pdf&quot;&gt;A Practical Analytic Single Scattering Model for Real Time Rendering&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.gamasutra.com/blogs/BartlomiejWronski/20141208/226295/Atmospheric_scattering_and_volumetric_fog_algorithm__part_1.php&quot;&gt;Atmospheric scattering and volumetric fog algorithm part 1&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 20 Apr 2020 00:00:00 +0000</pubDate>
+        <link>http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/graphics/simple_fog_shader</link>
+        <guid isPermaLink="true">http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/graphics/simple_fog_shader</guid>
+        
+        
+        <category>graphics</category>
+        
+      </item>
+    
+      <item>
+        <title>The Constrained Tile Placement Algorithm behind Generate Worlds</title>
+        <description>&lt;p&gt;This post describes the algorithm that powers &lt;a href=&quot;http://generateworlds.com/&quot;&gt;Generate Worlds&lt;/a&gt;, a tool that lets users create and explore procedural worlds by building small sets of voxel tiles.  In this post I’ll give an overview of the algorithm, and my next post will show that it compares favorably to competing methods in terms of speed and flexibility.  For some background on what constraint-based procedural generation is and why it’s interesting, look at my &lt;a href=&quot;https://ijdykeman.github.io/procedural_generation/2019/05/17/introducing-generate-worlds.html&quot;&gt;previous post&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;If you’d like to try your hand at creating procedural worlds using this system, consider buying Generate Worlds.  If the price is too steep, read on, and this post will give you all the information you need to implement the Generate Worlds algorithm yourself.&lt;/p&gt;
+
+&lt;iframe frameborder=&quot;0&quot; src=&quot;https://itch.io/embed/406212?linkback=true&amp;amp;border_width=2&amp;amp;bg_color=353535&amp;amp;fg_color=ffffff&amp;amp;link_color=fa5c5c&amp;amp;border_color=333333&quot; width=&quot;100%&quot; height=&quot;169&quot;&gt;&lt;/iframe&gt;
+
+&lt;h3 id=&quot;tile-sets&quot;&gt;Tile Sets&lt;/h3&gt;
+
+&lt;p&gt;In Generate Worlds, each environment is assembled from a &lt;em&gt;tile set&lt;/em&gt;.  Tiles are simply small voxel models.  Let’s start with an example.  The image below contains 9 tiles.  As you can see, each tile is made of voxels, which display as colored cubes.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/labeled_woods_tiles.svg&quot; alt=&quot;woods tiles&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;If we put arrange these voxel models in a sensible way, we can make a little pastoral scene, as in the animation below. By “sensible” I mean that tiles fit together if their colors match along the touching edge.&lt;/p&gt;
+
+&lt;video width=&quot;100%&quot; controls=&quot;&quot; autoplay=&quot;&quot; loop=&quot;&quot; muted=&quot;&quot;&gt;
+  &lt;source src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/woods_tile_assembly.mov&quot; /&gt;
+Your browser does not support the video tag.
+&lt;/video&gt;
+
+&lt;p&gt;The goal of the Generate Worlds algorithm is to perform this assembly quickly and automatically. Before considering the algorithm, let’s look at the problem setup.&lt;/p&gt;
+
+&lt;h3 id=&quot;putting-tiles-together&quot;&gt;Putting Tiles Together&lt;/h3&gt;
+
+&lt;p&gt;Consider a tile set containing the 4 tiles in the image below:
+&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/simple_tile_set.png&quot; alt=&quot;simple tile set&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;These tiles are analogous to the 3D ones shown in the previous section.&lt;/p&gt;
+
+&lt;p&gt;The Generate Worlds algorithm creates &lt;em&gt;valid tilings&lt;/em&gt; by imposing one simple rule: &lt;em&gt;If two tiles touch, all colors along the touching face must match.&lt;/em&gt;  This rule formalizes the intuition that a human designer might use to construct a 3D world out of voxel tiles.&lt;/p&gt;
+
+&lt;p&gt;In a valid tiling of the 4 tiles above, light-colored cells will touch only light-colored cells and dark-colored cell will only touch dark-colored cells along tile borders.  For example:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/valid_vs_invalid_pair.svg&quot; alt=&quot;valid vs invalid pair&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The example above on the right is invalid because a light square touches a dark square along the edge where the tiles touch.  Below are two valid tilings generated with this tile set:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/simple_example_tilings.png&quot; alt=&quot;simple example tilings&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Creating a valid tiling turns out to be non-trivial in general.  For instance, take the following simple, greedy strategy: We start with an empty grid.  At each iteration, place a tile in some location by choosing a tile that is valid given the tiles that we’ve already placed.  The diagram below illustrates the difficulty with this strategy.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/greedy_placement.svg&quot; alt=&quot;greedy placement&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;By placing tiles without looking ahead at how placements affect future options, the greedy approach quickly gets stuck; in the diagram above, no valid placement is possible at the red location.  This is the central difficulty: past placements can reduce current placement options to zero.  We need some way to prevent placements that cause us to get stuck.  The algorithm implemented in Generate Worlds starts by considering all tiles to be possible at all locations in the grid.  If I place one tile in the grid, clearly some of those possible placements go away.  Once the algorithm takes those possibilities away, it can reexamine the remaining possibilities and remove yet more tiles that are now incompatible with the smaller set of remaining possible tiles at neighboring locations.&lt;/p&gt;
+
+&lt;p&gt;Consider the example below.  The algorithm starts with a 3x3 grid with a single tile placed in the center.  The placement of this tile immediately implies that 9 possible tiles in the neighboring grid locations are impossible, so it removes them from consideration.  Once these tiles are removed, it can remove tiles that are not compatible with any tile still under consideration in the neighboring grid squares.  The red locations in the diagram highlight locations where tiles are removed because they are incompatible with all the neighbors still under consideration.  If the algorithm continues this process until no more tiles can be removed, it gets to the state on the bottom left of the diagram below.  As you can see, many tiles have been removed from consideration.  If a tile placement strategy were to only choose tiles from these remaining groups, it would be considerably less likely to get stuck than it would when using the greedy algorithm I described earlier.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/removing_incompatible_tiles.svg&quot; alt=&quot;removing incompatible tiles&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The problem with this approach is that it requires an expensive iterative process each time I place a tile.  But note that any time I place the inverted T tile, the 19 tiles that I removed in the example above can be removed from consideration around that placement.  I call the collection of tiles that remain under consideration around the tile after it is placed the &lt;em&gt;allowed neighborhood&lt;/em&gt; for that tile.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/allowed_neighborhood_example.svg&quot; alt=&quot;allowed neighborhood example&quot; /&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;rapid-tiling-by-caching-information&quot;&gt;Rapid Tiling by Caching Information&lt;/h3&gt;
+
+&lt;p&gt;&lt;strong&gt;The key insight of the Generate Worlds algorithm is that the information gathered about a tile’s possible neighbors can be reused each time that tile is placed.&lt;/strong&gt;  For the inverted T-shaped tile above, for instance, we can remove 19 tiles from consideration in the eight surrounding grid squares as soon as that tile is placed by looking up a cached version of the allowed neighborhood for that tile.&lt;/p&gt;
+
+&lt;p&gt;For instance, in the example below, the algorithm is tiling a 5x5 grid by using the cached allowed neighborhoods of the 4 tiles.  After placing the first tile, it removes the 19 tiles from consideration that we found to be impossible in the example above.  After placing each tile, the possibilities not in the allowed neighborhood of the placed tile are removed from consideration.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/tiling_a_world.svg&quot; alt=&quot;tiling a world&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Continuing in this way, we can tile the entire grid with only fast local updates to the sets of tiles still under consideration at each location.&lt;/p&gt;
+
+&lt;p&gt;Allowed neighborhoods can be as large as you want, allowing distant incompatible tiles to be removed from consideration each time a tile is placed.  While generating the allowed neighborhoods is relatively slow, it only needs to be done once, and  thereafter each tile placement takes time linear in the size of the neighborhood.&lt;/p&gt;
+
+&lt;h3 id=&quot;extension-to-3d&quot;&gt;Extension to 3D&lt;/h3&gt;
+
+&lt;p&gt;The Generate Worlds algorithm extends naturally to worlds with height.  Instead 2D tiles that must match in color along their shared edges with 4 neighbor tiles, we have 3D tiles that must match in color along 6 faces with their neighbors.  Consider these 3D tiles:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/dungeon_tiles.svg&quot; alt=&quot;dungeon tiles&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Assembling these tiles in 3D looks like this:&lt;/p&gt;
+
+&lt;video width=&quot;100%&quot; controls=&quot;&quot; autoplay=&quot;&quot; loop=&quot;&quot; muted=&quot;&quot;&gt;
+  &lt;source src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/dungeon_tile_assembly.mov&quot; /&gt;
+Your browser does not support the video tag.
+&lt;/video&gt;
+
+&lt;p&gt;In this case, the allowed neighborhoods are 3D grids instead of 2D grids, and the algorithm generates them in an analogous fashion to what I’ve illustrated above for the 2D case.&lt;/p&gt;
+
+&lt;h3 id=&quot;result-gallery&quot;&gt;Result Gallery&lt;/h3&gt;
+
+&lt;p&gt;Below are images of worlds generated using implementations of this algorithm, along with brief descriptions.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/generate_worlds_room.jpg&quot; alt=&quot;generate worlds room&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A screenshot from &lt;a href=&quot;http://generateworlds.com/&quot;&gt;Generate Worlds&lt;/a&gt; showing a  room with an exit.  The ridges on the ceiling coincide with tile boundaries.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/perspective_dungeon.jpg&quot; alt=&quot;perspective view of a dungeon&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A screenshot from a separate tool I am building, which is also powered by the Generate Worlds algorithm, showing different types of rooms and passageways.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/isometric_dungeon.jpg&quot; alt=&quot;isometric view of a dungeon&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A similar world as above, but now in a cute isometric view&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/traitors_world.png&quot; alt=&quot;Dante’s ninth circle&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A world inspired by Dante’s ninth circle of hell: sinner frozen in a plane of ice.  Rendered in MagicaVoxel.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/sodomites_world.png&quot; alt=&quot;Dante’s second circle&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A world inspired by Dante’s second circle of hell: a landscape under burning rain, crossed by a bridge.  Rendered in MagicaVoxel.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/waterfall_world.png&quot; alt=&quot;waterfalls world&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A world with grassy platforms with waterfalls and rivers.  Rendered in MagicaVoxel.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/generate_worlds_algorithm/town_world.png&quot; alt=&quot;town world&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;A medieval town landscape with buildings and walls.  Rendered in MagicaVoxel.&lt;/p&gt;
+
+</description>
+        <pubDate>Fri, 08 Nov 2019 00:00:00 +0000</pubDate>
+        <link>http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/procedural_generation/2019/11/08/generate-worlds-algorithm.html</link>
+        <guid isPermaLink="true">http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/procedural_generation/2019/11/08/generate-worlds-algorithm.html</guid>
+        
+        
+        <category>procedural_generation</category>
+        
+      </item>
+    
+      <item>
+        <title>Introducing Generate Worlds for Procedural Generation without Code</title>
+        <description>&lt;p&gt;The infinite procedurally generated worlds of games like Minecraft and Dwarf Fortress create a sense of exploration and variety that entirely hand-built game worlds cannot compete with.  However, designing and coding the algorithms to actually perform this generation is a specialized technical skill few possess.  At the same time, numerous online communities exist around mapping, painting, and otherwise imagining fantasy environments, and some great products exist to help them do it, like &lt;a href=&quot;https://www.wonderdraft.net/&quot;&gt;Wonderdraft&lt;/a&gt; for drawing fantasy maps.  But something is missing: I want to experience these worlds from the inside, and drawing tools don’t let me do it.&lt;/p&gt;
+
+&lt;p&gt;My desire to design and explore fantasy landscapes inspired me to build the procedurally generated island worlds of &lt;a href=&quot;http://www.brimmingsea.com/&quot;&gt;Brimming Sea&lt;/a&gt; in 2014.  It was a difficult technical task, but imagining and then walking around these islands was magical.  Since then, I’ve created several tools to help me design infinite procedural worlds &lt;em&gt;without writing any code&lt;/em&gt;, and I’m finally happy enough with one of those tools to release it.  I’m calling it Generate Worlds, and it’s available on the itch.io store.&lt;/p&gt;
+
+&lt;iframe frameborder=&quot;0&quot; src=&quot;https://itch.io/embed/406212?linkback=true&amp;amp;border_width=2&amp;amp;bg_color=353535&amp;amp;fg_color=ffffff&amp;amp;link_color=fa5c5c&amp;amp;border_color=333333&quot; width=&quot;100%&quot; height=&quot;169&quot;&gt;&lt;/iframe&gt;
+
+&lt;video width=&quot;100%&quot; controls=&quot;&quot; autoplay=&quot;&quot; loop=&quot;&quot; muted=&quot;&quot;&gt;
+  &lt;source src=&quot;http://ijdykeman.github.io/assets/rule_based_procedural_generation/generation_10s.mp4&quot; /&gt;
+Your browser does not support the video tag.
+&lt;/video&gt;
+
+&lt;p&gt;The video above shows Generate Worlds in action building a landscape and dungeon environment.  The video below briefly describes Generate Worlds.  Read on for the details.&lt;/p&gt;
+
+&lt;iframe width=&quot;100%&quot; height=&quot;370&quot; src=&quot;https://www.youtube.com/embed/DrAtX-EsQM0?autoplay=0&amp;amp;showinfo=0&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;
+
+&lt;h2 id=&quot;generate-worlds-with-rules-instead-of-code&quot;&gt;Generate Worlds with Rules instead of Code&lt;/h2&gt;
+
+&lt;p&gt;The key idea behind Generate Worlds is that instead of writing code that describes how to build the world, you simply create a set of rules about how you want the world to work and Generate Worlds puts it together for you.  Let’s start with a simple example.&lt;/p&gt;
+
+&lt;p&gt;Imagine we want to create a simple dungeon world containing hallways and rectangular rooms.  We will make the world by assembling these six passageway and room pieces:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/rule_based_procedural_generation/dungeon_parts.svg&quot; alt=&quot;dungeon parts&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;I’ll now add a series of rules to put these pieces together into a coherent dungeon, starting with an unstrucutred world made of those pieces but without any rules about how to put them together:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/rule_based_procedural_generation/full_dungeon_sequence.svg&quot; alt=&quot;dungeon construction&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We now have a reasonable looking, simple dungeon layout.  To recap, the rules are simply&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Passageways can connect to other passageways.&lt;/li&gt;
+  &lt;li&gt;All floor space must be enclosed by walls.&lt;/li&gt;
+  &lt;li&gt;Passageways can connect to doors.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;3d-tiles-instead-of-english-rules&quot;&gt;3D Tiles Instead of English Rules&lt;/h2&gt;
+
+&lt;p&gt;Creating these rules is easy compared to writing a dungeon generation algorithm, but it’s hard to convert an english statement like “Passageways can connect to other passageways” to a world, so I’ll instead rely on a 3D visual language.  This language consists of voxel &lt;em&gt;tiles&lt;/em&gt; that the user provides.  These tiles are simple .vox files that a user creates in some voxel editing software and loads into Generate Worlds.  Imagine we want to create a world with walled cities and countryside.  Here’s what the tiles for that world might look like:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/rule_based_procedural_generation/labeled_woods_tiles.svg&quot; alt=&quot;town and country tiles&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The world should have the following properties:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Rivers and roads have no dead ends&lt;/li&gt;
+  &lt;li&gt;Roads can cross rivers over a bridge&lt;/li&gt;
+  &lt;li&gt;Roads can cross into cities through a gate&lt;/li&gt;
+  &lt;li&gt;Walls separate the outside grassy countryside from town interiors&lt;/li&gt;
+  &lt;li&gt;Grassy areas can contain huts and trees&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;To enforce these all these rules, Generate Worlds does only one simple thing:  it ensures that two tiles are only placed next to each other in the world if the tiles are the same color in all the places where they touch, as in the example below.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/rule_based_procedural_generation/road_assembling.svg&quot; alt=&quot;two road tiles assembling&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;In the figure above, we can arrange these two tiles in this way because the tiles’ colors match where they touch.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Placing several tiles looks like this:&lt;/p&gt;
+
+&lt;video width=&quot;100%&quot; controls=&quot;&quot; autoplay=&quot;&quot; loop=&quot;&quot; muted=&quot;&quot;&gt;
+  &lt;source src=&quot;http://ijdykeman.github.io/assets/rule_based_procedural_generation/woods_tile_assembly.mov&quot; /&gt;
+Your browser does not support the video tag.
+&lt;/video&gt;
+
+&lt;p&gt;These tiles are easy to create in a voxel editor like MagicaVoxel.  The tile set above is simply a directory of .vox files that Generate Worlds takes as input.&lt;/p&gt;
+
+&lt;h2 id=&quot;generating-a-dungeon&quot;&gt;Generating a Dungeon&lt;/h2&gt;
+
+&lt;p&gt;Let’s try a more sophisticated world: a 3D dungeon that extends endlessly in all directions.  We can simply provide Generate Worlds with a new tile set of dungeon parts.  Nine of those tiles are shown below.  They contain pieces of passageways, rooms, stairs, columns, arcades, and doorways.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/rule_based_procedural_generation/dungeon_tiles.svg&quot; alt=&quot;dungeon tiles&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Putting them together in 3D looks like this:&lt;/p&gt;
+
+&lt;video width=&quot;100%&quot; controls=&quot;&quot; autoplay=&quot;&quot; loop=&quot;&quot; muted=&quot;&quot;&gt;
+  &lt;source src=&quot;http://ijdykeman.github.io/assets/rule_based_procedural_generation/full_dungeon_generation.mov&quot; /&gt;
+Your browser does not support the video tag.
+&lt;/video&gt;
+
+&lt;p&gt;Loading these .vox files into Generate Worlds, I can explore this dungeon world in first-person.  Generate Worlds lets you set lighting conditions, and place lights.&lt;/p&gt;
+
+&lt;video width=&quot;100%&quot; controls=&quot;&quot; autoplay=&quot;&quot; loop=&quot;&quot; muted=&quot;&quot;&gt;
+  &lt;source src=&quot;http://ijdykeman.github.io/assets/rule_based_procedural_generation/generation_10s.mp4&quot; /&gt;
+Your browser does not support the video tag.
+&lt;/video&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;My goal is to build a creative tool that isn’t quite like anything already in existence.  Minecraft lets you modify worlds block by block and explore them, but it doesn’t let you redefine how the world is created in the first place, limiting the scope of what you can build.  Mapping and drawing tools help you imagine and design worlds, but don’t let you explore them.  Finally, coding your own algorithms gives you huge flexibility, but at the cost of much higher difficulty.  And for what it’s worth, the worlds I’ve made in Generate Worlds are more varied and compelling than what I’ve been able to create by hand-building procedural generation algorithms in the past.&lt;/p&gt;
+
+&lt;p&gt;If you want to explore this creative avenue, consider supporting this effort by purchasing Generate Worlds.  A &lt;a href=&quot;http://generateworlds.com/tutorial.html&quot;&gt;tutorial&lt;/a&gt; is available to get you started.  If you have any issues using it, you can contact me at ijdykeman@gmail.com .&lt;/p&gt;
+</description>
+        <pubDate>Fri, 17 May 2019 00:00:00 +0000</pubDate>
+        <link>http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/procedural_generation/2019/05/17/introducing-generate-worlds.html</link>
+        <guid isPermaLink="true">http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/procedural_generation/2019/05/17/introducing-generate-worlds.html</guid>
+        
+        
+        <category>procedural_generation</category>
+        
+      </item>
+    
+      <item>
+        <title>Simple Depth Estimation from Multiple Images in Tensorflow</title>
+        <description>&lt;p&gt;As a robot navigates in an unknown environment, it must take measurements and simultaneously estimate its own location and the shape of the world around it.  This is called the SLAM (simultaneous localization and mapping) problem  Here, I consider the &lt;em&gt;monocular SLAM&lt;/em&gt; case, where the robot is armed with just a single RGB camera.  I simplify the problem further by only building a small map within the view of a single camera image.  My task, then, is to take in a few camera images of a scene and reconstruct its 3D geometry.&lt;/p&gt;
+
+&lt;p&gt;It turns out that you can represent this 3D reconstruction task as an optimization problem and set it up in a few lines of Python.  My approach is based on the depth map estimation step of the &lt;a href=&quot;https://vision.in.tum.de/_media/spezial/bib/engel14eccv.pdf&quot;&gt;LSD-SLAM&lt;/a&gt; algorithm, but it is significantly simpler.  The cost of this simplicity is that my approach is slower to run.&lt;/p&gt;
+
+&lt;p&gt;Given a scene of a rock and a plant, my algorithm recovers the 3D geometry of the scene and the positions of the cameras that photographed it from five different positions.  The algorithm jointly optimizes over the estimated camera poses and scene geometry to produce the scene below.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/simple_depth/point_cloud_with_poses_labelled.svg&quot; alt=&quot;depth from motion graph&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;This animation shows the depth map being refined over the course of optimization.  Brighter pixels are estimated to be closer to the camera.&lt;/p&gt;
+
+&lt;video width=&quot;100%&quot; controls=&quot;&quot; autoplay=&quot;&quot; loop=&quot;&quot; muted=&quot;&quot;&gt;
+  &lt;source src=&quot;http://ijdykeman.github.io/assets/simple_depth/deep_image_prior_map_optimization.mp4&quot; /&gt;
+Your browser does not support the video tag.
+&lt;/video&gt;
+
+&lt;h2 id=&quot;background&quot;&gt;Background&lt;/h2&gt;
+
+&lt;p&gt;This post assumes that you are familiar with basic linear algebra and gradient descent.  You don’t need to know about any simultaneous localization and mapping (SLAM) algorithms to understand this post.  My algorithm uses a Lie Algebra representation of SE(3) to represent camera poses.  In this post, I treat that machinery as a black box, though if you want to understand it, I recommend &lt;a href=&quot;http://ethaneade.com/lie.pdf&quot;&gt;Ethan Eade’s document on Lie algebras&lt;/a&gt; for representing transformations.&lt;/p&gt;
+
+&lt;h2 id=&quot;why-we-care-about-depth&quot;&gt;Why we care about depth&lt;/h2&gt;
+
+&lt;p&gt;A depth image contains at each pixel the distance from the camera to that point in the scene.  This small 3D model of the world in the camera’s view is useful for building larger maps and localizing a robot within them.  The quickest way to get a depth image is to use an RGB-Depth camera like a Kinect or RealSense.  However, such hardware is more expensive than standard RGB cameras and not nearly as ubiquitous.  In low-cost robotics applications, for instance, we are interested in ways of getting the same 3D information about the world with clever algorithms and cheap RGB cameras.&lt;/p&gt;
+
+&lt;h2 id=&quot;depth-from-rgb-images&quot;&gt;Depth from RGB images&lt;/h2&gt;
+
+&lt;p&gt;In the absence of hardware for instantly producing RGB-D images, you can produce depth images by imaging the same scene from several perspectives and then reconstructing its 3D geometry.  This method does not require knowledge of the exact positions that the different frames were taken from.   This sets it apart from methods that assume you have a calibrated stereo pair of cameras.  As we will see, the algorithm works with unknown camera poses on unknown scenes.&lt;/p&gt;
+
+&lt;p&gt;If we assume the scene is rigid, we can reason about what the scene’s 3D structure must be given that the camera saw a certain set of images.  For instance, in the images in the figure below, the green cylinder moves more in the image between frames than the blue cube does because it is closer to the camera.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/simple_depth/depth_from_motion_setup.svg&quot; alt=&quot;depth from motion setup&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;the-algorithm&quot;&gt;The algorithm&lt;/h2&gt;
+
+&lt;p&gt;This algorithm takes as input a set of images like those in the scene above and arbitrarily designates one to be the “reference image.”  The algorithm outputs the distance from the reference camera plane to each point in the scene, along with the camera poses from which each photo was taken.&lt;/p&gt;
+
+&lt;p&gt;The heart of this algorithm is the &lt;em&gt;warp&lt;/em&gt; operation that takes an image taken by one camera and renders it as though it were taken from another position.  It is aware of the scenes geometry and so captures effects like parallax.  If we correctly estimate scene geometry and all camera poses, we should be able to warp the images taken from one view to another view and end up with an image that looks the same.&lt;/p&gt;
+
+&lt;p&gt;In my algorithm, I warp all the scene images into the view of the reference camera.  I then optimize the estimated camera poses and scene geometry until all the scene images look as similar as possible to the reference image.&lt;/p&gt;
+
+&lt;p&gt;The diagram below gives a high level overview of this approach.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/simple_depth/depth_from_motion_graph.svg&quot; alt=&quot;depth from motion graph&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The image warp is a differentiable operation that takes as input&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;The depth image from the reference camera’s view&lt;/li&gt;
+  &lt;li&gt;Some image of the scene \(I\)&lt;/li&gt;
+  &lt;li&gt;A transform that takes the reference camera’s pose and moves it to the pose of the camera that took the scene image \(I\)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;and outputs a warped image where the pixels in \(I\) have been moved to their locations in the view of the reference camera.  In a nutshell, we know how the camera projects world points into the image plane, we know how far each reference image pixel is from the reference camera, and we have estimated the transform between the reference camera and the camera that took \(I\). Given all that, we can calculate a correspondence between pixels in \(I\) and pixels in the reference image.  By resampling \(I\) according to this correspondence, we get an image of the pixels in \(I\) from the reference camera’s point of view.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/simple_depth/image_warping.svg&quot; alt=&quot;depth from motion graph&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The figure above illustrates warping one pixel between camera views by inferring its location in 3D space.  This correspondence is found for all pixels in order to warp one view into another.   The warp operation is differentiable, allowing us to easily optimize the depth and pose variables it takes as input using gradient descent.&lt;/p&gt;
+
+&lt;p&gt;The formula for the warp given&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;\(p\), a pixel location in the reference image&lt;/li&gt;
+  &lt;li&gt;\(d(p)\), a function mapping a pixel location \(p\) in the reference image to the depth value at that location&lt;/li&gt;
+  &lt;li&gt;\(\textbf{T}\), a homogeneous transformation matrix representing the transform from some camera’s frame to that of the reference image&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;is&lt;/p&gt;
+
+\[\text{warp}(p, d, \textbf{T}) = \textbf{T} \begin{bmatrix}
+           p_x \\
+           p_y \\
+           1/d(p) \\
+           1
+         \end{bmatrix}\]
+
+&lt;p&gt;gives us the location of pixel \(p\) in the view of the reference camera.  The homogeneous transform \(T\) is computed from the representation of the camera poses using the method in Ethan Eade’s document, which I implement for Tensorflow in tf_lie.py.&lt;/p&gt;
+
+&lt;p&gt;Once \(I\) is warped into the reference camera view, we need some way of measuring how well this warped image approximates the reference image.  This will tell us how closely our depth map and camera poses match the true values.  I use a photometric loss to measure the difference between two images.  There are many possible functions we could use here.  I simply compute a Huber loss on the raw RGB values.  The Huber loss has a couple of nice properties.  First, it is dead simple.  Second, the Huber loss is a robust loss, so if some pixels are way off due to occlusion or specular highlights in one image, our total loss will not be hugely affected.  If \(ref(p)\) is the reference image’s color at position \(p\) and \(I(p)\) is an image \(I\)’s color at position \(p\), then our cost function is&lt;/p&gt;
+
+\[\sum_p \text{Huber}(ref(p), I(\text{warp}(p, d, T)))\]
+
+&lt;p&gt;For clarity, the function above elides summing over the r, g, and b channels of each pixel.&lt;/p&gt;
+
+&lt;p&gt;As a note, the iteratively reweighted least squares optimization scheme proposed in the LSD-SLAM paper can be seen as finding the minimum of the robust distance metric between images, although they don’t frame it this way.  Details on that can be found in Ethan Eade’s document on Gauss-Newton optimization.&lt;/p&gt;
+
+&lt;p&gt;Given the ability to represent camera poses and warp images, solving for the depth map and camera poses is a simple optimization problem to set up.  Given a few images \(I\) and a reference image, we take a sum over the photometric loss for each \(I\) given the depth estimate and camera pose estimate for that image.  We can now jointly optimize the poses and depth using gradient descent to minimize the sum of photometric losses.&lt;/p&gt;
+
+&lt;p&gt;The video below shows the whole optimization process in action.  The points on the lower right are the estimated locations of the cameras.  Each pixel in the scene is represented as a point that moves closer to or farther away from the reference camera (the blue point) according to its depth value over the course of optimization.  Notice how the camera images are arranged in a smooth arc.  That is because I took these images from a video, during which I made a smooth sweeping motion with the camera.&lt;/p&gt;
+
+&lt;video width=&quot;100%&quot; controls=&quot;&quot; autoplay=&quot;&quot; loop=&quot;&quot; muted=&quot;&quot;&gt;
+  &lt;source src=&quot;http://ijdykeman.github.io/assets/simple_depth/deep_prior_pointcloud_2.mp4&quot; /&gt;
+Your browser does not support the video tag.
+&lt;/video&gt;
+
+&lt;!-- This animation below shows 4 scene images being warped into progressively better estimates of the reference image.  First, the images are roughly aligned with the reference camera’s view by adjusting the pose estimates.  Toward the end of the animation, some  --&gt;
+&lt;!-- scene elements shift subtly as the algorithm adjusts its 3D geometry estimate.  Try zooming in on the top left image and watching the animation. --&gt;
+&lt;!-- &lt;div style=&quot;width:100%;height:0;padding-bottom:100%;position:relative;&quot;&gt;&lt;iframe src=&quot;https://giphy.com/embed/U89joc4KJrsys7T0Gs&quot; width=&quot;100%&quot; height=&quot;100%&quot; style=&quot;position:absolute&quot; frameBorder=&quot;0&quot; class=&quot;giphy-embed&quot; allowFullScreen&gt;&lt;/iframe&gt;&lt;/div&gt; --&gt;
+
+&lt;h1 id=&quot;an-implementation-in-tensorflow&quot;&gt;An implementation in tensorflow&lt;/h1&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/IJDykeman/simple_depth_from_motion&quot;&gt;My implementation can be found here.&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;That repo contains&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;An ipython notebook that generates a depth map using my approach&lt;/li&gt;
+  &lt;li&gt;A directory of images of the rock and plant scene&lt;/li&gt;
+  &lt;li&gt;tf_lie.py, a utility for handling SE(3) transformations in Tensorflow which operates on  tensors for which the last dimension represents SE(3) elements&lt;/li&gt;
+  &lt;li&gt;image_warping.py which implements the image warp described above&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The heart of the implementation is this snippet, which is in the notebook.  Here it is pared down for clarity, omitting some casting and other cruft.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;depth&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;  &lt;span class=&quot;n&quot;&gt;tf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;abs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Variable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;ones&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;400&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;400&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;])))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;cost&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.0&lt;/span&gt;
+
+&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;scene_image&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;scene_images&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;c1&quot;&gt;# pose representation for the cameras that took each scene image
+&lt;/span&gt;    &lt;span class=&quot;n&quot;&gt;translation_representation&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Variable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([[&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.01&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.01&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.01&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]])&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;rotation_representation&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Variable&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([[&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.01&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.01&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mf&quot;&gt;0.01&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]])&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;warped_scene_image&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;warp_image&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;scene_image&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;depth&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                    &lt;span class=&quot;n&quot;&gt;translation_representation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+                                    &lt;span class=&quot;n&quot;&gt;rotation_representation&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+    &lt;span class=&quot;n&quot;&gt;cost&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;losses&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;huber_loss&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reference_image&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;warped_scene_image&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    
+&lt;span class=&quot;n&quot;&gt;optimizer&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;train&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;AdamOptimizer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;learning_rate&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;005&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;).&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;minimize&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cost&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;init&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;global_variables_initializer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;sess&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tf&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nc&quot;&gt;Session&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;sess&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;init&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;nf&quot;&gt;range&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;sess&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nf&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;optimizer&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In about a dozen lines of python, you can capture the essence of the depth map estimation algorithm.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;First, initialize the depth map to be all ones and constrain depth to be positive.&lt;/li&gt;
+  &lt;li&gt;Define the cost to be the robust Huber metric between the reference image and the scene image warped into the reference view.&lt;/li&gt;
+  &lt;li&gt;Minimize the loss by adjusting the camera poses and the depth map using gradient descent.&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;The rest of the code in the notebook is data setup and visualization.&lt;/p&gt;
+
+&lt;p&gt;In this project, I have allowed myself one hack: I include a total variation term in the cost function.  Total variation measures the amount of discontinuity in the depth map and so encourages the depth map to be smooth.  This term makes the results look better and something like it is often used in depth estimation, but is not very principled.  For instance, it penalizes flat surfaces that are tilted with respect to the camera, and a surface like grass that truly has lots of depth discontinuity will be penalized.  A slightly better approach would be to penalize the curvature of the depth map, but that is a slippery slope of heuristics and hand-tuning.&lt;/p&gt;
+
+&lt;p&gt;This approach yields the depth map below.  It looks reasonable, but has obvious blocky artifacts caused by the total variation term encouraging flat regions to form.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/simple_depth/naive_depth_image.png&quot; alt=&quot;depth&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;refining-the-depth-map-using-a-deep-image-prior&quot;&gt;Refining the depth map using a “deep image prior”&lt;/h1&gt;
+
+&lt;p&gt;In the approach above, I represent each pixel as an independent depth value, and introduce some regularity through a total variation term.  While this is important for reducing high-frequency noise in the depth map, it creates artifacts of its own.  This motivated me to explore other forms of regularization.&lt;/p&gt;
+
+&lt;p&gt;In the &lt;a href=&quot;https://arxiv.org/abs/1711.10925&quot;&gt;deep image prior&lt;/a&gt; paper, the authors consider a related problem of denoising natural images.  The authors train a u-net style architecture to take a corrupted image and simply reproduce it as the network’s output.  This task is trivial since the network need only memorize a single data sample.  However, the authors show that the network tends to memorize “natural” image structure more easily than noise and other artifacts.  The u-net serves as a useful prior in the sense that it more readily memorizes the structure the authors are interested in preserving from the image.&lt;/p&gt;
+
+&lt;p&gt;I experimented with representing the depth map as the output of a u-net rather than as independent values at each pixel.  The u-net architecture takes as input the reference image and downsamples it before resampling it up to its original resolution.  At each resolution, there is a residual path allowing some high-resolution spatial information to be preserved.  I found that this approach works surprisingly well and is insensitive to the exact hyperparameters of the u-net such as number of downsampling operations or the number of filters.&lt;/p&gt;
+
+&lt;p&gt;An example of a depth map produced with this approach is shown below.  This depth map is overall much smoother, but also recovers fine details such as the twigs to the upper right of the rock.  Following the intuition of the deep image prior paper, I imagine that the network tends to default to producing smooth regions because they are easiest to represent.  However, the architecture is highly expressive, and so can output arbitrarily fine detail when forced to do so by the cost function.  This is closer to regularizing the depth map toward some abstract ideal of “parsimony” rather than toward a particular type of simplicity, such as geometric smoothness.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/simple_depth/cnn_depth_image.png&quot; alt=&quot;depth&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The diagram below shows that this approach differs from the previous one only in terms of the representation of the depth map.
+&lt;img src=&quot;http://ijdykeman.github.io/assets/simple_depth/depth_from_motion_graph_u_net.svg&quot; alt=&quot;depth from motion graph&quot; /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h1&gt;
+
+&lt;p&gt;For this scene of a plant and a rock on some leaf litter,&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/simple_depth/reference_image.png&quot; alt=&quot;scene&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;my approach which represents the depth map using a u-net produces this depth map:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/simple_depth/cnn_depth_image.png&quot; alt=&quot;depth&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;While that depth map is not perfect, it was produced with a very simple optimization setup.  Once you have utilities for manipulating camera poses (tf_lie.py) and doing image warping (image_warping.py), the depth problem can be solved in about a dozen lines of tensorflow code.  This stands in stark contrast to much of the work in the literature, where real-time requirements shift the focus from the fundamental simplicity of the optimization problem at hand to the complex approaches one needs to use in order to gain speed.&lt;/p&gt;
+
+</description>
+        <pubDate>Sun, 07 Apr 2019 00:00:00 +0000</pubDate>
+        <link>http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/slam/2019/04/07/simple-depth-from-motion.html</link>
+        <guid isPermaLink="true">http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/slam/2019/04/07/simple-depth-from-motion.html</guid>
+        
+        
+        <category>slam</category>
+        
+      </item>
+    
+      <item>
+        <title>Measuring the Similarity between Short English Phrases using Recurrent Neural Networks</title>
+        <description>&lt;p&gt;In this post, I will give a high level description an algorithm I created while interning at Tableau for measuring the similarity of short English phrases.  This algorithm is used in the natural language interface described in our paper &lt;a href=&quot;https://research.tableau.com/sites/default/files/VAST2017_105.pdf&quot;&gt;Applying Pragmatics Principles for Interaction with Visual Analytics&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/phrase_similarity_figures/data_table_with_query.svg&quot; alt=&quot;The model selects a mapping between phrases and columns&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;In the summer of 2016, my group at Tableau was working on building a system called Evizeon, which is natural language interface that takes in English queries and produces visualizations in response.  Say the user is examining a data set of pieces of real estate which contains information with location, neighborhood, square footage, and price.  The user might ask for the “most expensive houses in Queen Anne,” where Queen Anne is a neighborhood.  The system must now figure out that “expensive” refers to price, and a high price in particular.  The system must also infer that Queen Anne refers to the neighborhood the house is in.  In the end, we would like the system to display the houses with the highest prices in the Queen Anne neighborhood.  Our system is able to correctly answer this query.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/phrase_similarity_figures/most_expensive.png&quot; alt=&quot;expensive houses in Evizeon&quot; /&gt;
+&lt;em&gt;This screenshot from the Evizeon system shows the visualizations that result from the query “most expensive houses in Queen Anne.”&lt;/em&gt;
+&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;My contribution to this project was the algorithm that matches short phrases to data columns.  In the case above, my system matches “expensive” to the home_price attribute and determines that the user wants items with the highest price.  My system is not responsible for identifying which phrases in the input need to be matched with data columns; that is handled separately.&lt;/p&gt;
+
+&lt;h2 id=&quot;word-embedding-spaces&quot;&gt;Word Embedding Spaces&lt;/h2&gt;
+
+&lt;p&gt;The next section assumes basic familiarity with word embeddings, so I will provide a brief overview of them here.  In essence, a word embedding is a space, usually high dimensional, in which each word occupies a point.  This space is useful because, if the embedding space is well built, similar words will appear near each other and unrelated words will be far apart.  Word embedding spaces have many other interesting properties, such as providing representations of words that can make solving simple analogies like &lt;em&gt;man : woman :: king : queen&lt;/em&gt; easy.  For the purposes of this article, it is sufficient to know that each word has a place in the embedding space, and similar words are close to each other.  Note that usually, proximity is measured with cosine distance instead of Euclidean distance.&lt;/p&gt;
+
+&lt;p&gt;The particular embedding that I use in this paper is trained by &lt;a href=&quot;http://aclweb.org/anthology/Q16-1002&quot;&gt;Hill et al.&lt;/a&gt;
+ using the word2vec algorithm.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/phrase_similarity_figures/word2vec.svg&quot; alt=&quot;The model selects a mapping between phrases and columns&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;mapping-phrases-into-a-word-embedding-space&quot;&gt;Mapping Phrases into a Word Embedding Space&lt;/h2&gt;
+
+&lt;p&gt;In order to take a query phrase and select the most similar column description phrase, we need some way to measure similarity between short English phrases.  Methods exist for comparing long English documents using features like shared words.  One such method is creating a vector for each document where each position in the vector holds the number of times a certain words appears in that document.  If two documents share many words, these vectors will have a high cosine similarity.  There are many algorithms that improve upon this strategy, but this is the basic idea.  These algorithms work well on large documents with many words, but two short phrases meaning exactly the same thing like “high price” and “expensive” will very likely have no words in common, so word counting based approaches will not work well.&lt;/p&gt;
+
+&lt;p&gt;One possible approach to solving this problem might be to train a model to take in two phrases and predict their similarity.  The difficulty of this is that it would require a large data set of pairs of similar and dissimilar short phrases.  I know of no such data set.  Rather than training on the phrase similarity task directly, I used a domain adaptation approach where I adapted a model that embeds phrases into a word embedding space in which distance measurements are easy.  Given a vector in a word embedding space for each phrase, I will use the cosine similarity between these phrase vectors to measure the similarity between phrases.  Now I needed a way to place phrases into a word embedding space so that similar phrases end up near each other.&lt;/p&gt;
+
+&lt;p&gt;One model which maps word sequences to word vectors was proposed by Hill et al.  It is an RNN that takes in a dictionary definition and predicts the vector for the word that the definition corresponds to.  Using this model, two dictionary definitions with the same meaning, like “costing a lot of money” and “having a high price” should map near the same vector for “expensive.”  This seems a lot like the behavior we are looking for, as long as the domain adaptation from the domain of dictionary definitions to the domain of short English phrases works well.&lt;/p&gt;
+
+&lt;p&gt;I implemented the Hill et al. model in Tensorflow and trained it on the data set they provide.  As a word of caution to those considering using this data themselves, there is an issue with the train/test split in the data they provide.  By my count, about 71% of the holdout definitions are also in the training data. It looks like the issue is with definitions in the holdout set which have parentheses, semicolons, or numbers. Perhaps the system used to remove holdout definitions from the train set did the comparison without stripping those out, even though they were stripped from the training data.  I have notified the authors of that paper about this.&lt;/p&gt;
+
+&lt;p&gt;I found that the Hill et al. model does in fact produce reasonable embedding space vectors for short phrases as well as actual dictionary definitions.  Below is a diagram illustrating how the LSTM networks takes in two similar phrases and maps them near each other in the embedding space.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/phrase_similarity_figures/phrase2vec.svg&quot; alt=&quot;Mapping a phrase to a vector&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;ranking-phrases-by-similarity-to-a-query&quot;&gt;Ranking Phrases by Similarity to a Query&lt;/h2&gt;
+
+&lt;p&gt;The task we are studying is not measuring the similarity between phrases, but  rather ranking a number of data columns in order or relevance to a query.  The label of a data column is only one piece of information we have about that column.  A good tanking scheme will also take advantage of other information in the data column, such as words that appear in the data itself, and perhaps simple word matching features.  For instance, if “Queen Anne” appears in a data column and a user asks for houses in Queen Anne, we would like the ranker to make the obvious choice to rank that column highly.  To accomplish this, I created a number of hand crafted similarity features to go along with the phrase match feature.  These features included verbatim word matches between query phrases and column contents and cosine distance between the average of the word vectors on the column header and the query.  If the column contained members of a compact set, like one of 20 neighborhood names, I would also consider the cosine distance between the average of the word vectors of the members of that set and the average of the word vectors in the query.  This tends to help pick out direct synonyms.  All of these features are then fed into a logistic regressor that predicts the probability that a given column and phrase are a match.  To train this logistic regressor, I hand labeled a set of query phrases with the best matching columns among some data sets that we used for testing Evizeon.  This small data set was sufficient for training the simple logistic regression model.&lt;/p&gt;
+
+&lt;p&gt;This logistic regressor can give us, for any pair of columns, the probability that one column is a better match for the query than the other.  We must now turn these pairwise orderings into a full ranking of all the columns.  Below is an image of a graph representation of this problem.  The nodes are columns and the directed edges between pairs of nodes denote the probability that the node the edge points to is a better match for the query than the source of the edge.  In this case, we see that lots of high value edges point to “home price,” which makes sense, since it is a match for “expensive,” which is our query phrase.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/phrase_similarity_figures/ordering_probability_graph.svg&quot; alt=&quot;Unnormalized ranking graph&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Intuitively, we would like to rank these nodes by how much weight the models points into them, which is easy when only one node has lots of high value edges into it.  But when multiple nodes are good matches for the input, we need to have a good way of deciding which is better.  When deciding how highly to rank a node, we would probably prefer that it receive more ranking weight from nodes that themselves have a high value.  This is a lot like the problem that the early Google Search prototype solved with the PageRank algorithm: pages with lots of links from websites that have lots of links pointing to them get highly ranked, and lend lots of weight to sites that they themselves point to.  We will solve this problem in the same way they do, by treating this graph as a Markov chain where the outgoing weights from any node are normalized to be a valid probability distribution.  We will then find the steady state of the markov chain, which will give us the probability for each node that a random walk around the chain will land on that node.  This probability distribution will have the desired property that nodes pointed to with high weight by nodes that are themselves highly ranked will receive high rank.  I found that this ranking scheme works very well in practice.  This ranking scheme is the one used in Evizeon.&lt;/p&gt;
+
+&lt;!-- ## One More Thing: Detecting Top-N and Bottom-N queries --&gt;
+
+&lt;h2 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h2&gt;
+
+&lt;p&gt;Our paper quotes a user who stated, &lt;em&gt;“I did not think it would understand the word
+expensive… that blows my mind a little bit!”&lt;/em&gt;  I think this is a great example of the value of this work.  Tableau users are used to having to formally specify which data attributes they are referring to at all times through the Tableau GUI, and in the previous version of Evizeon, called Eviza, they had to be similarly rigorous in their references to the data when interacting with the system using English queries.  The real promise of a system like Evizeon is to allow users who are unfamiliar with the source data to interact seamlessly with visualizations built from that data.  Disambiguating their reference to data attributes is an important step toward this goal.&lt;/p&gt;
+
+</description>
+        <pubDate>Mon, 30 Oct 2017 00:00:00 +0000</pubDate>
+        <link>http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2017/10/30/comparing-phrases.html</link>
+        <guid isPermaLink="true">http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2017/10/30/comparing-phrases.html</guid>
+        
+        
+        <category>ml</category>
+        
+      </item>
+    
+      <item>
+        <title>Procedural Worlds from Simple Tiles</title>
+        <description>&lt;p&gt;&lt;strong&gt;In the two years after publishing this&lt;/strong&gt;, I worked on refining this algorithm to power a real-time world generator, called Generate Worlds, and it lets you design your own 2D and 3D tile sets and explore the worlds they generate in first-person.  &lt;a href=&quot;/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/procedural_generation/2019/05/17/introducing-generate-worlds.html&quot;&gt; I have a post that describes it&lt;/a&gt;, and it’s available for purchase on itch.io.&lt;/p&gt;
+
+&lt;iframe frameborder=&quot;0&quot; src=&quot;https://itch.io/embed/406212?linkback=true&amp;amp;border_width=2&amp;amp;bg_color=353535&amp;amp;fg_color=ffffff&amp;amp;link_color=fa5c5c&amp;amp;border_color=333333&quot; width=&quot;100%&quot; height=&quot;169&quot;&gt;&lt;/iframe&gt;
+
+&lt;p&gt;Here’s Generate Worlds in action:&lt;/p&gt;
+
+&lt;video width=&quot;100%&quot; controls=&quot;&quot; autoplay=&quot;&quot; loop=&quot;&quot; muted=&quot;&quot;&gt;
+  &lt;source src=&quot;http://ijdykeman.github.io/assets/rule_based_procedural_generation/generation_10s.mp4&quot; /&gt;
+Your browser does not support the video tag.
+&lt;/video&gt;
+
+&lt;hr /&gt;
+
+&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;/h1&gt;
+
+&lt;p&gt;This post describes two algorithms for creating complex procedural worlds from simple sets of colored tiles and constraints on the placements of those tiles.  I will show that by carefully designing these tile sets, you can create interesting procedurally generated content, such as landscapes with cities, or dungeons with complex internal structure.  The video below shows the system creating a procedural world based on the rules encoded in 43 colored tiles.&lt;/p&gt;
+
+&lt;iframe width=&quot;100%&quot; height=&quot;500&quot; src=&quot;https://www.youtube.com/embed/XVIYY0AQF-8?rel=0&amp;amp;showinfo=0&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot; style=&quot;display: block; margin: auto;&quot;&gt;&lt;/iframe&gt;
+
+&lt;p&gt;The image below shows the tile set that generated the world in the video above.  The world is annotated to assist in the exercise of imagination required to see it as an actual environment.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/wang_tiles/map_explanation.svg&quot; alt=&quot;map explanation&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;We will define a tiling as a finite grid where one of those tiles lies in each grid square.  We will further define a valid world as one where the colors along the edges of adjacent tiles must be the same.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/wang_tiles/pair_examples.svg&quot; alt=&quot;valid pairs&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;This is the only concrete rule for a tiling: tile edge colors must match up.  All the higher level structure flows from this.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;A valid tiling looks like this:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/wang_tiles/example_valid_tiling.png&quot; alt=&quot;valid tiling&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;This is a tiling which is supposed to represent a map with water, beaches, grass, towns with buildings (blue rectangles), and snow capped mountains.  The black lines show borders between tiles.&lt;/em&gt;&lt;/p&gt;
+
+&lt;!-- In this post, I&apos;ll explore algorithms for efficiently taking large, complex tile sets and producing valid or nearly valid tilings that look like convincing landscapes, dungeons, and other commonly procedurally generated content.  When these algorithms work well, they can produce some very nice looking results: --&gt;
+
+&lt;p&gt;I think this is an interesting way to describe and create worlds because very often, procedural generation algorithms take a top-down approach.  L-systems, for instance, rely on a recursive description of an object where the top level, large details are determined before lower level ones.  There is nothing wrong with this approach, but I think that it is interesting to create tile sets that are only able to encode simple low level relationships (e.g., ocean water and grass must be separated by a beach, buildings can only have convex, 90 degree corners) and see high level patterns emerge (e.g. square buildings).&lt;/p&gt;
+
+&lt;h2 id=&quot;tiling-is-an-np-complete-constraint-satisfaction-problem&quot;&gt;Tiling is an NP complete Constraint Satisfaction Problem&lt;/h2&gt;
+
+&lt;p&gt;For the reader familiar with constraint satisfaction problems (CSPs), it will already be clear that tiling a finite world is a CSP.  In a CSP, we have a set of variables, a set of values that each variable can take on (called its domain), and a set of constraints.  For us, the variables are locations in the map, the domain of each variable is the tile set, and the constraints are that tiles must match along their edges with their neighbors.&lt;/p&gt;
+
+&lt;p&gt;Intuitively, the problem of correctly creating a nontrivial tiling is hard because the tile sets can encode arbitrary, long range dependencies.  Formally, this is an NP complete constraint satisfaction problem when we consider tile sets in general.  A naive algorithm for creating tilings would exhaustively search the space of tilings and run in exponential time.  The hope is that we can create interesting worlds using tile sets that are solvable using search accelerated by heuristics.  The other option is to create tilings that are nearly correct, but may have a small number of incorrect placements.  I have found two algorithms that work well with some interesting tile sets, and I describe them below.&lt;/p&gt;
+
+&lt;!-- ## Examples of Interesting Tile Sets
+
+To motivate this post, I&apos;ll show a few tile sets that I&apos;ve come up with and some tilings that can be generated under the constraints they describe.  
+ --&gt;
+
+&lt;h2 id=&quot;method-1-greedy-placement-with-backjumping&quot;&gt;Method 1: Greedy Placement with Backjumping&lt;/h2&gt;
+
+&lt;p&gt;&lt;em&gt;Keep choosing random locations and place valid tiles there.  If you get stuck, remove some and try again.&lt;/em&gt;&lt;/p&gt;
+
+&lt;div class=&quot;language-plaintext highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;Initialize the entire map to UNDECIDED
+
+while UNDECIDED tiles remain on the map
+    if any valid tile can be placed on the map
+      t &amp;lt;- collection of all possible valid tile placements
+      l &amp;lt;- random selection from t weighted by tile probabilities
+      place l on the map
+    else
+      select a random UNDECIDED tile and set all its neighbors to UNDECIDED
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/wang_tiles/randomized_algo_diagram.svg&quot; alt=&quot;randomized algorithm example&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The first approach I took to creating a tiling from a tile set is to simply start with the entire grid in an undefined state, and to iteratively place a random tile in a location where it is valid, or, if no locations are valid, set a small region on near an undefined tile to be undefined and continue greedy placement.  The “greedy placement” is the strategy of placing a tile as long as all its edges line up with existing tiles, without regard for whether this placement will create a partial tiling that cannot be completed without removing existing tiles.  When such a situation arises, and we cannot place any more tiles, we must remove some previously placed tiles.  But we can’t say which are ideal to remove, because if we could solve that problem, we could probably also have solved the problem of placing tiles in a smart way in the first place.  To give the algorithm another chance at finding a valid tiling for a given area, we set all the tiles around the location that undefined and continue with the greedy placement strategy.  Eventually, the hope is, a valid tiling will be found, but this is not guaranteed.  The algorithm will continue to run until a valid tiling is found, which may be forever.  It has no ability to detect when a tile set is unsolvable.&lt;/p&gt;
+
+&lt;p&gt;There is no guarantee that this algorithm will halt.  A simple tile set with two tiles that share no colors would cause this algorithm to loop forever.  An even simpler case would be one tile with different colors on the top and bottom.  It might make sense to somehow check for tile sets that cannot produce valid tilings.  We might say that a tile set is certainly valid if it can tile an infinite plane.  In some cases it is clearly possible to prove or disprove whether a tile set can tile an infinite plane, but the problem turns out to be undecidable in general.  Therefore, it is up to the designer of the tile set to create one which can yield a valid tiling.&lt;/p&gt;
+
+&lt;p&gt;This algorithm is unable to find good solutions for the dungeon tile set in the video at the top of this post.  It performs well on simpler tile sets.  We would like to solve more complex tile sets where many types of transitions between tiles are possible and lots of rules (e.g. roads begin and end at buildings) are encoded.
+We need an algorithm that is able to look ahead and take make tile placements while being somehow aware of what options that placement will leave open for future placements.  This will allow us to efficiently solve complex tile sets.&lt;/p&gt;
+
+&lt;h3 id=&quot;from-a-constraint-satisfaction-perspective&quot;&gt;From a constraint satisfaction perspective&lt;/h3&gt;
+
+&lt;p&gt;This algorithm is a backjumping random search.  At each step, we attempt to assign a single variable.  If we cannot, we unassign a variable and all the variables which are connected by constraints to it.  This is called backjumping, which differs from backtracking, where we unassign only one variable at a time.  In backtracking, we generally unassign variables in the reverse of the order we assigned them, but with backjumping we unassign variables according to the structure of the problem at hand.  It makes sense that if we can’t place any tile at a particular location, we should change the placement of neighboring tiles, since their placement created an unsolvable situation.  Backtracking may instead cause us to unassign variables that are spatially far away but happened to be assigned recently.&lt;/p&gt;
+
+&lt;p&gt;This search does not employ any local consistency method.  That is, we make no attempt to place tiles that won’t cause an unsolvable situation later on, even as soon as one step of search in the future.  It may be possible to accelerate search by keeping track of the effects that a placement will have on possible placements a few tiles away.  Hopefully, this will keep our search from spending so much time undoing its work.  This is what the next algorithm does.&lt;/p&gt;
+
+&lt;h2 id=&quot;method-2-most-constrained-placement-with-local-information-propagation&quot;&gt;Method 2: Most Constrained Placement with Local Information Propagation&lt;/h2&gt;
+
+&lt;p&gt;&lt;em&gt;Maintain a probability distribution over tiles at each location, making nonlocal updates to these distributions when a placement decision is made.  Never backtrack.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/wang_tiles/method_2_example.svg&quot; alt=&quot;method 2 example&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Next, I’ll describe an algorithm which is guaranteed to halt and produces better looking results for all the tile sets I have tried.  It is also able to produce nearly-valid tilings for much more complicated tile sets.  The tradeoff is that this algorithm does not guarantee that its output is always a valid tiling.  The Optimizations section describes optimizations that help this technique run fast even over large tile sets and maps.&lt;/p&gt;
+
+&lt;p&gt;The difficulty of creating a valid tiling is largely determined by the number of transitions necessary to get between two tile types.  A simple tile set might contain only sand, water, and grass.  If grass and water cannot touch, then a transition to sand will be necessary between the two.  This is a simple case that the previous algorithm can solve easily.  A more complex case might involve many nested levels of tile types.  For instance, you might have deep water, water, sand, grass, high plain, mountain, and snow cap.  Seven transitions would need to be present in the map for all of these types to appear, assuming that these types cannot touch except in the order I stated them.  Further complexity can be introduced by creating tiles that naturally create long-distance dependencies between tiles, like roads that must start and end at certain types of tiles.&lt;/p&gt;
+
+&lt;p&gt;Intuitively, it makes sense that an algorithm for this problem should have some ability to “look ahead” and consider at least a few transitions out what the consequences of its placement choices might be.  In order to do this, the tile map is considered to be a probability distribution over tiles at each location.  When the algorithm places a tile, it updates the probability distributions around that tile in response to the placement so that the probabilities of nearby tiles that are likely to be compatible with the placement are increased.&lt;/p&gt;
+
+&lt;p&gt;For example, if a water tile is placed on the map, the tiles next to it must contain some water.  The tiles next to those tiles might also contain water, but there are other possibilities, such as grass if a beach was placed next to the original water.  The farther we get from the placed tile, the more types of tiles become possible.  To make concrete use of this observation, we can count the number of ways that we can arrive at each tile placement near the original tile.  In some cases, only a single sequence of transitions can cause one tile to transition to another over a given distance.  In other cases, there could be many possible transition sequences.  Once we have placed a tile, we can determine the probability distributions of tiles at nearby locations by counting the number of ways we can transition from the tile we have placed to nearby tiles.  The “look ahead” that the algorithm performs is tracking these transition counts and treating them as probability distributions from which to select future tiles to place.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/wang_tiles/tile_transition_counts.svg&quot; alt=&quot;tile transition counts&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;At each time step, the algorithm examines all non-decided tile locations, each of which is a probability distribution over tiles, and selects one location to place a tile.  It selects the distribution from the map with the lowest entropy.  Low entropy multinomial distributions tend to have their probability concentrated in a few modes, so placing these first means placing tiles we already have some constraints for.  This is why the algorithm fills in tiles near tiles that are already decided first.&lt;/p&gt;
+
+&lt;p&gt;This is the most effective algorithm I have managed to implement for this problem, and it has the added advantage of lending itself to nice visualizations as it runs.  It may be possible to improve this algorithm by adding some form of backtracking.  If an invalid location exists in the final tiling, undoing nearby tile placements and then resampling from the resulting distributions at their locations may allow a fix to be found for the final tiling.  Of course, if you were determined to always keep searching until a valid tiling is found, you would lose the bounded run time guarantee we have now.&lt;/p&gt;
+
+&lt;h3 id=&quot;optimizations&quot;&gt;Optimizations&lt;/h3&gt;
+
+&lt;p&gt;The core operation of this method is updating the probabilities around a placed tile.  One approach would be to count the possible transitions outward from a placed tile each time a tile is placed.  This would be very slow, since many transition pairs would need to be considered for each map location to which the new probabilities are propagated.  One obvious optimization is not to propagate across the entire map.  A more interesting optimization is to cache the effect that each tile placement will have on the locations around it, so that each tile placement merely does a lookup to see what type of changes to the neighboring probabilities a placement makes, and then apply that change via some simple operation.  I will describe my technique for doing this below.&lt;/p&gt;
+
+&lt;p&gt;Imagine a tile were placed on an otherwise empty map.  This placement would update the probabilities of tiles nearby.  We can think of these updated distributions as having a prior distribution which is informed by previous placements.  If multiple tiles are placed, this prior is a joint distribution.  I approximate the posterior given this joint prior as the product of the distributions given each placement in the past.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/wang_tiles/sphere_example.svg&quot; alt=&quot;sphere example&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;To implement this, I imagine that when a tile is placed on an empty map, it induces a significant change in the distributions in the map nearby.  I call these updates the &lt;em&gt;sphere&lt;/em&gt; of the tile, as in, the sphere of influence the tile projects around it when it is placed on an empty map.  When two tiles are placed near each other, their spheres interact to create the final distributions that are affected by both placements.  Considering that many tiles may be placed near a given undecided location, there could be a large number of interacting constraints that would make a counting based approach to finding the probability of different tiles appearing at that location slow.  What if we instead only consider a simple model of the interaction between the precomputed spheres of the tiles that have already been placed?&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/wang_tiles/labeled_sphere.svg&quot; alt=&quot;sphere diagram&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;When a tile is placed, I update the probability map by elementwise multiplying the distribution of that tile’s sphere at each location in the map with the distribution already stored in that location in the map.  It may be helpful to consider an example of what this might do to the distribution map.  Say a given location in the map currently has a distribution that considers grass and water likely, and we place a water tile next to that location.  The water tile’s sphere will have a high probability of water right next to the water tile, and a low probability of grass.  When we multiply these distributions together elementwise, the probability of water in the result is high, because it is the product of two large probabilities, but the probability of grass will become low, because it is the product of the high probability stored in the map with the low probability stored in the sphere.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/wang_tiles/interacting_spheres.svg&quot; alt=&quot;spheres interacting diagram&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;This strategy allows us to efficiently approximate the effect that each tile placement should have on the probability map.&lt;/p&gt;
+
+&lt;h3 id=&quot;relationship-to-wave-function-collapse&quot;&gt;Relationship to Wave Function Collapse&lt;/h3&gt;
+
+&lt;p&gt;This strategy was inspired by the animations from the &lt;a href=&quot;https://github.com/mxgmn/WaveFunctionCollapse&quot;&gt;Wave Function Collapse&lt;/a&gt; project.  The pictures above look similar to those from Wave Function Collapse, but there are a few key differences between the strategies.  This method uses the same basic principle of placing a piece of the world and then eliminating other placements that are now ruled out.  In Wave Function Collapse, this is done by discretely removing placement possibilities across the whole image each time a pixel is updated.  In my method, the updates are all local, and rather than discretely removing possible placements, I reweight the probability distributions at the nearby locations.  Since my updates are local, most of the world is totally blank early in generation.  In Wave Function Collapse, you’ll notice updates immediately start far away from the “collapsed” region of the generated texture.  The advantage of only doing local updates is that the algorithm is fast even for large worlds.&lt;/p&gt;
+
+&lt;p&gt;An advantage of using continuous distributions rather than discrete ones to represent the possible placements is fault tolerance.  If Wave Function Collapse eliminates all possible placements at a location, it quits and restarts from scratch.  Since my method maintains a fuzzy notion of valid placements, it can still select a tile that fits most of its neighbors  even when no strictly valid placement is possible.&lt;/p&gt;
+
+&lt;h3 id=&quot;from-a-constraint-satisfaction-perspective-1&quot;&gt;From a constraint satisfaction perspective&lt;/h3&gt;
+
+&lt;p&gt;To solve constraint satisfaction problems efficiently, it often makes sense to keep track of what assignments of other variables become impossible when a particular variable is assigned.  This is known as “enforcing local consistency.”  Enforcing some kind of local consistency helps prevent you from assigning a value to a variable then assigning an incompatible value to a nearby value right away and being forced to backtrack.  Such transformations are under the umbrella of constraint propagation methods in the CSP literature.  In this algorithm, we are propagating information through a small area of the map each time we place a tile about what tiles can or cannot appear nearby.  If we place a mountain tile, for instance, we know that there can’t be an open ocean tile only two tiles away, so the probability of ocean at all locations on the map two tiles from the placement is set to zero.  This local information is recorded in the spheres discussed above.&lt;/p&gt;
+
+&lt;p&gt;By reducing the number of possible assignments of nearby tiles, we significantly reduce the search space the algorithm needs to handle after with each placement.  We know that in that small neighborhood, all probabilities of tiles appearing that are incompatible with the places tile are zero.  This is equivalent to removing those values from the domains of the variables at those locations.  This means that each pair of neighboring locations in the region around the placement has some tile in its domain that is compatible with some tile still in its neighbors domain.  When two variables are connected by a constraint in a CSP problem and their domains contain only values that could satisfy the constraint, they are said to be arc consistent, so this method is really an efficient arc consistency enforcing strategy.&lt;/p&gt;
+
+&lt;p&gt;In a CSP, the “most constrained” variable in a given partial assignment is the one with the fewest possible values remaining in its domain.  The idea of placing a tile at the location of the lowest entropy distribution in the map is analogous to assigning a value to the most constrained variable in a CSP, which is a common variable ordering heuristic when solving CSPs by search.&lt;/p&gt;
+
+&lt;h2 id=&quot;manipulating-tilings-by-changing-tile-selection-probabilities&quot;&gt;Manipulating Tilings by Changing Tile Selection Probabilities.&lt;/h2&gt;
+
+&lt;p&gt;So far, I’ve talked about only about how to create valid tilings, but beyond being valid, there might be other properties we might like a tiling to have.  For instance, we might like it to have a certain ratio of one tile type to another, or we might like to ensure that it is not all one uniform type of tile, even if such a tiling is valid.  To accomplish this, both the algorithms I describe take as input a base probability associated with each tile.  The higher this probability, the more likely that tile should be in the final tiling.  Both algorithms make random choices over collections of tiles, and I simply weight these random choices by the base tile probabilities.&lt;/p&gt;
+
+&lt;p&gt;Below, you can see how this is used.  By adjusting the probability of the solid water tile appearing, I can adjust the size and frequency of water features on the map.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/wang_tiles/water_probability.svg&quot; alt=&quot;water probability comparison&quot; /&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;make-your-own-tile-sets&quot;&gt;Make Your Own Tile Sets&lt;/h2&gt;
+
+&lt;p&gt;In short,&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;clone my &lt;a href=&quot;https://github.com/IJDykeman/wangTiles&quot;&gt;repo on github&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;Download &lt;a href=&quot;https://processing.org/download/&quot;&gt;Processing 2.2.1&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;use Processing to open wangTiles.pde and click the play button&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Using the code I’ve put on github, you can create your own tilesets using an image editor, and see how the tiling solver creates worlds with them.  Simply clone the repo and edit the image named tiles.png, then use Processing to run wangTiles.pde to see an animation of the map being generated.&lt;/p&gt;
+
+&lt;h3 id=&quot;the-tile-set-specification&quot;&gt;The Tile Set Specification&lt;/h3&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/wang_tiles/tile_spec.svg&quot; alt=&quot;tile spec&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;The tiles are laid out on a grid of 4x4 cells.  Each cell contains a colored tile in the upper left 3x3 region, and the remaining 7 pixel contain metadata about the tile.  The pixel below the center of the tile can be set to pure red to comment that tile out of the set.  The solvers will never include it in a map.  The upper pixel to the right of the tile can be set to pure black to add all 4 rotations of the tile to the tile set as well.  This is a nice shorthand when you want to add something like a corner, which can reasonably exist in 4 orientations.  Finally, the most important piece of markup is the pixel below and to the left of the tile.  This controls the base probability of that tile appearing in the map.  The darker the pixel is, the more likely that tile is to appear.&lt;/p&gt;
+
+&lt;h2 id=&quot;related-work&quot;&gt;Related Work&lt;/h2&gt;
+
+&lt;p&gt;Many people have explored &lt;a href=&quot;https://en.wikipedia.org/wiki/Wang_tile&quot;&gt;Wang tiles&lt;/a&gt;, which are tile sets with colored edges that must match in edge color with tiles they are placed next to, just like the tiles I have talked about here.&lt;/p&gt;
+
+&lt;p&gt;The &lt;a href=&quot;https://github.com/mxgmn/WaveFunctionCollapse&quot;&gt;Wave Function Collapse&lt;/a&gt; project by &lt;a href=&quot;https://twitter.com/ExUtumno&quot;&gt;@ExUtumno&lt;/a&gt; explores creating textures from examples, including textures that represent maps of simple dungeons.  That algorithm maintains a map boolean vectors representing  possible pixel assignments and progressively removes possible assignments from consideration when they are discovered to be incompatible with pixels placed so far.  As is pointed in the paper &lt;a href=&quot;https://dl.acm.org/citation.cfm?id=3102071.3110566&quot;&gt;WaveFunctionCollapse is constraint solving in the wild&lt;/a&gt;, this information propagation step is the same as the well-known &lt;a href=&quot;https://en.wikipedia.org/wiki/AC-3_algorithm&quot;&gt;AC-3&lt;/a&gt; algorithm for local consistency originally introduced in 1977.  The system as a whole is effectively a greedy constraint satisfaction solver with some modifications to its tie breaking to help the result texture match the statistics of the input texture.  This is a different approach than those discussed here, which don’t use canonical local consistency methods like AC-3, and in the case of the second algorithm, maintain a continuous, as opposed to discrete, distribution over possible placement decisions at each location.&lt;/p&gt;
+
+&lt;p&gt;Wave Function Collapse is predated by Paul Merrell’s &lt;a href=&quot;http://graphics.stanford.edu/~pmerrell/model_synthesis.pdf&quot;&gt;Model Synthesis&lt;/a&gt; algorithm, which appears to also be an AC-3-based constraint satisfaction system, although AC-3 is not mentioned in this paper or Merrell’s thesis.  Merrell considers the problem of generating 3D models from 3D tiles with adjacency constraints, like those I have in 2D above.   Merrel’s work includes an interesting sampling strategy where he starts with a trivial solution and progressively replaces sections of it using his constraint satisfaction algorithm, maintaining a consistent model at each step.&lt;/p&gt;
+
+&lt;h2 id=&quot;conclusion-and-acknowledgments&quot;&gt;Conclusion and Acknowledgments&lt;/h2&gt;
+
+&lt;p&gt;Enforcing local rules to create high level structure, such as having a rule that roads have no dead ends enforcing the fact that roads must lead from some non-road location to another, is an interesting perspective on the problem of procedural generation.  A surprising range of interesting rules can be encoded this way.  The quality of the resulting tilings is highly dependent on the solver, however, so a fruitful direction for future work would be improving the algorithms that do the tiling.  I have not explored using genetic algorithms, simulated annealing, or general purpose constraint satisfaction algorithms for this task yet.  Any of these might yield a tile set solver that is able to handle a wide range of tile sets with minimal parameter tuning.&lt;/p&gt;
+
+&lt;p&gt;I would like to thank &lt;a href=&quot;http://cannontwo.com/&quot;&gt;Cannon Lewis&lt;/a&gt; and Ronnie McLaren for helpful discussions during this project.  Ronnie came up with many interesting ideas about how to encode interesting behavior in the tiles.  The meothd 2 algorithm resulted from a conversation with Cannon on Wave Function Collapse, and his advice was instrumental in creating the efficient approximate algorithm that I described in here.&lt;/p&gt;
+
+</description>
+        <pubDate>Thu, 12 Oct 2017 00:00:00 +0000</pubDate>
+        <link>http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2017/10/12/wang-tile-procedural-generation.html</link>
+        <guid isPermaLink="true">http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2017/10/12/wang-tile-procedural-generation.html</guid>
+        
+        
+        <category>ml</category>
+        
+      </item>
+    
+      <item>
+        <title>Dictionary Definitions from Word Embeddings using Variational Autoencoders</title>
+        <description>&lt;p&gt;In this blog post, I’ll describe a model I built in collaboration with Angel Chang for generating dictionary definitions of word vectors.  Dense word embedding are known to capture the meaning of words in a way that is effective for many downstream NLP tasks.  However, it is difficult to observe directly what information they contain.  Word vectors can be manipulated arithmetically to solve analogy and word similarity problems, but these tasks provide an indirect look at what meaning the embedding captures.  In particular, these tasks do not reveal what use a complex model could make of these vectors.  On the other hand, using word embeddings as input for a complex downstream task can only tell us how well that embedding does as a representation for that task.  Our model creates a direct view of word vector contents by creating an English representation of their contents.  This is analogous to asking a person to produce a definition of a word if you want to evaluate their understanding of that word.  Our system is able to create plausible definitions for words for unseen words.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/vae-definition-generation/nested_dictionary_model_diagram.svg&quot; alt=&quot;full model diagram&quot; /&gt;&lt;/p&gt;
+
+&lt;!-- # Related work --&gt;
+&lt;!-- Unnat&apos;s paper and the other definitions paper --&gt;
+
+&lt;h1 id=&quot;data&quot;&gt;Data&lt;/h1&gt;
+
+&lt;p&gt;We use a data set of 596,739 (&lt;em&gt;word&lt;/em&gt;, &lt;em&gt;definition&lt;/em&gt;) pairs compiled from various lexical resources.  Each word is paired with all definitions found in WordNet, The American Heritage Dictionary, The Collaborative International Dictionary of English, Wiktionary and Webster’s Dictionary.  We perform a 85/10/5 split on the training data to obtain our final training,  validation, and test sets (see the table below for dataset statistics). We split by word so that all the definitions for a given word appear in only one of the data sets.  We only use definitions of length less than 20 to avoid a long tail of definitions which contain detailed historical or biographical information.&lt;/p&gt;
+
+&lt;!-- data set, words, definitions, definitions per word
+train, 55888, 507438, 9.1
+validation, 6575, 58388, 8.9
+test, 3288, 30913, 9.4 --&gt;
+
+&lt;style type=&quot;text/css&quot;&gt;
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:0px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:0px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-vi9z{font-family:Georgia, serif !important;;vertical-align:top}
+.tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
+&lt;/style&gt;
+
+&lt;table class=&quot;tg&quot;&gt;
+  &lt;tr&gt;
+    &lt;th class=&quot;tg-vi9z&quot;&gt;data set&lt;/th&gt;
+    &lt;th class=&quot;tg-vi9z&quot;&gt;words&lt;/th&gt;
+    &lt;th class=&quot;tg-vi9z&quot;&gt;definitions&lt;/th&gt;
+    &lt;th class=&quot;tg-vi9z&quot;&gt;definitions per word&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;train&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;55888&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;507438&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;9.1&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;validation&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;6575&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;58388&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;8.9&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;test&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;3288&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;30913&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;9.4&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;
+
+&lt;center&gt;&lt;i&gt;Data set statistics with total number of words and definitions, and average number of definitions per word.&lt;/i&gt;&lt;/center&gt;
+
+&lt;p&gt;We use word vectors trained by &lt;a href=&quot;http://www.aclweb.org/anthology/Q16-1002&quot;&gt;Hill et al.&lt;/a&gt;  using word2vec to represent words as input to our models, and as target outputs when applicable.  We do not modify the embeddings during training.  This allows us to to exploit large training corpora used for those embeddings, and to increase our ability to generalize to words not present in the dictionary data.&lt;/p&gt;
+
+&lt;h1 id=&quot;approaches&quot;&gt;Approaches&lt;/h1&gt;
+
+&lt;p&gt;We investigate models across a spectrum of size and complexity.  Our simplest model is a multilayer perceptron for generating two-word definitions, e.g. &lt;em&gt;frog: amphibious animal&lt;/em&gt;.  This model produces definitions that are reliably reasonable but limited in expressiveness.  To generate more complex and diverse definitions of unspecified length, we use variational autoencoders (VAEs) with RNN encoders and decoders.  We created one sequence VAE with softmax output, and one which outputs embedding space vectors at each time step. We compare all of these models to a baseline RNN decoder architecture.&lt;/p&gt;
+
+&lt;h2 id=&quot;two-word-definitions&quot;&gt;Two word definitions&lt;/h2&gt;
+
+&lt;p&gt;As a preliminary experiment, we generate two-word definitions of the form (&lt;em&gt;adjective&lt;/em&gt;, &lt;em&gt;noun&lt;/em&gt;), for example, &lt;em&gt;ostrich: flightless bird&lt;/em&gt;.  As training data, we use two-word definitions extracted from our original data for this task.  To extract a two-word definition, we search the original definition for a hypernym of the word being defined, then find adjectives that appear before that hypernym.  Each one of those (&lt;em&gt;adjective&lt;/em&gt;, &lt;em&gt;hypernym&lt;/em&gt;) pairs forms a valid two-word definition.  For example, given the dictionary definition &lt;em&gt;ostrich: a flightless African bird with a long neck, long legs, and two toes on each foot.&lt;/em&gt; we get &lt;em&gt;ostrich: flightless bird&lt;/em&gt; and &lt;em&gt;ostrich: African bird&lt;/em&gt; as two word definitions.  To detect hypernyms, we use WordNet, and we use NLTK to part-of-speech tag the definitions to find adjectives.&lt;/p&gt;
+
+&lt;p&gt;Using this data, we train a multilayer perceptron to predict an adjective and a hypernym vector for a given word.
+We use as the loss function the sum of the squared cosine distances between the two predicted vectors and the vectors for the two-word definition. We take the words in our embedding space with the lowest cosine distances to the vectors the model predicts to be its output.  We use an ensemble model that sums the outputs of 10 trained models to improve the quality of definitions generated.&lt;/p&gt;
+
+&lt;p&gt;In the equation below, \(J\) is the loss function.  \(\hat x_{adj}\) is the vector the model predicts for the adjective, \(x_{adj}\) is the vector for the target adjective.  \(\hat x_{noun}\) is the predicted vector for the noun, \(x_{noun}\) is the target.&lt;/p&gt;
+
+\[\begin{equation}
+\begin{split}
+J(x, \hat x) =
+ &amp;amp;\quad \left(\frac{x_{adj}
+ \cdot \hat x_{adj}}{||x_{adj}||\times||\hat x_{adj}||}\right)^2 \\
+ +  &amp;amp;\quad \left(\frac{x_{noun}
+ \cdot \hat x_{noun}}{||x_{noun}||
+    \times||\hat x_{noun}||}\right)^2
+\end{split}
+\end{equation}\]
+
+&lt;p&gt;In general, this model produces results that are simple but reasonable.  For instance, the model generates the definitions &lt;em&gt;storm: violent wind&lt;/em&gt; and &lt;em&gt;theist: religious person&lt;/em&gt; (results section for more examples).&lt;/p&gt;
+
+&lt;p&gt;For instance, it comes up with the definition &lt;em&gt;technocrat: sophisticated person.&lt;/em&gt;  While this may accurately reflect part of the meaning of the word, this definition certainly doesn’t capture everything that the word “technocrat” expresses, namely its association with technology.  To generate more complete definitions, we use variational autoencoders that can output definitions of varying length and structure.&lt;/p&gt;
+
+&lt;h2 id=&quot;background-on-variational-autoencoders&quot;&gt;Background on Variational Autoencoders&lt;/h2&gt;
+&lt;!-- %$Q$ is encouraged to be close to some prior distribution in the latent space. --&gt;
+&lt;!-- %, and the prior is $$\mathcal{N}(\vec 0, \vec 1)$$. --&gt;
+&lt;p&gt;A variational autoencoder (VAE) is a form of regularized autoencoder where the encoder produces a probability distribution \(Q\) for each sample \(x\), and the decoder receives as input samples from that probability distribution, which it uses to reconstruct \(x\).  The encoder and decoder are neural networks. In our case, \(Q\) is an isotropic Guassian. Given a data sample \(x\), the encoder produces the parameters \(\vec \mu(x)\) and \(\vec \sigma(x)\) of \(Q\), so \(Q=\mathcal{N}(\vec \mu(x), \vec \sigma(x))\).
+The decoder takes a sample \(z\) from \(Q\) and attempts to reconstruct \(x\), producing \(\hat x\).  We will denote the decoder function \(decode\), so
+\(\hat x = decode(z) ~~\text{where} ~ z \sim \mathcal{N}(\vec \mu(x), \vec \sigma(x))\)  We will train the autoencoder to minimize the reconstruction error between \(x\) and \(\hat x\), which we will denote \(re(x, \hat x)\).&lt;/p&gt;
+
+&lt;p&gt;In order to force \(Q\) to be close to some known distribution, we also add the Kullback-Leibler divergence between \(Q\) and a prior distribution to the loss.  In our case, the prior is \(\mathcal{N}(\vec 0, \vec 1)\), so \(KL(\mathcal{N}(\vec \mu(x), \vec \sigma(x)) \|\mathcal{N}(\vec 0, \vec 1))\) is added to the loss of the autoencoder.  Having a prior on \(Q\) will be useful for generating novel samples, as we will describe later.&lt;/p&gt;
+
+&lt;p&gt;We denote the loss for an example \(x\) with \(J(x)\).  The loss expression is&lt;/p&gt;
+
+\[\begin{equation}
+\begin{split}
+J(x) &amp;amp; = re(x, \hat x) + KL(\mathcal{N}(\vec \mu(x), \vec \sigma(x)) ~ || ~ \mathcal{N}(\vec 0, \vec 1))\\
+&amp;amp; =re(x, decode(z)) \\
+&amp;amp; \quad + KL(\mathcal{N}(\vec \mu(x), \vec \sigma(x)) ~ || ~ \mathcal{N}(\vec 0, \vec 1))\\
+&amp;amp; \quad \text{where} ~ z \sim \mathcal{N}(\vec \mu(x), \vec \sigma(x)))
+\end{split}
+\end{equation}\]
+
+&lt;p&gt;We now might now like to optimize the encoder decoder networks with backpropagation, but we cannot as long as there is a non-differentiable sampling operation producing \(z\).  To alleviate this, we invoke the reparametrization trick.  The reparametrization trick involves not sampling \(z\) from \(\mathcal{N}(\vec \mu(x), \vec \sigma(x))\), but instead sampling \(\epsilon\) from \(\mathcal{N}(\vec 0, \vec 1))\) and taking \(z = \hat \sigma(x) \odot \epsilon + \hat \mu(x)\), where \(\odot\) is elementwise multiplication.  Our loss expression is now:&lt;/p&gt;
+
+\[\begin{equation}
+\begin{split}
+J(x) &amp;amp; =re(x, decode(\hat \sigma(x) \odot \epsilon + \hat \mu(x))) \\
+&amp;amp; \quad + KL(\mathcal{N}(\vec \mu(x), \vec \sigma(x)) ~ || ~ \mathcal{N}(\vec 0, \vec 1))\\
+&amp;amp; \quad \text{where} ~ \epsilon \sim \mathcal{N}(\vec 0, \vec 1))
+\end{split}
+\end{equation}\]
+
+&lt;p&gt;After performing the reparametrization trick, we can train the model end-to-end using backpropagation.&lt;/p&gt;
+
+&lt;p&gt;Once the model is trained, we would like to use it to generate samples similar to those in our training data.  Since we added a term in the loss to encourage \(Q\) to be close to \(\mathcal{N}(\vec 0, \vec 1)\), the decoder function has been trained to accept samples \(z\) from a distribution that is close to \(\mathcal{N}(\vec 0, \vec 1)\).  Therefore, to generate new samples, we simply feed values \(z \sim \mathcal{N}(\vec 0, \vec 1)\) into the decoder.&lt;/p&gt;
+
+&lt;p&gt;We would also like the ability to condition the samples we generate on some input.  For instance, we might want to generate an image of a particualr type of object, or a definition of a particular word.  For this, we use a conditional variational autoencoder (CVAE).
+&lt;!-- \cite{sohn2015learning} --&gt;
+A CVAE is the same as a VAE except that both the encoder and the decoder take in a label \(y\) in addition to their usual input.&lt;/p&gt;
+
+&lt;h1 id=&quot;conditional-variational-autoencoder-with-discrete-output&quot;&gt;Conditional Variational Autoencoder with Discrete Output&lt;/h1&gt;
+
+&lt;!-- % To generate definitions for specific words, we use a conditional VAE (CVAE).  At training time, we feed the encoder and decoder of our model the vector of the word to be defined, and feed the decoder a vector $z$ sampled a normal distribution parametrized by the output of the encoder.
+% At inference time, we feed the decoder a latent vector $z$
+% sampled from a standard normal distribution
+% along with a word vector, and we expect to see a reasonable definition for that unseen word. --&gt;
+
+&lt;p&gt;To generate definitions for specific words, we use a conditional variational autoencoder with recurrent neural networks as its encoder and decoder.  This model is a conditional version of the VAE presented in &lt;a href=&quot;https://arxiv.org/pdf/1511.06349.pdf&quot;&gt;Bowman et al. 2016&lt;/a&gt; that outputs a discrete distribution over its vocabulary at each time step.  A single layer LSTM is used for both the encoder and decoder.  The encoder’s final hidden state is passed through a linear projection to create the \(\vec \sigma\) and \(\vec \mu\) parameters for the Gaussian \(Q\) in the latent space.  At each time step, the decoder’s output is passed through a softmax layer.&lt;/p&gt;
+
+&lt;h1 id=&quot;conditional-variational-autoencoder-with-word-vector-output&quot;&gt;Conditional Variational Autoencoder with Word Vector Output&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/vae-definition-generation/full_pathway_drawing.svg&quot; alt=&quot;VAE diagram&quot; /&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;i&gt;A diagram of the vector output model at training time.  The RNN on the left is the encoder, and the one on the right is the decoder.  For the vector model, we add a special STOP vector to the embedding space to indicate the end of output.  The discrete output model is the same except that instead of a nearest neighbor search on each output step, we take the argmax over the output.&lt;/i&gt;&lt;/center&gt;
+
+&lt;p&gt;In order to exploit the representational power of word vectors as output as well as input, we created a language decoder which outputs vectors in the embedding space at each time step instead of outputting a probability distribution over the entire vocabulary.  This is a logical extension of the two-word model, which also outputs word vectors and is able to consistently capture the meanings of words in its output.  To our knowledge, this is the first language generator to use word vectors as its output representation.  As we show in the results section, this model produces definitions that are substantially better than those from the discrete output models (the CVAE with discrete output and the RNN decoder baseline model).&lt;/p&gt;
+
+&lt;p&gt;Like the CVAE with discrete output, this model’s encoder takes in the word to be defined, and it’s decoder takes in the word to be defined and a sample from the Gaussian parametrized by the encoder (see figure below).  This model model uses for its loss the sum of the cosine distances between each word in the predicted sequence \(\hat x\) and the word at the same location in the target sequence \(x\). In the equation below, \(J\) is once again the loss function and \(Q=\mathcal{N}(\vec \mu(x), \vec \sigma(x)\).&lt;/p&gt;
+
+\[J(x, \hat x, Q)
+= \sum_{i=1}^{|x|}
+\frac{\hat x_i \cdot x_i}{||\hat x_i||~||x_i||}
++ KL(Q,~ \mathcal{N}(\vec 0, \vec 1))\]
+
+&lt;p&gt;At inference time, we feed in a latent vector \(z\) and a word vector to be defined, and then find the nearest neighbor in the embedding space to each vector the model predicts.  That sequence of nearest neighbor words is the model’s output.&lt;/p&gt;
+
+&lt;h1 id=&quot;baseline-rnn-decoder-model&quot;&gt;Baseline RNN Decoder Model&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/vae-definition-generation/rnn_decoder_diagram.svg&quot; alt=&quot;RNN decoder diagram&quot; /&gt;&lt;/p&gt;
+
+&lt;center&gt;&lt;i&gt;A diagram of the baseline RNN decoder model.&lt;/i&gt;&lt;/center&gt;
+
+&lt;p&gt;As a baseline, we created a simple RNN decoder architecture.  This architecture takes a word vector as input, and uses the same LSTM architecture as the discrete CVAE model decoder to predict a sequence of words for its definition.&lt;/p&gt;
+
+&lt;p&gt;This model sometimes produces reasonable definitions, such as &lt;em&gt;tibet: a region of the central region of the country of china&lt;/em&gt; or &lt;em&gt;sterling: a surname&lt;/em&gt;.  More often, it produces definitions that do not clearly express any aspect of the meaning of a word, or are extremely vague, such as &lt;em&gt;suburbs: the area of a region&lt;/em&gt;.&lt;/p&gt;
+
+&lt;p&gt;Unlike the variational autoencoder models, this model will always produce the same definitions for a given word.  The variational autoencoders will produce different definitions depending on the value of \(z\) which they recieve at inference time.&lt;/p&gt;
+
+&lt;h1 id=&quot;results&quot;&gt;Results&lt;/h1&gt;
+&lt;p&gt;We present example definitions of words from the test set generated by our implementations of each of our four models, and evaluate the definition quality using BLEU against dictionary definitions and a user study.  For all our experiments, we used Tensorflow and TF.learn.  For our CVAEs, we use a latent space dimensionality of 13, the same as &lt;a href=&quot;https://arxiv.org/pdf/1511.06349.pdf&quot;&gt;Bowman et al. 2016&lt;/a&gt;, and an LSTM size of 3000.   All models are trained using backpropagation with the Adam optimize, with the validation set used to monitor  convergence.&lt;/p&gt;
+
+&lt;h2 id=&quot;model-output&quot;&gt;Model Output&lt;/h2&gt;
+
+&lt;p&gt;When sampling from the vector output models, we take each vector produced and look up the nearest word by cosine distance in the embedding space.  If that word is the word we are trying to define, we instead take the next nearest neighbor.  To speed up nearest neighbor lookup during inference, we restrict the output vocabulary to the 10,000 most common words in English.  This usually does not produce different definitions from those that are decoded using the full 800,000 word embedding since words in the long tail (e.g. Twitter hashtags) are uncommon in definitions.  For discrete output models, we also ignore the word we are defining, taking the next highest scoring word instead.  We ignore words that are repeated, i.e. “the dog dog the” becomes “the dog the.”  Note that we allow all models (except the two-word model) to output punctuation, including parentheses.&lt;/p&gt;
+
+&lt;p&gt;The table below shows examples of definitions produced by each of our models. The vector output models (vector CVAE and two-word) are most consistent about generating a definition that clearly expresses at least part of the meaning of the target word.  The vector CVAE performs especially well on words with only a single meaning, for instance, &lt;em&gt;glaucoma: the abnormal hemorrhagic disease.  Often the interocular illness.&lt;/em&gt;  This is an accurate definition, since glaucoma is in fact an interocular disease that can cause hemorrhaging.&lt;/p&gt;
+
+&lt;p&gt;The discrete models (discrete CVAE and RNN decoder) often miss the meaning of the word completely, while still producing grammatically reasonable output, e.g. &lt;em&gt;bishop: a male given name&lt;/em&gt;.
+&lt;!-- %As expected, the two-word model generates simple, reasonable definitions.  The discrete output model is more able to create correct English, whereas the vector output model expresses more detail about the word being defined. e.g. for ``neurosis,&apos;&apos; ``feeling excessive desire of something&apos;&apos; is a more grammatically correct, but less accurate definition than ``an obsessional rather aimlessness or irrational anxiety.&apos;&apos; --&gt;&lt;/p&gt;
+
+&lt;!-- 
+| word       |  vector CVAE   |  discrete CVAE   |
+|---         | ---            | ---  |
+|sizzling    | showing the fiery sound (in cooking)                  | made by heat                 |
+|smuggling   | transferring in illicit items (especially food goods) | making or other              |
+|undated     | lacking a date in manuscript)                         | existing or written          |
+|Arabia      | the mediterranean country (in the africa)             | country and north region     |
+|connoisseur | any discerning performer (in taste)                   | someone who is skilled       |
+|bishop      | the biggest catholic priest in church                 | someone who makes or.        |
+|tandoori    | the indian uncooked dish (usually in curries)         | made with meat.              |
+
+| word        |  RNN decoder                      |  two-word  |
+|---         | ---                                | --- |
+|sizzling    | a very; a person                   | fiery sound|
+|smuggling   | the act of  making or  taking      | illegal theft|
+|undated     | not yet                            | original document|
+|Arabia      | the region of southern asia        | large area|
+|connoisseur | one who is a person                | energetic person|
+|bishop      | a male given name                  | catholic priest|
+|tandoori    | a small, a small, a small.         | small dish|
+--&gt;
+&lt;!-- | word        |  vector CVAE   |  discrete CVAE   |  RNN decoder   |  two-word  |
+|---       | ---  | ---  | --- | --- |
+|sizzling    | showing the fiery sound (in cooking)                  | made by heat                 | a very; a person                   | fiery sound|
+|smuggling   | transferring in illicit items (especially food goods) | making or other              | the act of  making or  taking      | illegal theft|
+|undated     | lacking a date in manuscript)                         | existing or written          | not yet                            | original document|
+|Arabia      | the mediterranean country (in the africa)             | country and north region     | the region of southern asia        | large area|
+|connoisseur | any discerning performer (in taste)                   | someone who is skilled       | one who is a person                | energetic person|
+|bishop      | the biggest catholic priest in church                 | someone who makes or.        | a male given name                  | catholic priest|
+|tandoori    | the indian uncooked dish (usually in curries)         | made with meat.              | a small, a small, a small.         | small dish| --&gt;
+
+&lt;style type=&quot;text/css&quot;&gt;
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;margin:0px auto;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
+@media screen and (max-width: 767px) {.tg {width: auto !important;}.tg col {width: auto !important;}.tg-wrap {overflow-x: auto;-webkit-overflow-scrolling: touch;margin: auto 0px;}}&lt;/style&gt;
+
+&lt;div class=&quot;tg-wrap&quot;&gt;&lt;table class=&quot;tg&quot;&gt;
+  &lt;tr&gt;
+    &lt;th class=&quot;tg-k4q0&quot;&gt;word&lt;/th&gt;
+    &lt;th class=&quot;tg-k4q0&quot;&gt;vector CVAE&lt;/th&gt;
+    &lt;th class=&quot;tg-k4q0&quot;&gt;discrete CVAE&lt;/th&gt;
+    &lt;th class=&quot;tg-k4q0&quot;&gt;RNN decoder&lt;/th&gt;
+    &lt;th class=&quot;tg-k4q0&quot;&gt;two-word&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;sizzling&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;showing the fiery sound (in cooking)&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;made by heat&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;a very; a person&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;fiery sound&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;smuggling&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;transferring in illicit items (especially food goods)&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;making or other&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;the act of making or taking&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;illegal theft&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;undated&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;lacking a date in manuscript)&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;existing or written&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;not yet&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;original document&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;Arabia&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;the mediterranean country (in the africa)&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;country and north region&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;the region of southern asia&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;large area&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;connoisseur&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;any discerning performer (in taste)&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;someone who is skilled&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;one who is a person&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;energetic person&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;bishop&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;the biggest catholic priest in church&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;someone who makes or.&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;a male given name&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;catholic priest&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;tandoori&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;the indian uncooked dish (usually in curries)&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;made with meat.&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;a small, a small, a small.&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;small dish&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;user-study&quot;&gt;User Study&lt;/h2&gt;
+
+&lt;p&gt;To see if our definitions can be understood by people we selected 200 words from the test set, and 4 distractor words for each (chosen randomly, or from the 10 closest words in the embedding space).  Then, we recruited 211 Amazon Mechanical Turk workers. We showed them the target word and distractor words, along with a definition generated from one of our models, or a real definition, and asked them to select the target word among the distractors.  As the table below shows, the vector CVAE outperforms all other models.  This can be a challenging task even with real definitions and random distractors due to uncommon word senses: e.g., the definition &lt;em&gt;pebble: in australia, a hard, obstinate person; a tough; also said of animals&lt;/em&gt; had distractors “brilliant”, “advisor”, “nuclear”, and “slander”, leading a worker to wrongly select “advisor”.  A challenging case with similar distractors is &lt;em&gt;fearful: indicating anxiety, fear, or terror; a fearful, nervous glance&lt;/em&gt; with distractors “worried”, “alarmed”, “apprehensive”, “afraid” where the person mistakenly chose “afraid”.&lt;/p&gt;
+
+&lt;!-- |model            |  random | similar |
+| ----            |  ------ | ------- |
+|two-word         | 63%     | 27%     |
+|RNN              | 50%     | 23%     |
+|discrete CVAE    | 55%     | 21%     |
+|vector CVAE      | __71%__ | __30%__ |
+|real definitions | 76%     | 50%     | --&gt;
+
+&lt;style type=&quot;text/css&quot;&gt;
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;margin:0px auto;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
+@media screen and (max-width: 767px) {.tg {width: auto !important;}.tg col {width: auto !important;}.tg-wrap {overflow-x: auto;-webkit-overflow-scrolling: touch;margin: auto 0px;}}&lt;/style&gt;
+
+&lt;div class=&quot;tg-wrap&quot;&gt;&lt;table class=&quot;tg&quot;&gt;
+  &lt;tr&gt;
+    &lt;th class=&quot;tg-k4q0&quot;&gt;model&lt;/th&gt;
+    &lt;th class=&quot;tg-k4q0&quot;&gt;random&lt;/th&gt;
+    &lt;th class=&quot;tg-k4q0&quot;&gt;similar&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;two-word&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;63%&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;27%&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;RNN&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;50%&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;23%&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;discrete CVAE&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;55%&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;21%&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;vector CVAE&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;&lt;b&gt;71%&lt;/b&gt;&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;&lt;b&gt;30%&lt;/b&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;real definitions&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;76%&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;50%&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;&lt;/div&gt;
+
+&lt;center&gt;&lt;i&gt;Percent correct selected by users with random selection being 20% correct.&lt;/i&gt;&lt;/center&gt;
+
+&lt;h2 id=&quot;quantitative-comparison-with-bleu-scores&quot;&gt;Quantitative Comparison with BLEU Scores&lt;/h2&gt;
+
+&lt;p&gt;To compare our models, we use the BLEU score to measure similarity between the generated definitions and those in the dictionary (see table below).  We present the BLEU scores for the holdout set, where each definition produced by the model is compared with multiple reference definitions.
+The vector CVAE model performs better than the discrete models, confirming our intuition that leveraging the vector representation as output helps with definition synthesis.&lt;/p&gt;
+
+&lt;!-- |model             | test set BLEU |
+| ----             | ------------- |
+|RNN decoder       | 0.5458        |
+|discrete CVAE     | 0.5023        |
+|vector CVAE       | __0.6319__    | --&gt;
+
+&lt;style type=&quot;text/css&quot;&gt;
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;margin:0px auto;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
+@media screen and (max-width: 767px) {.tg {width: auto !important;}.tg col {width: auto !important;}.tg-wrap {overflow-x: auto;-webkit-overflow-scrolling: touch;margin: auto 0px;}}&lt;/style&gt;
+
+&lt;div class=&quot;tg-wrap&quot;&gt;&lt;table class=&quot;tg&quot;&gt;
+  &lt;tr&gt;
+    &lt;th class=&quot;tg-k4q0&quot;&gt;model&lt;/th&gt;
+    &lt;th class=&quot;tg-k4q0&quot;&gt;test set BLEU&lt;/th&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;RNN decoder&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;0.5458&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;discrete CVAE&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;0.5023&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;vector CVAE&lt;/td&gt;
+    &lt;td class=&quot;tg-k4q0&quot;&gt;&lt;b&gt;0.6319&lt;/b&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;defining-unseen-words&quot;&gt;Defining Unseen Words&lt;/h2&gt;
+&lt;p&gt;We can produce definitions for words with no definition in the dictionary data we drew from.  The vector VAE definition of “Anthropologie,” a “boho-chic” clothing chain is &lt;em&gt;anthropologie: an modern merchandiser to a boutique emporium.&lt;/em&gt; For Voldemort, the evil wizard from Harry Potter: &lt;em&gt;voldemort: the evil one in the demon of magic in the war&lt;/em&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;limitations&quot;&gt;Limitations&lt;/h2&gt;
+
+&lt;p&gt;The vector CVAE model produces definitions that mostly refer to a correct sense of the word.  However, it has issues with grammar, combining multiple senses in one definition, and vagueness. For example, &lt;em&gt;cannon: the gun weapon&lt;/em&gt;, misses the key feature that it is large, and &lt;em&gt;rocking: having the sound and (as a swing)&lt;/em&gt; confuses rocking in the sense of music (sound) and rocking in the sense of movement (swing).  A promising avenue for future work is to generate definitions in context, and to use sense embeddings to disentangle the different possible senses.&lt;/p&gt;
+</description>
+        <pubDate>Fri, 12 May 2017 00:00:00 +0000</pubDate>
+        <link>http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2017/05/12/vae-definition-generator.html</link>
+        <guid isPermaLink="true">http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2017/05/12/vae-definition-generator.html</guid>
+        
+        
+        <category>ml</category>
+        
+      </item>
+    
+      <item>
+        <title>Capturing Word Meaning and Cultural Association with a Character Level Model</title>
+        <description>&lt;h1 id=&quot;motivation-and-introduction&quot;&gt;Motivation and Introduction&lt;/h1&gt;
+
+&lt;p&gt;In fiction, names are often designed to convey some suggestion of what a character might be like.  A clear example might be the name Voldemort, which to me sounds evil, and contains the “mort” subword, which is also in death-related words like mortal and mortuary.  Other names from fiction like Mordor, Sauron, Severus Snape, or Gothmog are meant to heighten the sense of the character’s evil.  Names like Dumbledore or Bilbo Baggins might instead suggest friendliness.  These types of associations are intentional on the part of the author, and can be reliably picked up by the reader.  Word embeddings are a powerful technique for representing word meaning, but these cues are lost on them since they generally represent all rare words with a single token, and since strange or creative names tend to be rare words, perhaps only appearing in a single document, they are ignored by these models.&lt;/p&gt;
+
+&lt;p&gt;I’d like to use a recurrent neural network operating on characters to place these types of words into an embedding space.  Then, using comparisons between words in that space, I’m hoping to see what kinds of aesthetic or emotional cues a word carries.  The model ends up being able to pick up some of this type of information, as well as other information, such as whether a word is a chemical, disease, or drug name, or whether it is a name of a person, and if so, where and when they might have lived.&lt;/p&gt;
+
+&lt;p&gt;In this post, I’ll describe a model that takes the letters that make up a word and predicts the associated word vector.&lt;/p&gt;
+
+&lt;h1 id=&quot;code&quot;&gt;Code&lt;/h1&gt;
+
+&lt;p&gt;I implemented this model in Tensorflow.  You can find the code in a Jupyter notebook &lt;a href=&quot;https://github.com/IJDykeman/CharacterMeaningModel&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h1 id=&quot;the-model&quot;&gt;The model&lt;/h1&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/chars-to-vec_figures/chars2vec.svg&quot; alt=&quot;model diagram&quot; /&gt;&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Beowulf and Chilperic are both ancient Anglo-Saxon figures, and the model detects that they are similar.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;I’ll represent the letters as one-hot vectors.  The recurrent neural net receives these vectors as input and then feeds into two fully connected layers.  I found that adding dropout after the last LSTM output reduced overfitting.  Following the intuition presented in &lt;a href=&quot;https://papers.nips.cc/paper/5346-sequence-to-sequence-learning-with-neural-networks.pdf&quot;&gt;this paper&lt;/a&gt;, I reverse the order of the letters as I feed them into the RNN, though that isn’t reflected in the diagram above.  By reversing the letters as they are fed in, the PAD tokens are not the last ones the LSTM sees before its final state is created.  Instead, it sees the actual input data last, so there are fewer long term dependencies to handle at training time.  I represent the words in the model’s vocabulary using word vectors trained by the authors of &lt;a href=&quot;https://arxiv.org/pdf/1504.00548v4.pdf&quot;&gt;Learning to Understand Phrases by Embedding the Dictionary&lt;/a&gt;.&lt;/p&gt;
+
+&lt;p&gt;In the diagram, 〈Chilperic〉 is meant to represent the word vector associated with the word “Chilperic.”  The ≈ symbol indicates that the output of the final layer of the model has a low cosine distance to 〈Chilperic〉.  When the model makes a prediction, it outputs a vector, then looks up the word vectors closest to its output.  These nearest neighbors are the model’s opinion on what words are similar to its input.&lt;/p&gt;
+
+&lt;h2 id=&quot;where-it-works-and-where-it-doesnt&quot;&gt;Where it Works and where it Doesn’t&lt;/h2&gt;
+
+&lt;p&gt;As expected, this model performs well on morphologically rich words, that is, words whose meaning is closely related to the meanings of subwords.  A common source of these types of words is medical terminology.  For instance, “tendinitis” is a swelling of the tendons.  The suffix “itis” indicates that this word describes a &lt;a href=&quot;https://en.wiktionary.org/wiki/-itis#Suffix&quot;&gt;swelling disease&lt;/a&gt;.  The prefix “tendin” obviously indicates that it is a disease that affects tendons.  The model consistently identifies disease names with other disease names already present in the word vector corpus.&lt;/p&gt;
+
+&lt;p&gt;The model associates the made-up disease name “sternumitis” to other diseases: paraparesis, scleritis, and radiculopathy.  I found a fake &lt;a href=&quot;http://www.generatorland.com/glgenerator.aspx?id=55#&quot;&gt;drug name generator&lt;/a&gt; online, and the words it produces are consistently associated by the model to real drugs.  For instance, the fake name Glazioxx is mapped to Lescol, idarubicin, and Sandimmune.&lt;/p&gt;
+
+&lt;p&gt;Some words aren’t so morphologically rich.  The word “cat” can’t be broken down into parts that indicate the meaning of the whole word.  As expected, the model performs poorly in guessing words similar to these.&lt;/p&gt;
+
+&lt;h2 id=&quot;predicting-attributes-from-fictional-names&quot;&gt;Predicting Attributes from Fictional Names&lt;/h2&gt;
+
+&lt;p&gt;I think “Zorgon” is a sinister sounding name.  Given “Zorgon,” which is not present in the word embedding I used, the system predicts that Arthas, Beastman, and Gorath are similar words.  These are names of fictional characters who all look like they could all plausibly be named “Zorgon.”&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/chars-to-vec_figures/zorgon_characters.svg&quot; alt=&quot;zorgon characters&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Image sources: Gortath: Marvel Premiere #5; Beastman: Mattel Masters of the Universe&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Unfortunately, it’s a bit harder to find names of characters that sound particularly like names of good people.  In the Harry Potter books, which tend to take liberties with naming, morally upstanding characters tend to simply have common names: Harry, Ron, Molly, Albus, James, or Ginny.  I’ll take Dobby and Dumbledore as examples of good-sounding names of good characters.  The model associates these both to cute names like “Sweatpea,” or “Stompy,” which is the name of a cartoon baby elephant.  While these associations don’t quite capture the gravity Dumbledore is meant to have, they convey at least a positive connotation.&lt;/p&gt;
+
+&lt;p&gt;Galadriel, a sorceress in Lord of the Rings who rules an enchanted forest, is associated most strongly with with Balor, an Irish mythical king of supernatural beings, and Melisandre, the sorceress from A Song of Ice and Fire.&lt;/p&gt;
+
+&lt;p&gt;If you hear of a company called Iteron and one called Dromgoole’s, you would likely make different assumptions about the type of business each one is.  In particular, Iteron sounds more like a tech company, while Dromgoole’s sounds like it’s trying to be associated with a more traditional aesthetic.  The model agrees with this intuition.  “Iteron” is associated with Aricent, Vixs, Cloudera, and Idirect.  These are all real companies whose businesses have to do with software, satellite communications, and semiconductors.  The name Iteron is the name of a spaceship from the game Eve Online, so I think this association with technology is very reasonable.&lt;/p&gt;
+
+&lt;p&gt;The model associates “Dromgoole’s” most strongly with “Theobalds” which is the name of an estate in england that was a royal palace in the 16th and 17th centuries.  It also associates the name “Trelissick,” which is an english garden.  Other strongly associated terms are also names of English towns and gardens.  Dromgoole’s is the name of a high-end fountain pen shop, so it’s likely that this is just the type of aesthetic that name was designed to evoke.&lt;/p&gt;
+
+&lt;h1 id=&quot;separating-coincidental-association-from-similarity&quot;&gt;Separating Coincidental Association from Similarity&lt;/h1&gt;
+
+&lt;p&gt;The word “beowulf” is in the word embedding space I used.  If I simply look up nearby words, I get names of characters from the poem Beowulf, like Grendel, Hrothgar, and Unferth.  It is also associated with other epic poems, The Iliad, The Nibelungenlied, and The Kalevala.  These are reasonable associations if you want to know about Beowulf the poem, but this doesn’t capture the idea of who Beowulf himself is.&lt;/p&gt;
+
+&lt;p&gt;The model associates the characters “Beowulf” with names of Northern European kings who lived in the 6th century, which is when the events of Beowulf are supposed to have taken place.  The top 9 matches are Chilperic, Theudebert, Fredegund, Audoin, Chlothar, Theodahad, Vratislaus, Gundobad, and Thurisind, all 6th century monarchs living around the area where Beowulf is set.&lt;/p&gt;
+
+&lt;p&gt;The model has managed to extract likely information about Beowulf the person from his name, which may be of practical interest when the vector for Beowulf is most strongly  associated with the eponymous poem.  The original association captures the fact that Grendel and Beowulf are often mentioned together, but one is a king, and the other is a man-eating monster.  The model makes an association that captures the type of person Beowulf is.&lt;/p&gt;
+
+&lt;p&gt;The model behaves the same way when given the name “Gawain,” who is a character from a poem set in Arthurian England.  The vector for “Gawain” is close to those of other characters in the poem, while the model associates the name “Gawain” with Irish names like “Domhnall,” “Conchobar”, and “Conall.”&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/chars-to-vec_figures/gawain_characters.svg&quot; alt=&quot;Names associated with Gawain&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;Image sources: Gawain: Howard Pyle illustration from the 1903 edition of The Story of King Arthur and His Knights; Conall: theirishstories.com; Domnhall/Donald crest by English Wikipedia user Celtus; Conchobar: A portrait of Conchubhair MacNeasa by Cormac McCann, 3 November 2013 under CC BY-SA 3.0&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The model is also able to reliably associate the names of real monarchs to other monarchs in their region or from their culture, but that’s a less impressive feat, since the word vectors for those names are likely to already be associated with other monarchs related to them, since there usually aren’t confounding factors like poems named after those people.&lt;/p&gt;
+
+&lt;p&gt;In the examples of fictional character names above, the word vectors for the names themselves were always closest to names of other characters from the same stories, while the model picked out different types of associations, like matching Galadriel with other magical fantasy characters.&lt;/p&gt;
+
+&lt;h1 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h1&gt;
+
+&lt;p&gt;This model is able to pick up subtle associations like name styles from a certain culture and time period.  It’s also able to associate evil sounding names with evil characters and make other, more subtle associations, like matching a magical sounding name to other magical characters, as in the Galadriel example.  The model uses no labeled data.  Its only data source is the raw text used to train the word embedding this model is trained on.  As far as I know, this is the first work toward building a model for associating fictional characters to each other based on their names.&lt;/p&gt;
+
+&lt;h1 id=&quot;future-work&quot;&gt;Future work&lt;/h1&gt;
+
+&lt;p&gt;The stated goal here was to extract “emotional or aesthetic cues” from a character sequence.  This has been achieved only partially, since the model isn’t able to say that it believes a name sounds evil.  It can only present other words that it thinks are similar to the input.  If we gave it an evil sounding name and it returns other evil sounding names, that’s a kind of success, but it’s not explicit extraction of the belief that the name sounds evil.  A dataset with fictional names labeled by moral alignment of the characters or other attributes of interest could serve as supervision for this task.  A model like the one described here could perhaps be used for that task.&lt;/p&gt;
+
+&lt;p&gt;I also don’t have a way of quantifying the quality of the model’s predictions about fictional names.  Associating things like company names with certain cultures, like the Dromgoole’s example, relies on a highly subjective judgement that “Dromgoole’s” sounds like the kind of place a British aristocrat might like.  A dataset labeled with associations people make after seeing a name might help here.&lt;/p&gt;
+
+&lt;p&gt;I think another interesting future project would be creating a generative model for creating names from word vectors.  It’s &lt;a href=&quot;https://arxiv.org/pdf/1601.03764v2.pdf&quot;&gt;known&lt;/a&gt; that word vectors can contain a weighted combination of different concepts.  Perhaps by choosing a mix of known names and attributes, you could generate candidate names that would fit a particular type of character, or even create plausible sounding words in general.&lt;/p&gt;
+</description>
+        <pubDate>Mon, 02 Jan 2017 00:00:00 +0000</pubDate>
+        <link>http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2017/01/02/chars-to-vec.html</link>
+        <guid isPermaLink="true">http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2017/01/02/chars-to-vec.html</guid>
+        
+        
+        <category>ml</category>
+        
+      </item>
+    
+      <item>
+        <title>Conditional Variational Autoencoders</title>
+        <description>&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;When I started working on understanding generative models, I didn’t find any resources that gave a good, high level, intuitive overview of variational autoencoders.  Some great resources exist for understanding them in detail and seeing the math behind them.  In particular &lt;a href=&quot;https://arxiv.org/abs/1606.05908&quot;&gt;“Tutorial on Variational Autoencoders” by Carl Doersch&lt;/a&gt; covers the same topics as this post, but as the author notes, there is some abuse of notation in that article, and the treatment is more abstract then what I’ll go for here.  Here, I’ll carry the example of a variational autoencoder for the MNIST digits dataset throughout, using concrete examples for each concept.  Hopefully by reading this article you can get a general idea of how Variational Autoencoders work before tackling them in detail.&lt;/p&gt;
+
+&lt;h2 id=&quot;goal-of-a-variational-autoencoder&quot;&gt;Goal of a Variational Autoencoder&lt;/h2&gt;
+
+&lt;p&gt;A variational autoencoder (VAE) is a generative model, meaning that we would like it to be able to generate plausible looking fake samples that look like samples from our training data.  In the case of the MNIST data, these fake samples would be synthetic images of handwritten digits.  Our VAE will provide us with a space, which we will call the latent space, from which we can sample points.  Any of these points can be decoded into a reasonable image of a handwritten digit.&lt;/p&gt;
+
+&lt;h2 id=&quot;structure-of-a-vae&quot;&gt;Structure of a VAE&lt;/h2&gt;
+
+&lt;p&gt;The goal of any autoencoder is to reconstruct its own input.  Usually, the autoencoder first compresses the input into a smaller form, then transforms it back into an approximation of the input.   The function used to compress the data is usually called an “encoder” and the function used to decompress the data is called a “decoder.”  Those functions can be neural networks, which is the case we’ll consider here.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/cvae_figures/ae_diagram.svg&quot; alt=&quot;autoencoder diagram&quot; /&gt;
+&lt;em&gt;A standard autoencoder&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Standard autoencoders can work well if your goal is simply to reconstruct your input, but it won’t work as a generative model, because picking a random input &lt;strong&gt;V’&lt;/strong&gt; to the decoder won’t necessarily cause the decoder to produce a reasonable image.  &lt;strong&gt;V’&lt;/strong&gt; could be far away from any input the decoder has seen before, and so the decoder may never have been trained to produce reasonable digit images when given an input like &lt;strong&gt;V’&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;We need some way of ensuring that the decoder is prepared to decode any input we give it into a reasonable digit image.  To do this, we’ll need to predefine the distribution of inputs that the decoder should expect to see.  We’ll use a standard normal distribution to define the distribution of inputs the decoder will receive.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/cvae_figures/latent_space.svg&quot; alt=&quot;latent space diagram&quot; /&gt;
+&lt;em&gt;A standard normal distribution.  This is how we would like points corresponding to MNIST digit images to be distributed in the latent space.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;We would like to train the decoder to take any point sampled from this distribution and return a reasonable digit image.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/cvae_figures/vae_decoder_diagram.svg&quot; alt=&quot;decoder diagram&quot; /&gt;
+&lt;em&gt;The decoder of a variational autoencoder&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;Now we need an encoder.  In a traditional autoencoder, the encoder takes a sample from the data and returns a single point in the latent space, which is then passed into the decoder.  In a variational autoencoder, the encoder instead produces a probability distribution in the latent space.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/cvae_figures/encoder_vae_diagram.svg&quot; alt=&quot;encoder diagram&quot; /&gt;
+&lt;em&gt;The encoder of a variational autoencoder&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The latent distributions it outputs are gaussians of the same dimensionality as the latent space.  The encoder produces the parameters of these gaussians.&lt;/p&gt;
+
+&lt;p&gt;So we have an encoder that takes in images and produces probability distributions in the latent space, and a decoder that takes points in the latent space and returns artificial images.  So for a given image, the encoder produces a distribution, a point in the latent space is sampled from that distribution, and then that point is fed into the decoder which produces an artificial image.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/cvae_figures/vae_diagram.svg&quot; alt=&quot;vae diagram&quot; /&gt;
+&lt;em&gt;A variational autoencoder&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;the-structure-of-the-latent-space&quot;&gt;The Structure of the Latent Space&lt;/h2&gt;
+
+&lt;p&gt;I said earlier that the decoder should expect to see points sampled from a standard normal distribution.  But now I’ve stated that the decoder receives samples from non-standard normal distributions produced by the encoder.  These two things aren’t at odds, though, if points sampled from the encoder still approximately fit a standard normal distribution.  We want a situation like this:&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/cvae_figures/kl_divergence_diagram.svg&quot; alt=&quot;kl divergence diagram&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;where the average of different distributions produced in response to different training examples approximate a standard normal.  Now the assumption that the decoder sees points drawn from a standard normal distribution holds.&lt;/p&gt;
+
+&lt;p&gt;Obviously we need some way to measure whether the sum of distributions produced by the encoder “approximates” the standard normal distribution.  We can measure the quality of this approximation using Kullback-Leibler divergence.  Kullback-Leibler divergence essentially measures how different two probability distributions are.  This is treated in more depth in Doersch’s tutorial.&lt;/p&gt;
+
+&lt;h2 id=&quot;training-a-vae-with-the-reparametrization-trick&quot;&gt;Training a VAE with The Reparametrization Trick&lt;/h2&gt;
+
+&lt;p&gt;In the VAE described above, there is a random variable in the network between the input and output.  There’s no way to backpropagate through a random variable, which presents the obvious problem that you’re now unable to train the encoder.  To solve this problem, the VAE is expressed in a different way such that the parameters of the latent distribution are factored out of the parameters of the random variable, so that backpropagation can proceed through the parameters of the latent distribution.  Concretely, N(μ,Σ) = μ + Σ N(0, I) when the covariance matrix Σ is diagonal, which it is in our case.  But this is treated in more depth in other articles.  The important takeaway is that a VAE can be trained end-to-end using backprop.  But since there is still an element of randomness involved, instead of being called stochastic gradient descent, the training process is called stochastic gradient variational Bayes (SGVB).&lt;/p&gt;
+
+&lt;h2 id=&quot;conditional-variational-autoencoder&quot;&gt;Conditional Variational Autoencoder&lt;/h2&gt;
+
+&lt;p&gt;So far, we’ve created an autoencoder that can reproduce its input, and a decoder that can produce reasonable handwritten digit images.  The decoder cannot, however, produce an image of a particular number on demand.  Enter the &lt;em&gt;conditional&lt;/em&gt; variational autoencoder (CVAE).  The conditional variational autoencoder has an extra input to both the encoder and the decoder.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/cvae_figures/cvae_diagram.svg&quot; alt=&quot;cvae diagram&quot; /&gt;
+&lt;em&gt;A conditional variational autoencoder&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;At training time, the number whose image is being fed in is provided to the encoder and decoder.  In this case, it would be represented as a one-hot vector.&lt;/p&gt;
+
+&lt;p&gt;To generate an image of a particular number, just feed that number into the decoder along with a random point in the latent space sampled from a standard normal distribution.  Even if the same point is fed in to produce two different numbers, the process will work correctly, since the system no longer relies on the latent space to encode what number you are dealing with.  Instead, the latent space encodes other information, like stroke width or the angle at which the number is written.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/cvae_figures/cvae_generation_diagram.svg&quot; alt=&quot;cvae generation diagram&quot; /&gt;
+&lt;em&gt;A variational autoencoder generating images according to given labels&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;The grid of images below was produced by fixing the desired number input to the decoder and taking a few random samples from the latent space to produce a handful of different versions of that number.  As you can see, the numbers vary in style, but all the images in a single row are clearly of the same number.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/cvae_figures/cvae_generated_grid.png&quot; alt=&quot;cvae generated grid&quot; /&gt;&lt;/p&gt;
+
+&lt;!--
+# Conclusion
+
+VAEs are powerful unsupervised learning tool.  The latent space of a standard VAE should capture useful patterns in your data reliably.  For example, as I wrote this post, I saw that a VAE trained without any labels successfully seperated MNIST images into 10 distinct regions in the latent space, where each region contained almost exclusively images of one number.  CVAEs are useful for generating artificial samples that match some label.  Note that nothing in this tutorial is specific to images.  For example, sequential data can be generated with VAEs if the encoder and decoder are RNNs. --&gt;
+
+</description>
+        <pubDate>Wed, 21 Dec 2016 00:00:00 +0000</pubDate>
+        <link>http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2016/12/21/cvae.html</link>
+        <guid isPermaLink="true">http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2016/12/21/cvae.html</guid>
+        
+        
+        <category>ml</category>
+        
+      </item>
+    
+      <item>
+        <title>Producing Simple Definitions from Word Vectors</title>
+        <description>&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/turnip_net.svg&quot; alt=&quot;Simple network diagram&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Word embeddings are a great way to represent words for NLP tasks, but the vectors themselves are hard to directly interpret.  One way to see what kind of concept a word vector represents is to look for similar vectors in the embedding space.   For example, the word “ostrich” is most similar to chicken.  The next most similar word is “elephant,” followed by “pig”, “giraffe”, and finally “ratite,” which is a term for a group of species of flightless birds to which the ostrich belongs.  It’s not clear from this information how much the word embedding space “understands” about the ostrich.  It’s true that chickens are also birds, and it’s promising that “ratite” appears on the list, but “elephant” and “pig” are both considered more similar to “ostrich.”  It’s clearly recorded the fact that an Ostrich is an animal, but how detailed is the word embedding’s idea of what an ostrich is?&lt;/p&gt;
+
+&lt;p&gt;If you wanted to determine whether a person understood the meaning of a word, you might ask them to define it.  Let’s apply the same intuition here, and train a model to produce definitions of words in its vocabulary.  For this early experiment, I’ll limit the definitions to a simple form: a single adjective followed by a single noun.  For example, “flightless bird” might be a good definition for ostrich.&lt;/p&gt;
+
+&lt;h2 id=&quot;gathering-data&quot;&gt;Gathering Data&lt;/h2&gt;
+
+&lt;p&gt;We need a large set of definitions of the form (adjective, noun).  Many dictionary definitions are of the form “adjective adjective hypernym … “ where the hypernym is a category of which the word to define is an example.  For instance,&lt;/p&gt;
+
+&lt;blockquote&gt;
+  &lt;p&gt;ostrich (noun) a flightless swift-running African bird with a long neck, long legs, and two toes on each foot.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+&lt;p&gt;So we have that an ostrich is a type of bird that is flightless, swift-running, and African.  I’ll consider “flightless bird,” “swift-running bird,” and “African bird” to all be acceptable definitions for ostrich.&lt;/p&gt;
+
+&lt;p&gt;To extract these definitions automatically, I use hypernyms from wordnet and part of speech tagging and take all the adjectives up to the first occurrence of a hypernym of the word being defined, and treat each (adjective, hypernym) pair as an example of a valid definition for that word.&lt;/p&gt;
+
+&lt;p&gt;This is a pretty simple approach, and it tends to pick up low quality definitions like “certain bird,” if the original definition was “a certain tropical bird…” To mitigate this, I made a small list of disallowed adjectives, like “certain,” “such,” and “several.”&lt;/p&gt;
+
+&lt;p&gt;I also need the word vectors themselves.  I’m using both the vectors and the dictionary corpus from &lt;a href=&quot;http://www.aclweb.org/anthology/Q16-1002&quot;&gt;this paper by Hill et. al.&lt;/a&gt;, which was a big factor in inspiring me to do this work, in addition to a good source of data.  You can get their data &lt;a href=&quot;http://www.cl.cam.ac.uk/~fh295/dicteval.html&quot;&gt;here&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;a-multicolumn-perceptron&quot;&gt;A Multicolumn Perceptron&lt;/h2&gt;
+
+&lt;p&gt;Since I’m predicting a fixed length response from fixed length input, and there’s no expectation of spatial structure in the input vectors, I’ll simply use a deep, fully connected architecture.  I experimented with different numbers and widths of layers, and found that two 500 unit hidden layers works well.&lt;/p&gt;
+
+&lt;p&gt;I noticed that as I varied the number of layers, different sets examples from the validation data would work.  I wondered if perhaps more depth was helpful for some examples but not others.  In that case, it might help to have a network with subnetworks of various depth.  I used three columns of layers, one with 2 200 node layers, one with 3 100 node layers, and one with 4 100 node layers.  This model provided the best performance I managed over the course of the project.&lt;/p&gt;
+
+&lt;p&gt;Some work has been done with multicolumn deep convolutional neural networks, but a cursory search of the literature didn’t turn anything up about multicolumn fully connected networks, so I can’t provide references to attest to the qualities of this architecture in general.&lt;/p&gt;
+
+&lt;p&gt;I’ll train it using the Adam optimizer with a decaying learning rate starting at .0005.  The loss function I’m using is&lt;/p&gt;
+
+\[L = (1-cos(a, a’))^2 + (1-cos(n, n’))^2 + L2\]
+
+&lt;p&gt;Where a and a’ are the predicted and correct adjective vector respectively, and the same for n and n’.  Cos is the cosine similarity between two vectors.  L2 is the L2 regularization  term.&lt;/p&gt;
+
+&lt;h2 id=&quot;ensemble-method-for-filtering-generated-definitions&quot;&gt;Ensemble Method for Filtering Generated Definitions&lt;/h2&gt;
+
+&lt;p&gt;Even with the mutlicolumn architecture, there’s still some noise in the generated definitions.  Training the same model multiple times produces models that succeed or fail on different examples.  If I could create an ensemble and then aggregate their predictions in some way, I might end up with a more robust system.  The problem is choosing which model’s prediction to use.&lt;/p&gt;
+
+&lt;p&gt;To convert a model’s predicted vector to readable text, I find the nearest word vector to the prediction.  I noticed that the cosine distance between the predicted vectors and the nearest word vectors is negatively correlated with the quality of the prediction.  So if the distance between the prediction and the nearest word is high, the quality of the prediction is low, I’ll just gather predictions from a number of different models and take the prediction with the lowest cosine distances to the nearest words in the vocabulary.  This made the system’s results much more reliable.&lt;/p&gt;
+
+&lt;h2 id=&quot;results&quot;&gt;Results&lt;/h2&gt;
+
+&lt;p&gt;I’m happy with the model’s performance on the validation set.  Here are some hand-picked examples:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;romanticism: philosophical movement&lt;/li&gt;
+  &lt;li&gt;breakthrough: spectacular performance&lt;/li&gt;
+  &lt;li&gt;intrigue: illegal subtlety&lt;/li&gt;
+  &lt;li&gt;stockade: large building&lt;/li&gt;
+  &lt;li&gt;cantaloupe: common fruit&lt;/li&gt;
+  &lt;li&gt;philosopher: intellectual person&lt;/li&gt;
+  &lt;li&gt;d: old symbol&lt;/li&gt;
+  &lt;li&gt;salsa: colorful music&lt;/li&gt;
+  &lt;li&gt;flamenco: strong music&lt;/li&gt;
+  &lt;li&gt;buttock: small end&lt;/li&gt;
+  &lt;li&gt;sensualism: religious carnality&lt;/li&gt;
+  &lt;li&gt;graduation: successful completion&lt;/li&gt;
+  &lt;li&gt;phi: greek letter&lt;/li&gt;
+  &lt;li&gt;ship: large vessel&lt;/li&gt;
+  &lt;li&gt;canoe: small boat&lt;/li&gt;
+  &lt;li&gt;dumpling: small food&lt;/li&gt;
+  &lt;li&gt;analysis: literary writing&lt;/li&gt;
+  &lt;li&gt;computer: electronic device&lt;/li&gt;
+  &lt;li&gt;algebra: formal mathematics&lt;/li&gt;
+  &lt;li&gt;beat: regular motion&lt;/li&gt;
+  &lt;li&gt;beet: swollen vegetable&lt;/li&gt;
+  &lt;li&gt;turnip: red vegetable&lt;/li&gt;
+  &lt;li&gt;skewer: small blade&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The result I liked the most while I was working on this model was the definitions of tracery.  Tracery is the flower-inspired stone openwork sometimes found on Gothic windows.  The model described it as “botanical building.”  Though the final ensemble model predicts the more correct “decorative structure,” this clearly shows that information about the symbolic, sensory quality of tracery is present in its word vector.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;http://ijdykeman.github.io/assets/tracery.jpg&quot; alt=&quot;Tracery&quot; /&gt;
+&lt;em&gt;The tracery in the east window of Christ Church Cathedral in Fredericton New Brunswick&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;future-work&quot;&gt;future work&lt;/h2&gt;
+
+&lt;p&gt;I think these results could be greatly improved by collecting more data.  The set of examples I have is only about 50,000 strong.&lt;/p&gt;
+
+&lt;p&gt;Only a fraction of definitions in the corpus are of the form I mentioned above.  It may be that some words’ hypernyms never show up in their definitions.  It might make sense to use hypernyms from wordnet even without corresponding adjectives.  This could help optimize the part of the network that determines hypernyms by having a separate loss function that only measures error on the noun prediction.&lt;/p&gt;
+
+&lt;p&gt;The other obvious next step is to try to produce arbitrary dictionary definitions from a word.  By limiting the form of definitions I use to (adjective, noun), I greatly reduce the amount of useful information I can extract from a dictionary.  The definition corpus used for the paper by Hill et. al. has 800,000 examples.  Perhaps this could be used to train a recurrent model to predict a full definition from a word vector.&lt;/p&gt;
+
+&lt;p&gt;I have not addressed the question of polysemy in my data.  Many words have multiple meanings, and so at training time, the network is seeing conflicting definitions for a given word.  One could remove definitions for non-dominant word senses, but word vectors are known to contain information about multiple senses of the word they represent, so there may be a way of creating reasonable definitions that cover various senses.  I plan to explore this.&lt;/p&gt;
+
+&lt;h3 id=&quot;random-examples-from-the-validation-set&quot;&gt;random examples from the validation set&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;rabbi: religious person&lt;/li&gt;
+  &lt;li&gt;manometer: mechanical instrument&lt;/li&gt;
+  &lt;li&gt;barb: thick piece&lt;/li&gt;
+  &lt;li&gt;ligature: plural letter&lt;/li&gt;
+  &lt;li&gt;sardine: small fish&lt;/li&gt;
+  &lt;li&gt;gradient: vertical motion&lt;/li&gt;
+  &lt;li&gt;croton: unusual jawfish&lt;/li&gt;
+  &lt;li&gt;stick: heavy strap&lt;/li&gt;
+  &lt;li&gt;picumnus: atypical subfamily&lt;/li&gt;
+  &lt;li&gt;peritoneum: thin structure&lt;/li&gt;
+  &lt;li&gt;carton: small container&lt;/li&gt;
+  &lt;li&gt;military: military state&lt;/li&gt;
+  &lt;li&gt;legume: large plant&lt;/li&gt;
+  &lt;li&gt;homegirl: female woman&lt;/li&gt;
+  &lt;li&gt;brownie: small milk&lt;/li&gt;
+  &lt;li&gt;iroquois: western indian&lt;/li&gt;
+  &lt;li&gt;reception: official creation&lt;/li&gt;
+  &lt;li&gt;mullet: short hair&lt;/li&gt;
+  &lt;li&gt;subsystem: ventral device&lt;/li&gt;
+  &lt;li&gt;fence: narrow barrier&lt;/li&gt;
+  &lt;li&gt;vagrancy: political state&lt;/li&gt;
+  &lt;li&gt;medina: small tree&lt;/li&gt;
+  &lt;li&gt;titter: high sound&lt;/li&gt;
+  &lt;li&gt;limb: high strength&lt;/li&gt;
+  &lt;li&gt;auricle: small part&lt;/li&gt;
+  &lt;li&gt;bait: large device&lt;/li&gt;
+  &lt;li&gt;cree: american indian&lt;/li&gt;
+  &lt;li&gt;townsman: native inhabitant&lt;/li&gt;
+  &lt;li&gt;annelid: small organism&lt;/li&gt;
+  &lt;li&gt;bantamweight: professional boxer&lt;/li&gt;
+  &lt;li&gt;alkali: similar compound&lt;/li&gt;
+  &lt;li&gt;bandanna: small coat&lt;/li&gt;
+  &lt;li&gt;blitz: violent event&lt;/li&gt;
+  &lt;li&gt;galleon: narrow vessel&lt;/li&gt;
+  &lt;li&gt;ottoman: french inhabitant&lt;/li&gt;
+  &lt;li&gt;spelling: formal act&lt;/li&gt;
+  &lt;li&gt;smash: strong buzz&lt;/li&gt;
+  &lt;li&gt;surcharge: military fee&lt;/li&gt;
+  &lt;li&gt;soleus: large muscle&lt;/li&gt;
+  &lt;li&gt;lycosa: large subfamily&lt;/li&gt;
+  &lt;li&gt;rheostat: electrical instrument&lt;/li&gt;
+  &lt;li&gt;hunger: extreme fear&lt;/li&gt;
+  &lt;li&gt;pia: hard piece&lt;/li&gt;
+  &lt;li&gt;crappie: small fish&lt;/li&gt;
+  &lt;li&gt;period: definite time&lt;/li&gt;
+  &lt;li&gt;border: perceptible passage&lt;/li&gt;
+  &lt;li&gt;dialect: particular word&lt;/li&gt;
+  &lt;li&gt;tracery: decorative structure&lt;/li&gt;
+  &lt;li&gt;crypt: deep building&lt;/li&gt;
+  &lt;li&gt;macrophage: low tree&lt;/li&gt;
+  &lt;li&gt;factoid: revelatory essay&lt;/li&gt;
+  &lt;li&gt;hysteroscopy: medical instrument&lt;/li&gt;
+  &lt;li&gt;lungi: south fabric&lt;/li&gt;
+  &lt;li&gt;technocrat: sophisticated person&lt;/li&gt;
+  &lt;li&gt;hypocrisy: false dishonesty&lt;/li&gt;
+  &lt;li&gt;halfback: american position&lt;/li&gt;
+  &lt;li&gt;bird: old bird&lt;/li&gt;
+  &lt;li&gt;deflagration: violent explosion&lt;/li&gt;
+  &lt;li&gt;cleft: small rock&lt;/li&gt;
+  &lt;li&gt;node: large unit&lt;/li&gt;
+  &lt;li&gt;electrocution: mental destruction&lt;/li&gt;
+  &lt;li&gt;ripsaw: small car&lt;/li&gt;
+  &lt;li&gt;ladin: western german&lt;/li&gt;
+  &lt;li&gt;gravity: physical movement&lt;/li&gt;
+  &lt;li&gt;corticosteroid: synthetic antibiotic&lt;/li&gt;
+  &lt;li&gt;sentimentality: repetitive sentimentality&lt;/li&gt;
+  &lt;li&gt;amplitude: large quantity&lt;/li&gt;
+  &lt;li&gt;magneto: small bird&lt;/li&gt;
+  &lt;li&gt;medic: medical person&lt;/li&gt;
+  &lt;li&gt;real: ultimate structure&lt;/li&gt;
+  &lt;li&gt;tub: large vessel&lt;/li&gt;
+  &lt;li&gt;temperament: intrinsic person&lt;/li&gt;
+  &lt;li&gt;straight: curved part&lt;/li&gt;
+  &lt;li&gt;usurer: obnoxious person&lt;/li&gt;
+  &lt;li&gt;lindane: synthetic analgesic&lt;/li&gt;
+  &lt;li&gt;tarpan: native cattle&lt;/li&gt;
+  &lt;li&gt;dorsum: second direction&lt;/li&gt;
+  &lt;li&gt;anarchy: political state&lt;/li&gt;
+  &lt;li&gt;colony: legal district&lt;/li&gt;
+  &lt;li&gt;gulch: large hole&lt;/li&gt;
+  &lt;li&gt;profundity: splendid quality&lt;/li&gt;
+  &lt;li&gt;ovenbird: small bird&lt;/li&gt;
+  &lt;li&gt;sauerkraut: french pasta&lt;/li&gt;
+  &lt;li&gt;neritidae: morphological family&lt;/li&gt;
+  &lt;li&gt;micrococcus: red subfamily&lt;/li&gt;
+  &lt;li&gt;benelux: musical movement&lt;/li&gt;
+  &lt;li&gt;hymenoptera: phylogenetic order&lt;/li&gt;
+  &lt;li&gt;storminess: high weather&lt;/li&gt;
+  &lt;li&gt;predator: carnivorous animal&lt;/li&gt;
+  &lt;li&gt;cardboard: thin fabric&lt;/li&gt;
+  &lt;li&gt;clam: small crustacean&lt;/li&gt;
+  &lt;li&gt;street: large area&lt;/li&gt;
+  &lt;li&gt;coast: coarse boundary&lt;/li&gt;
+  &lt;li&gt;kris: bright leaf&lt;/li&gt;
+  &lt;li&gt;update: informal procedure&lt;/li&gt;
+  &lt;li&gt;lift: minimal motion&lt;/li&gt;
+  &lt;li&gt;treason: strong punishment&lt;/li&gt;
+  &lt;li&gt;impromptu: traditional music&lt;/li&gt;
+  &lt;li&gt;nu: official letter&lt;/li&gt;
+  &lt;li&gt;territorial: real person&lt;/li&gt;
+  &lt;li&gt;sidestep: astonishing return&lt;/li&gt;
+  &lt;li&gt;instability: strong state&lt;/li&gt;
+  &lt;li&gt;sapsucker: small bird&lt;/li&gt;
+  &lt;li&gt;vaccinia: large infection&lt;/li&gt;
+  &lt;li&gt;neurologist: medical doctor&lt;/li&gt;
+  &lt;li&gt;lollipop: small case&lt;/li&gt;
+  &lt;li&gt;prednisolone: quinoline antibiotic&lt;/li&gt;
+  &lt;li&gt;footnote: small part&lt;/li&gt;
+  &lt;li&gt;nystatin: generic antibiotic&lt;/li&gt;
+  &lt;li&gt;newsletter: short book&lt;/li&gt;
+  &lt;li&gt;postage: french coin&lt;/li&gt;
+  &lt;li&gt;servitude: brutal loyalty&lt;/li&gt;
+  &lt;li&gt;odynophagia: extraordinary symptom&lt;/li&gt;
+  &lt;li&gt;associationism: political doctrine&lt;/li&gt;
+  &lt;li&gt;montrachet: white wine&lt;/li&gt;
+  &lt;li&gt;stanchion: small device&lt;/li&gt;
+  &lt;li&gt;public: informal person&lt;/li&gt;
+  &lt;li&gt;stream: strong region&lt;/li&gt;
+  &lt;li&gt;peat: low rock&lt;/li&gt;
+  &lt;li&gt;lathi: english knife&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Sat, 29 Oct 2016 00:00:00 +0000</pubDate>
+        <link>http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2016/10/29/simple_definitions.html</link>
+        <guid isPermaLink="true">http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2016/10/29/simple_definitions.html</guid>
+        
+        
+        <category>ml</category>
+        
+      </item>
+    
+  </channel>
+</rss>

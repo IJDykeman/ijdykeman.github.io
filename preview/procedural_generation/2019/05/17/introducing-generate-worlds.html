@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Introducing Generate Worlds for Procedural Generation without Code</title>
+  <meta name="description" content="The infinite procedurally generated worlds of games like Minecraft and Dwarf Fortress create a sense of exploration and variety that entirely hand-built game...">
+
+  <link rel="stylesheet" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/css/main.css">
+  <link rel="canonical" href="http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/procedural_generation/2019/05/17/introducing-generate-worlds.html">
+  <link rel="alternate" type="application/rss+xml" title="Isaac Dykeman" href="http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/feed.xml">
+</head>
+
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/">Isaac Dykeman</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+<!--         
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/about/">About</a>
+          
+          
+        
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/gallery/">Gallery</a>
+          
+          
+        
+          
+        
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/projects/megagrant.html">MegaGrant Proposal for Low Cost Motion Capture</a>
+          
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/reading_list/">Reading List</a>
+          
+          
+        
+          
+         -->
+          <a class="page-link" href="/about/">About</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Introducing Generate Worlds for Procedural Generation without Code</h1>
+    <p class="post-meta"><time datetime="2019-05-17T00:00:00+00:00" itemprop="datePublished">May 17, 2019</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>The infinite procedurally generated worlds of games like Minecraft and Dwarf Fortress create a sense of exploration and variety that entirely hand-built game worlds cannot compete with.  However, designing and coding the algorithms to actually perform this generation is a specialized technical skill few possess.  At the same time, numerous online communities exist around mapping, painting, and otherwise imagining fantasy environments, and some great products exist to help them do it, like <a href="https://www.wonderdraft.net/">Wonderdraft</a> for drawing fantasy maps.  But something is missing: I want to experience these worlds from the inside, and drawing tools don’t let me do it.</p>
+
+<p>My desire to design and explore fantasy landscapes inspired me to build the procedurally generated island worlds of <a href="http://www.brimmingsea.com/">Brimming Sea</a> in 2014.  It was a difficult technical task, but imagining and then walking around these islands was magical.  Since then, I’ve created several tools to help me design infinite procedural worlds <em>without writing any code</em>, and I’m finally happy enough with one of those tools to release it.  I’m calling it Generate Worlds, and it’s available on the itch.io store.</p>
+
+<iframe frameborder="0" src="https://itch.io/embed/406212?linkback=true&amp;border_width=2&amp;bg_color=353535&amp;fg_color=ffffff&amp;link_color=fa5c5c&amp;border_color=333333" width="100%" height="169"></iframe>
+
+<video width="100%" controls="" autoplay="" loop="" muted="">
+  <source src="http://ijdykeman.github.io/assets/rule_based_procedural_generation/generation_10s.mp4" />
+Your browser does not support the video tag.
+</video>
+
+<p>The video above shows Generate Worlds in action building a landscape and dungeon environment.  The video below briefly describes Generate Worlds.  Read on for the details.</p>
+
+<iframe width="100%" height="370" src="https://www.youtube.com/embed/DrAtX-EsQM0?autoplay=0&amp;showinfo=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe>
+
+<h2 id="generate-worlds-with-rules-instead-of-code">Generate Worlds with Rules instead of Code</h2>
+
+<p>The key idea behind Generate Worlds is that instead of writing code that describes how to build the world, you simply create a set of rules about how you want the world to work and Generate Worlds puts it together for you.  Let’s start with a simple example.</p>
+
+<p>Imagine we want to create a simple dungeon world containing hallways and rectangular rooms.  We will make the world by assembling these six passageway and room pieces:</p>
+
+<p><img src="http://ijdykeman.github.io/assets/rule_based_procedural_generation/dungeon_parts.svg" alt="dungeon parts" /></p>
+
+<p>I’ll now add a series of rules to put these pieces together into a coherent dungeon, starting with an unstrucutred world made of those pieces but without any rules about how to put them together:</p>
+
+<p><img src="http://ijdykeman.github.io/assets/rule_based_procedural_generation/full_dungeon_sequence.svg" alt="dungeon construction" /></p>
+
+<p>We now have a reasonable looking, simple dungeon layout.  To recap, the rules are simply</p>
+
+<ol>
+  <li>Passageways can connect to other passageways.</li>
+  <li>All floor space must be enclosed by walls.</li>
+  <li>Passageways can connect to doors.</li>
+</ol>
+
+<h2 id="3d-tiles-instead-of-english-rules">3D Tiles Instead of English Rules</h2>
+
+<p>Creating these rules is easy compared to writing a dungeon generation algorithm, but it’s hard to convert an english statement like “Passageways can connect to other passageways” to a world, so I’ll instead rely on a 3D visual language.  This language consists of voxel <em>tiles</em> that the user provides.  These tiles are simple .vox files that a user creates in some voxel editing software and loads into Generate Worlds.  Imagine we want to create a world with walled cities and countryside.  Here’s what the tiles for that world might look like:</p>
+
+<p><img src="http://ijdykeman.github.io/assets/rule_based_procedural_generation/labeled_woods_tiles.svg" alt="town and country tiles" /></p>
+
+<p>The world should have the following properties:</p>
+<ul>
+  <li>Rivers and roads have no dead ends</li>
+  <li>Roads can cross rivers over a bridge</li>
+  <li>Roads can cross into cities through a gate</li>
+  <li>Walls separate the outside grassy countryside from town interiors</li>
+  <li>Grassy areas can contain huts and trees</li>
+</ul>
+
+<p>To enforce these all these rules, Generate Worlds does only one simple thing:  it ensures that two tiles are only placed next to each other in the world if the tiles are the same color in all the places where they touch, as in the example below.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/rule_based_procedural_generation/road_assembling.svg" alt="two road tiles assembling" /></p>
+
+<p><em>In the figure above, we can arrange these two tiles in this way because the tiles’ colors match where they touch.</em></p>
+
+<p>Placing several tiles looks like this:</p>
+
+<video width="100%" controls="" autoplay="" loop="" muted="">
+  <source src="http://ijdykeman.github.io/assets/rule_based_procedural_generation/woods_tile_assembly.mov" />
+Your browser does not support the video tag.
+</video>
+
+<p>These tiles are easy to create in a voxel editor like MagicaVoxel.  The tile set above is simply a directory of .vox files that Generate Worlds takes as input.</p>
+
+<h2 id="generating-a-dungeon">Generating a Dungeon</h2>
+
+<p>Let’s try a more sophisticated world: a 3D dungeon that extends endlessly in all directions.  We can simply provide Generate Worlds with a new tile set of dungeon parts.  Nine of those tiles are shown below.  They contain pieces of passageways, rooms, stairs, columns, arcades, and doorways.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/rule_based_procedural_generation/dungeon_tiles.svg" alt="dungeon tiles" /></p>
+
+<p>Putting them together in 3D looks like this:</p>
+
+<video width="100%" controls="" autoplay="" loop="" muted="">
+  <source src="http://ijdykeman.github.io/assets/rule_based_procedural_generation/full_dungeon_generation.mov" />
+Your browser does not support the video tag.
+</video>
+
+<p>Loading these .vox files into Generate Worlds, I can explore this dungeon world in first-person.  Generate Worlds lets you set lighting conditions, and place lights.</p>
+
+<video width="100%" controls="" autoplay="" loop="" muted="">
+  <source src="http://ijdykeman.github.io/assets/rule_based_procedural_generation/generation_10s.mp4" />
+Your browser does not support the video tag.
+</video>
+
+<h2 id="conclusion">Conclusion</h2>
+
+<p>My goal is to build a creative tool that isn’t quite like anything already in existence.  Minecraft lets you modify worlds block by block and explore them, but it doesn’t let you redefine how the world is created in the first place, limiting the scope of what you can build.  Mapping and drawing tools help you imagine and design worlds, but don’t let you explore them.  Finally, coding your own algorithms gives you huge flexibility, but at the cost of much higher difficulty.  And for what it’s worth, the worlds I’ve made in Generate Worlds are more varied and compelling than what I’ve been able to create by hand-building procedural generation algorithms in the past.</p>
+
+<p>If you want to explore this creative avenue, consider supporting this effort by purchasing Generate Worlds.  A <a href="http://generateworlds.com/tutorial.html">tutorial</a> is available to get you started.  If you have any issues using it, you can contact me at ijdykeman@gmail.com .</p>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">Isaac Dykeman</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>Isaac Dykeman</li>
+          <li><a href="mailto:ijdykeman@gmail.com">ijdykeman@gmail.com</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/ijdykeman"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">ijdykeman</span></a>
+
+          </li>
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89435172-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+
+</html>

@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<!--
+to build the JS, run
+wasm-pack build --target web
+from within the project directory
+-->
+
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ilib</title>
+    <style>
+        canvas {
+            background-color: rgb(59, 85, 141);
+            /* width: max-content; */
+            /* height: max-content; */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            /* width: 100%; */
+            /* height: 100%; */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="wasm-example" style="width: 100vw; margin: auto; height: 100vh;">
+        <!-- WASM content will be loaded here -->
+    </div>
+
+    <!-- Embedded JSON data for host_data_viz -->
+    <script type="application/json" id="viz-data">
+    {
+      "points": [
+        [0.0, 0.0, 1.0],
+        [0.0, 0.0, 2.0],
+        [1.0, 1.0, 1.0],
+        [-1.0, -1.0, 1.0]
+      ]
+    }
+    </script>
+
+</body>
+<script type="module">
+    console.log("going to import.");
+    import init from "./target/generated/msa_data_viz_demo.js";
+    init().then(() => {
+        console.log("WASM Loaded!");
+    });
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+            if (mutation.addedNodes.length) {
+                const canvas = document.getElementById('rust_viewer');
+                if (canvas) {
+                    canvas.addEventListener('contextmenu', (event) => {
+                        event.preventDefault();
+                    });
+                    observer.disconnect();
+                }
+            }
+        });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    function adjustHeight() {
+        var div = document.getElementById('wasm-example');
+        var style = window.getComputedStyle(document.getElementById("wasm-example"), null);
+        // div.style.height = parseInt(style.getPropertyValue("width"), 10) * 3 / 4 + 'px';
+        // div.style.height = parseInt(style.getPropertyValue("width"), 10) + 'px';;
+    }
+
+    window.onresize = adjustHeight;
+    adjustHeight();
+</script>
+
+</html>

@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>A Simple Shader for Point Lights in Fog</title>
+  <meta name="description" content="I want a simple, fast shader that gives me fog illuminated by point lights.  To do this, I created a screen-space effect that achieves the results below.  Th...">
+
+  <link rel="stylesheet" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/css/main.css">
+  <link rel="canonical" href="http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/graphics/simple_fog_shader">
+  <link rel="alternate" type="application/rss+xml" title="Isaac Dykeman" href="http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/feed.xml">
+</head>
+
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/">Isaac Dykeman</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+<!--         
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/about/">About</a>
+          
+          
+        
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/gallery/">Gallery</a>
+          
+          
+        
+          
+        
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/projects/megagrant.html">MegaGrant Proposal for Low Cost Motion Capture</a>
+          
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/reading_list/">Reading List</a>
+          
+          
+        
+          
+         -->
+          <a class="page-link" href="/about/">About</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">A Simple Shader for Point Lights in Fog</h1>
+    <p class="post-meta"><time datetime="2020-04-20T00:00:00+00:00" itemprop="datePublished">Apr 20, 2020</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>I want a simple, fast shader that gives me fog illuminated by point lights.  To do this, I created a screen-space effect that achieves the results below.  The pipeline is nearly as simple as for plain point lights.  It requires no volumetric data structures, no ray marching, and can be tacked on seamlessly to an existing point light shader.</p>
+
+<p>The key insight is that it’s possible to compute in closed form the light that emanates from the fog as it is illuminated by a point light.  My approach is to find this formula and plug it into a shader.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/fog_shader/spaceship_in_omnidirectional_fog.png" alt="A spaceship in omnidirectional fog" />
+<em>A little spaceship scene rendered in fog with this technique</em></p>
+
+<p><img src="http://ijdykeman.github.io/assets/fog_shader/scene.svg" alt="The basic setup" /></p>
+
+<h2 id="fog-model">Fog Model</h2>
+
+<p>The shader makes a few assumptions about the fog we are dealing with.  	It essentially treats each piece of fog as a tiny, semi transparent, white, diffuse surface.</p>
+<ul>
+  <li>The shader assumes that fog scatters light uniformly in all directions.  Real fog or smoke does not necessarily have this property, but it’s a fine approximation for the look we’re going for.</li>
+  <li>The shader assumes that all wavelengths of light interact with the fog in the same way.  In reality, this is often not true.  For instance, Rayleigh scattering turns the sky blue by scattering blue light more than other wavelengths.</li>
+  <li>The light emanating from the fog varies with the inverse square of the distance from the light source to the fog.  This has no basis in reality, but looks fine.  Lots of resources exist that explain how fog really scatters light and I’m sure you could extend this method with those formulas.</li>
+</ul>
+
+<p>The results are compelling even with these simplifications in place.</p>
+
+<h2 id="an-analytic-solution">An Analytic Solution</h2>
+
+<p>Given an infinitesimal fog fragment (imagine a little cube of fog), I’ll say that the light being emitted by that fog fragment is</p>
+
+\[\text{light} = \frac{1}{(\text{distance from light to fog fragment})^2}\]
+
+<p>This is saying that the light coming from each fog fragment falls off with the inverse-square of its distance to the light, just like the light coming from a diffuse surface would.</p>
+
+<p>For neatness, rewrite</p>
+
+\[d = \text{distance from light to fog fragment}\]
+
+\[\text{light} = \frac{1}{d^2}\]
+
+\[\int_{\text{view line}} \text{light at} \hspace{1ex} x \hspace{1em} dx\]
+
+<p>Or more formally:</p>
+
+\[L = \text{light position}\]
+
+\[w = \text{world fragment position}\]
+
+\[c = \text{camera position}\]
+
+\[\text{light arriving at camera} = \int_{c}^{w} \frac{1}{|x - L|_2} dx\]
+
+<p><img src="http://ijdykeman.github.io/assets/fog_shader/integral_scene.svg" alt="The basic setup" /></p>
+
+<p>This integral expresses what we want, but it’s more complicated to evaluate than it needs to be.  Since all the variables in the image above are 3-vectors, we effectively have 12 variables to deal with.  I’ll eliminate most of these by doing a simple reparametrization of the problem.</p>
+
+<p>I’ll define a new space called <em>light space</em>  with</p>
+<ul>
+  <li>The view line on the x-axis</li>
+  <li>The light on the y-axis</li>
+</ul>
+
+<p><img src="http://ijdykeman.github.io/assets/fog_shader/light_space.svg" alt="The basic setup" /></p>
+
+<p>Now rather than a line integral through 3-space, I just integrate along the x-axis from the camera to the world fragment.  Now I need to rewrite the integral.  The distance from a point \(x\) on the x-axis to the light is \(\sqrt{h^2+x^2}\).   So the integral over the view line becomes</p>
+
+\[\int \frac{1}{h^2+x^2} dx\]
+
+<p>Solving by hand or with your favorite computer algebra system:</p>
+
+\[\int \frac{1}{h^2+x^2} dx = \frac{tan^{-1}(\frac{x}{h})}{h}\]
+
+<p>So to find the light coming from the fog for a given view line, I evaluate this integral from the camera to the world fragment.  If the camera is at \(x=a\) and the world fragment is at \(x=b\), the light arriving at a pixel from the illuminated fog along its view ray is</p>
+
+\[\int_a^b \frac{1}{h^2+x^2} dx  = \frac{tan^{-1}(\frac{b}{h})}{h} - \frac{tan^{-1}(\frac{a}{h})}{h}\]
+
+<h2 id="thoughts-on-implementation">Thoughts on Implementation</h2>
+
+<p>I was able to implement this shader in my deferred shading pipeline without making any serious modifications.  It involved adding around a dozen lines of GLSL code.  If you are computing diffuse+specular lighting with point lights already, your point light shader should already have access to camera position, light position, and the position of the world at the current pixel, and that’s all you need!</p>
+
+<p>Handling multiple lights is straightforward.  You simply sum the contributions of light scattering from fog for each light.  To make the system efficient for many lights, you should be sure to only compute the integral for pixels close enough to the light to have a chance at contributing a visible amount of light to the scene.  For instance, in a deferred shading pipeline you can render a spherical mesh around the light so that the shader computing the light contribution only runs for pixels near the light.</p>
+
+<p>I found that the hardest part of implementing this shader is correctly putting your camera and world fragment into light space so that you can take advantage of the simple integral.</p>
+
+<h2 id="results">Results</h2>
+
+<p><img src="http://ijdykeman.github.io/assets/fog_shader/small_gw_world.png" alt="A small generate worlds environment" />
+<em>A small level built with the Generate Worlds algorithm with subtle fog lighting</em></p>
+
+<p><img src="http://ijdykeman.github.io/assets/fog_shader/large_gw_world.png" alt="A large generate worlds environment" />
+<em>More lights create a stronger effect</em></p>
+
+<p><img src="http://ijdykeman.github.io/assets/fog_shader/spaceship_in_directional_fog.jpg" alt="A spaceship with directional lights" /></p>
+
+<p><em>By also tracking information about the direction that the light is pointing, you can create nice shaped lights in the fog</em></p>
+
+<h2 id="further-reading">Further reading</h2>
+
+<p><a href="http://www.cs.cmu.edu/afs/cs/academic/class/16823-s16/www/pdfs/appearance-modeling-19-20.pdf">Introduction to Light Scattering: An Imaging Sciences Perspective</a></p>
+
+<p><a href="http://www.cs.columbia.edu/~bosun/images/research/sig05/download/rtsc.pdf">A Practical Analytic Single Scattering Model for Real Time Rendering</a></p>
+
+<p><a href="https://www.gamasutra.com/blogs/BartlomiejWronski/20141208/226295/Atmospheric_scattering_and_volumetric_fog_algorithm__part_1.php">Atmospheric scattering and volumetric fog algorithm part 1</a></p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">Isaac Dykeman</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>Isaac Dykeman</li>
+          <li><a href="mailto:ijdykeman@gmail.com">ijdykeman@gmail.com</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/ijdykeman"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">ijdykeman</span></a>
+
+          </li>
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89435172-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+
+</html>

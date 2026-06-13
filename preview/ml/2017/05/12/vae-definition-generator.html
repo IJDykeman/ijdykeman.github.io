@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Dictionary Definitions from Word Embeddings using Variational Autoencoders</title>
+  <meta name="description" content="In this blog post, I’ll describe a model I built in collaboration with Angel Chang for generating dictionary definitions of word vectors.  Dense word embeddi...">
+
+  <link rel="stylesheet" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/css/main.css">
+  <link rel="canonical" href="http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/ml/2017/05/12/vae-definition-generator.html">
+  <link rel="alternate" type="application/rss+xml" title="Isaac Dykeman" href="http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/feed.xml">
+</head>
+
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/">Isaac Dykeman</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+<!--         
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/about/">About</a>
+          
+          
+        
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/gallery/">Gallery</a>
+          
+          
+        
+          
+        
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/projects/megagrant.html">MegaGrant Proposal for Low Cost Motion Capture</a>
+          
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/reading_list/">Reading List</a>
+          
+          
+        
+          
+         -->
+          <a class="page-link" href="/about/">About</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">Dictionary Definitions from Word Embeddings using Variational Autoencoders</h1>
+    <p class="post-meta"><time datetime="2017-05-12T00:00:00+00:00" itemprop="datePublished">May 12, 2017</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>In this blog post, I’ll describe a model I built in collaboration with Angel Chang for generating dictionary definitions of word vectors.  Dense word embedding are known to capture the meaning of words in a way that is effective for many downstream NLP tasks.  However, it is difficult to observe directly what information they contain.  Word vectors can be manipulated arithmetically to solve analogy and word similarity problems, but these tasks provide an indirect look at what meaning the embedding captures.  In particular, these tasks do not reveal what use a complex model could make of these vectors.  On the other hand, using word embeddings as input for a complex downstream task can only tell us how well that embedding does as a representation for that task.  Our model creates a direct view of word vector contents by creating an English representation of their contents.  This is analogous to asking a person to produce a definition of a word if you want to evaluate their understanding of that word.  Our system is able to create plausible definitions for words for unseen words.</p>
+
+<p><img src="/assets/vae-definition-generation/nested_dictionary_model_diagram.svg" alt="full model diagram" /></p>
+
+<!-- # Related work -->
+<!-- Unnat's paper and the other definitions paper -->
+
+<h1 id="data">Data</h1>
+
+<p>We use a data set of 596,739 (<em>word</em>, <em>definition</em>) pairs compiled from various lexical resources.  Each word is paired with all definitions found in WordNet, The American Heritage Dictionary, The Collaborative International Dictionary of English, Wiktionary and Webster’s Dictionary.  We perform a 85/10/5 split on the training data to obtain our final training,  validation, and test sets (see the table below for dataset statistics). We split by word so that all the definitions for a given word appear in only one of the data sets.  We only use definitions of length less than 20 to avoid a long tail of definitions which contain detailed historical or biographical information.</p>
+
+<!-- data set, words, definitions, definitions per word
+train, 55888, 507438, 9.1
+validation, 6575, 58388, 8.9
+test, 3288, 30913, 9.4 -->
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:0px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:0px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-vi9z{font-family:Georgia, serif !important;;vertical-align:top}
+.tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
+</style>
+
+<table class="tg">
+  <tr>
+    <th class="tg-vi9z">data set</th>
+    <th class="tg-vi9z">words</th>
+    <th class="tg-vi9z">definitions</th>
+    <th class="tg-vi9z">definitions per word</th>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">train</td>
+    <td class="tg-k4q0">55888</td>
+    <td class="tg-k4q0">507438</td>
+    <td class="tg-k4q0">9.1</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">validation</td>
+    <td class="tg-k4q0">6575</td>
+    <td class="tg-k4q0">58388</td>
+    <td class="tg-k4q0">8.9</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">test</td>
+    <td class="tg-k4q0">3288</td>
+    <td class="tg-k4q0">30913</td>
+    <td class="tg-k4q0">9.4</td>
+  </tr>
+</table>
+
+<center><i>Data set statistics with total number of words and definitions, and average number of definitions per word.</i></center>
+
+<p>We use word vectors trained by <a href="http://www.aclweb.org/anthology/Q16-1002">Hill et al.</a>  using word2vec to represent words as input to our models, and as target outputs when applicable.  We do not modify the embeddings during training.  This allows us to to exploit large training corpora used for those embeddings, and to increase our ability to generalize to words not present in the dictionary data.</p>
+
+<h1 id="approaches">Approaches</h1>
+
+<p>We investigate models across a spectrum of size and complexity.  Our simplest model is a multilayer perceptron for generating two-word definitions, e.g. <em>frog: amphibious animal</em>.  This model produces definitions that are reliably reasonable but limited in expressiveness.  To generate more complex and diverse definitions of unspecified length, we use variational autoencoders (VAEs) with RNN encoders and decoders.  We created one sequence VAE with softmax output, and one which outputs embedding space vectors at each time step. We compare all of these models to a baseline RNN decoder architecture.</p>
+
+<h2 id="two-word-definitions">Two word definitions</h2>
+
+<p>As a preliminary experiment, we generate two-word definitions of the form (<em>adjective</em>, <em>noun</em>), for example, <em>ostrich: flightless bird</em>.  As training data, we use two-word definitions extracted from our original data for this task.  To extract a two-word definition, we search the original definition for a hypernym of the word being defined, then find adjectives that appear before that hypernym.  Each one of those (<em>adjective</em>, <em>hypernym</em>) pairs forms a valid two-word definition.  For example, given the dictionary definition <em>ostrich: a flightless African bird with a long neck, long legs, and two toes on each foot.</em> we get <em>ostrich: flightless bird</em> and <em>ostrich: African bird</em> as two word definitions.  To detect hypernyms, we use WordNet, and we use NLTK to part-of-speech tag the definitions to find adjectives.</p>
+
+<p>Using this data, we train a multilayer perceptron to predict an adjective and a hypernym vector for a given word.
+We use as the loss function the sum of the squared cosine distances between the two predicted vectors and the vectors for the two-word definition. We take the words in our embedding space with the lowest cosine distances to the vectors the model predicts to be its output.  We use an ensemble model that sums the outputs of 10 trained models to improve the quality of definitions generated.</p>
+
+<p>In the equation below, \(J\) is the loss function.  \(\hat x_{adj}\) is the vector the model predicts for the adjective, \(x_{adj}\) is the vector for the target adjective.  \(\hat x_{noun}\) is the predicted vector for the noun, \(x_{noun}\) is the target.</p>
+
+\[\begin{equation}
+\begin{split}
+J(x, \hat x) =
+ &amp;\quad \left(\frac{x_{adj}
+ \cdot \hat x_{adj}}{||x_{adj}||\times||\hat x_{adj}||}\right)^2 \\
+ +  &amp;\quad \left(\frac{x_{noun}
+ \cdot \hat x_{noun}}{||x_{noun}||
+    \times||\hat x_{noun}||}\right)^2
+\end{split}
+\end{equation}\]
+
+<p>In general, this model produces results that are simple but reasonable.  For instance, the model generates the definitions <em>storm: violent wind</em> and <em>theist: religious person</em> (results section for more examples).</p>
+
+<p>For instance, it comes up with the definition <em>technocrat: sophisticated person.</em>  While this may accurately reflect part of the meaning of the word, this definition certainly doesn’t capture everything that the word “technocrat” expresses, namely its association with technology.  To generate more complete definitions, we use variational autoencoders that can output definitions of varying length and structure.</p>
+
+<h2 id="background-on-variational-autoencoders">Background on Variational Autoencoders</h2>
+<!-- %$Q$ is encouraged to be close to some prior distribution in the latent space. -->
+<!-- %, and the prior is $$\mathcal{N}(\vec 0, \vec 1)$$. -->
+<p>A variational autoencoder (VAE) is a form of regularized autoencoder where the encoder produces a probability distribution \(Q\) for each sample \(x\), and the decoder receives as input samples from that probability distribution, which it uses to reconstruct \(x\).  The encoder and decoder are neural networks. In our case, \(Q\) is an isotropic Guassian. Given a data sample \(x\), the encoder produces the parameters \(\vec \mu(x)\) and \(\vec \sigma(x)\) of \(Q\), so \(Q=\mathcal{N}(\vec \mu(x), \vec \sigma(x))\).
+The decoder takes a sample \(z\) from \(Q\) and attempts to reconstruct \(x\), producing \(\hat x\).  We will denote the decoder function \(decode\), so
+\(\hat x = decode(z) ~~\text{where} ~ z \sim \mathcal{N}(\vec \mu(x), \vec \sigma(x))\)  We will train the autoencoder to minimize the reconstruction error between \(x\) and \(\hat x\), which we will denote \(re(x, \hat x)\).</p>
+
+<p>In order to force \(Q\) to be close to some known distribution, we also add the Kullback-Leibler divergence between \(Q\) and a prior distribution to the loss.  In our case, the prior is \(\mathcal{N}(\vec 0, \vec 1)\), so \(KL(\mathcal{N}(\vec \mu(x), \vec \sigma(x)) \|\mathcal{N}(\vec 0, \vec 1))\) is added to the loss of the autoencoder.  Having a prior on \(Q\) will be useful for generating novel samples, as we will describe later.</p>
+
+<p>We denote the loss for an example \(x\) with \(J(x)\).  The loss expression is</p>
+
+\[\begin{equation}
+\begin{split}
+J(x) &amp; = re(x, \hat x) + KL(\mathcal{N}(\vec \mu(x), \vec \sigma(x)) ~ || ~ \mathcal{N}(\vec 0, \vec 1))\\
+&amp; =re(x, decode(z)) \\
+&amp; \quad + KL(\mathcal{N}(\vec \mu(x), \vec \sigma(x)) ~ || ~ \mathcal{N}(\vec 0, \vec 1))\\
+&amp; \quad \text{where} ~ z \sim \mathcal{N}(\vec \mu(x), \vec \sigma(x)))
+\end{split}
+\end{equation}\]
+
+<p>We now might now like to optimize the encoder decoder networks with backpropagation, but we cannot as long as there is a non-differentiable sampling operation producing \(z\).  To alleviate this, we invoke the reparametrization trick.  The reparametrization trick involves not sampling \(z\) from \(\mathcal{N}(\vec \mu(x), \vec \sigma(x))\), but instead sampling \(\epsilon\) from \(\mathcal{N}(\vec 0, \vec 1))\) and taking \(z = \hat \sigma(x) \odot \epsilon + \hat \mu(x)\), where \(\odot\) is elementwise multiplication.  Our loss expression is now:</p>
+
+\[\begin{equation}
+\begin{split}
+J(x) &amp; =re(x, decode(\hat \sigma(x) \odot \epsilon + \hat \mu(x))) \\
+&amp; \quad + KL(\mathcal{N}(\vec \mu(x), \vec \sigma(x)) ~ || ~ \mathcal{N}(\vec 0, \vec 1))\\
+&amp; \quad \text{where} ~ \epsilon \sim \mathcal{N}(\vec 0, \vec 1))
+\end{split}
+\end{equation}\]
+
+<p>After performing the reparametrization trick, we can train the model end-to-end using backpropagation.</p>
+
+<p>Once the model is trained, we would like to use it to generate samples similar to those in our training data.  Since we added a term in the loss to encourage \(Q\) to be close to \(\mathcal{N}(\vec 0, \vec 1)\), the decoder function has been trained to accept samples \(z\) from a distribution that is close to \(\mathcal{N}(\vec 0, \vec 1)\).  Therefore, to generate new samples, we simply feed values \(z \sim \mathcal{N}(\vec 0, \vec 1)\) into the decoder.</p>
+
+<p>We would also like the ability to condition the samples we generate on some input.  For instance, we might want to generate an image of a particualr type of object, or a definition of a particular word.  For this, we use a conditional variational autoencoder (CVAE).
+<!-- \cite{sohn2015learning} -->
+A CVAE is the same as a VAE except that both the encoder and the decoder take in a label \(y\) in addition to their usual input.</p>
+
+<h1 id="conditional-variational-autoencoder-with-discrete-output">Conditional Variational Autoencoder with Discrete Output</h1>
+
+<!-- % To generate definitions for specific words, we use a conditional VAE (CVAE).  At training time, we feed the encoder and decoder of our model the vector of the word to be defined, and feed the decoder a vector $z$ sampled a normal distribution parametrized by the output of the encoder.
+% At inference time, we feed the decoder a latent vector $z$
+% sampled from a standard normal distribution
+% along with a word vector, and we expect to see a reasonable definition for that unseen word. -->
+
+<p>To generate definitions for specific words, we use a conditional variational autoencoder with recurrent neural networks as its encoder and decoder.  This model is a conditional version of the VAE presented in <a href="https://arxiv.org/pdf/1511.06349.pdf">Bowman et al. 2016</a> that outputs a discrete distribution over its vocabulary at each time step.  A single layer LSTM is used for both the encoder and decoder.  The encoder’s final hidden state is passed through a linear projection to create the \(\vec \sigma\) and \(\vec \mu\) parameters for the Gaussian \(Q\) in the latent space.  At each time step, the decoder’s output is passed through a softmax layer.</p>
+
+<h1 id="conditional-variational-autoencoder-with-word-vector-output">Conditional Variational Autoencoder with Word Vector Output</h1>
+
+<p><img src="/assets/vae-definition-generation/full_pathway_drawing.svg" alt="VAE diagram" /></p>
+
+<center><i>A diagram of the vector output model at training time.  The RNN on the left is the encoder, and the one on the right is the decoder.  For the vector model, we add a special STOP vector to the embedding space to indicate the end of output.  The discrete output model is the same except that instead of a nearest neighbor search on each output step, we take the argmax over the output.</i></center>
+
+<p>In order to exploit the representational power of word vectors as output as well as input, we created a language decoder which outputs vectors in the embedding space at each time step instead of outputting a probability distribution over the entire vocabulary.  This is a logical extension of the two-word model, which also outputs word vectors and is able to consistently capture the meanings of words in its output.  To our knowledge, this is the first language generator to use word vectors as its output representation.  As we show in the results section, this model produces definitions that are substantially better than those from the discrete output models (the CVAE with discrete output and the RNN decoder baseline model).</p>
+
+<p>Like the CVAE with discrete output, this model’s encoder takes in the word to be defined, and it’s decoder takes in the word to be defined and a sample from the Gaussian parametrized by the encoder (see figure below).  This model model uses for its loss the sum of the cosine distances between each word in the predicted sequence \(\hat x\) and the word at the same location in the target sequence \(x\). In the equation below, \(J\) is once again the loss function and \(Q=\mathcal{N}(\vec \mu(x), \vec \sigma(x)\).</p>
+
+\[J(x, \hat x, Q)
+= \sum_{i=1}^{|x|}
+\frac{\hat x_i \cdot x_i}{||\hat x_i||~||x_i||}
++ KL(Q,~ \mathcal{N}(\vec 0, \vec 1))\]
+
+<p>At inference time, we feed in a latent vector \(z\) and a word vector to be defined, and then find the nearest neighbor in the embedding space to each vector the model predicts.  That sequence of nearest neighbor words is the model’s output.</p>
+
+<h1 id="baseline-rnn-decoder-model">Baseline RNN Decoder Model</h1>
+
+<p><img src="/assets/vae-definition-generation/rnn_decoder_diagram.svg" alt="RNN decoder diagram" /></p>
+
+<center><i>A diagram of the baseline RNN decoder model.</i></center>
+
+<p>As a baseline, we created a simple RNN decoder architecture.  This architecture takes a word vector as input, and uses the same LSTM architecture as the discrete CVAE model decoder to predict a sequence of words for its definition.</p>
+
+<p>This model sometimes produces reasonable definitions, such as <em>tibet: a region of the central region of the country of china</em> or <em>sterling: a surname</em>.  More often, it produces definitions that do not clearly express any aspect of the meaning of a word, or are extremely vague, such as <em>suburbs: the area of a region</em>.</p>
+
+<p>Unlike the variational autoencoder models, this model will always produce the same definitions for a given word.  The variational autoencoders will produce different definitions depending on the value of \(z\) which they recieve at inference time.</p>
+
+<h1 id="results">Results</h1>
+<p>We present example definitions of words from the test set generated by our implementations of each of our four models, and evaluate the definition quality using BLEU against dictionary definitions and a user study.  For all our experiments, we used Tensorflow and TF.learn.  For our CVAEs, we use a latent space dimensionality of 13, the same as <a href="https://arxiv.org/pdf/1511.06349.pdf">Bowman et al. 2016</a>, and an LSTM size of 3000.   All models are trained using backpropagation with the Adam optimize, with the validation set used to monitor  convergence.</p>
+
+<h2 id="model-output">Model Output</h2>
+
+<p>When sampling from the vector output models, we take each vector produced and look up the nearest word by cosine distance in the embedding space.  If that word is the word we are trying to define, we instead take the next nearest neighbor.  To speed up nearest neighbor lookup during inference, we restrict the output vocabulary to the 10,000 most common words in English.  This usually does not produce different definitions from those that are decoded using the full 800,000 word embedding since words in the long tail (e.g. Twitter hashtags) are uncommon in definitions.  For discrete output models, we also ignore the word we are defining, taking the next highest scoring word instead.  We ignore words that are repeated, i.e. “the dog dog the” becomes “the dog the.”  Note that we allow all models (except the two-word model) to output punctuation, including parentheses.</p>
+
+<p>The table below shows examples of definitions produced by each of our models. The vector output models (vector CVAE and two-word) are most consistent about generating a definition that clearly expresses at least part of the meaning of the target word.  The vector CVAE performs especially well on words with only a single meaning, for instance, <em>glaucoma: the abnormal hemorrhagic disease.  Often the interocular illness.</em>  This is an accurate definition, since glaucoma is in fact an interocular disease that can cause hemorrhaging.</p>
+
+<p>The discrete models (discrete CVAE and RNN decoder) often miss the meaning of the word completely, while still producing grammatically reasonable output, e.g. <em>bishop: a male given name</em>.
+<!-- %As expected, the two-word model generates simple, reasonable definitions.  The discrete output model is more able to create correct English, whereas the vector output model expresses more detail about the word being defined. e.g. for ``neurosis,'' ``feeling excessive desire of something'' is a more grammatically correct, but less accurate definition than ``an obsessional rather aimlessness or irrational anxiety.'' --></p>
+
+<!-- 
+| word       |  vector CVAE   |  discrete CVAE   |
+|---         | ---            | ---  |
+|sizzling    | showing the fiery sound (in cooking)                  | made by heat                 |
+|smuggling   | transferring in illicit items (especially food goods) | making or other              |
+|undated     | lacking a date in manuscript)                         | existing or written          |
+|Arabia      | the mediterranean country (in the africa)             | country and north region     |
+|connoisseur | any discerning performer (in taste)                   | someone who is skilled       |
+|bishop      | the biggest catholic priest in church                 | someone who makes or.        |
+|tandoori    | the indian uncooked dish (usually in curries)         | made with meat.              |
+
+| word        |  RNN decoder                      |  two-word  |
+|---         | ---                                | --- |
+|sizzling    | a very; a person                   | fiery sound|
+|smuggling   | the act of  making or  taking      | illegal theft|
+|undated     | not yet                            | original document|
+|Arabia      | the region of southern asia        | large area|
+|connoisseur | one who is a person                | energetic person|
+|bishop      | a male given name                  | catholic priest|
+|tandoori    | a small, a small, a small.         | small dish|
+-->
+<!-- | word        |  vector CVAE   |  discrete CVAE   |  RNN decoder   |  two-word  |
+|---       | ---  | ---  | --- | --- |
+|sizzling    | showing the fiery sound (in cooking)                  | made by heat                 | a very; a person                   | fiery sound|
+|smuggling   | transferring in illicit items (especially food goods) | making or other              | the act of  making or  taking      | illegal theft|
+|undated     | lacking a date in manuscript)                         | existing or written          | not yet                            | original document|
+|Arabia      | the mediterranean country (in the africa)             | country and north region     | the region of southern asia        | large area|
+|connoisseur | any discerning performer (in taste)                   | someone who is skilled       | one who is a person                | energetic person|
+|bishop      | the biggest catholic priest in church                 | someone who makes or.        | a male given name                  | catholic priest|
+|tandoori    | the indian uncooked dish (usually in curries)         | made with meat.              | a small, a small, a small.         | small dish| -->
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;margin:0px auto;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
+@media screen and (max-width: 767px) {.tg {width: auto !important;}.tg col {width: auto !important;}.tg-wrap {overflow-x: auto;-webkit-overflow-scrolling: touch;margin: auto 0px;}}</style>
+
+<div class="tg-wrap"><table class="tg">
+  <tr>
+    <th class="tg-k4q0">word</th>
+    <th class="tg-k4q0">vector CVAE</th>
+    <th class="tg-k4q0">discrete CVAE</th>
+    <th class="tg-k4q0">RNN decoder</th>
+    <th class="tg-k4q0">two-word</th>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">sizzling</td>
+    <td class="tg-k4q0">showing the fiery sound (in cooking)</td>
+    <td class="tg-k4q0">made by heat</td>
+    <td class="tg-k4q0">a very; a person</td>
+    <td class="tg-k4q0">fiery sound</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">smuggling</td>
+    <td class="tg-k4q0">transferring in illicit items (especially food goods)</td>
+    <td class="tg-k4q0">making or other</td>
+    <td class="tg-k4q0">the act of making or taking</td>
+    <td class="tg-k4q0">illegal theft</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">undated</td>
+    <td class="tg-k4q0">lacking a date in manuscript)</td>
+    <td class="tg-k4q0">existing or written</td>
+    <td class="tg-k4q0">not yet</td>
+    <td class="tg-k4q0">original document</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">Arabia</td>
+    <td class="tg-k4q0">the mediterranean country (in the africa)</td>
+    <td class="tg-k4q0">country and north region</td>
+    <td class="tg-k4q0">the region of southern asia</td>
+    <td class="tg-k4q0">large area</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">connoisseur</td>
+    <td class="tg-k4q0">any discerning performer (in taste)</td>
+    <td class="tg-k4q0">someone who is skilled</td>
+    <td class="tg-k4q0">one who is a person</td>
+    <td class="tg-k4q0">energetic person</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">bishop</td>
+    <td class="tg-k4q0">the biggest catholic priest in church</td>
+    <td class="tg-k4q0">someone who makes or.</td>
+    <td class="tg-k4q0">a male given name</td>
+    <td class="tg-k4q0">catholic priest</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">tandoori</td>
+    <td class="tg-k4q0">the indian uncooked dish (usually in curries)</td>
+    <td class="tg-k4q0">made with meat.</td>
+    <td class="tg-k4q0">a small, a small, a small.</td>
+    <td class="tg-k4q0">small dish</td>
+  </tr>
+</table></div>
+
+<h2 id="user-study">User Study</h2>
+
+<p>To see if our definitions can be understood by people we selected 200 words from the test set, and 4 distractor words for each (chosen randomly, or from the 10 closest words in the embedding space).  Then, we recruited 211 Amazon Mechanical Turk workers. We showed them the target word and distractor words, along with a definition generated from one of our models, or a real definition, and asked them to select the target word among the distractors.  As the table below shows, the vector CVAE outperforms all other models.  This can be a challenging task even with real definitions and random distractors due to uncommon word senses: e.g., the definition <em>pebble: in australia, a hard, obstinate person; a tough; also said of animals</em> had distractors “brilliant”, “advisor”, “nuclear”, and “slander”, leading a worker to wrongly select “advisor”.  A challenging case with similar distractors is <em>fearful: indicating anxiety, fear, or terror; a fearful, nervous glance</em> with distractors “worried”, “alarmed”, “apprehensive”, “afraid” where the person mistakenly chose “afraid”.</p>
+
+<!-- |model            |  random | similar |
+| ----            |  ------ | ------- |
+|two-word         | 63%     | 27%     |
+|RNN              | 50%     | 23%     |
+|discrete CVAE    | 55%     | 21%     |
+|vector CVAE      | __71%__ | __30%__ |
+|real definitions | 76%     | 50%     | -->
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;margin:0px auto;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
+@media screen and (max-width: 767px) {.tg {width: auto !important;}.tg col {width: auto !important;}.tg-wrap {overflow-x: auto;-webkit-overflow-scrolling: touch;margin: auto 0px;}}</style>
+
+<div class="tg-wrap"><table class="tg">
+  <tr>
+    <th class="tg-k4q0">model</th>
+    <th class="tg-k4q0">random</th>
+    <th class="tg-k4q0">similar</th>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">two-word</td>
+    <td class="tg-k4q0">63%</td>
+    <td class="tg-k4q0">27%</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">RNN</td>
+    <td class="tg-k4q0">50%</td>
+    <td class="tg-k4q0">23%</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">discrete CVAE</td>
+    <td class="tg-k4q0">55%</td>
+    <td class="tg-k4q0">21%</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">vector CVAE</td>
+    <td class="tg-k4q0"><b>71%</b></td>
+    <td class="tg-k4q0"><b>30%</b></td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">real definitions</td>
+    <td class="tg-k4q0">76%</td>
+    <td class="tg-k4q0">50%</td>
+  </tr>
+</table></div>
+
+<center><i>Percent correct selected by users with random selection being 20% correct.</i></center>
+
+<h2 id="quantitative-comparison-with-bleu-scores">Quantitative Comparison with BLEU Scores</h2>
+
+<p>To compare our models, we use the BLEU score to measure similarity between the generated definitions and those in the dictionary (see table below).  We present the BLEU scores for the holdout set, where each definition produced by the model is compared with multiple reference definitions.
+The vector CVAE model performs better than the discrete models, confirming our intuition that leveraging the vector representation as output helps with definition synthesis.</p>
+
+<!-- |model             | test set BLEU |
+| ----             | ------------- |
+|RNN decoder       | 0.5458        |
+|discrete CVAE     | 0.5023        |
+|vector CVAE       | __0.6319__    | -->
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;margin:0px auto;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-k4q0{font-family:Georgia, serif !important;;vertical-align:top}
+@media screen and (max-width: 767px) {.tg {width: auto !important;}.tg col {width: auto !important;}.tg-wrap {overflow-x: auto;-webkit-overflow-scrolling: touch;margin: auto 0px;}}</style>
+
+<div class="tg-wrap"><table class="tg">
+  <tr>
+    <th class="tg-k4q0">model</th>
+    <th class="tg-k4q0">test set BLEU</th>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">RNN decoder</td>
+    <td class="tg-k4q0">0.5458</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">discrete CVAE</td>
+    <td class="tg-k4q0">0.5023</td>
+  </tr>
+  <tr>
+    <td class="tg-k4q0">vector CVAE</td>
+    <td class="tg-k4q0"><b>0.6319</b></td>
+  </tr>
+</table></div>
+
+<h2 id="defining-unseen-words">Defining Unseen Words</h2>
+<p>We can produce definitions for words with no definition in the dictionary data we drew from.  The vector VAE definition of “Anthropologie,” a “boho-chic” clothing chain is <em>anthropologie: an modern merchandiser to a boutique emporium.</em> For Voldemort, the evil wizard from Harry Potter: <em>voldemort: the evil one in the demon of magic in the war</em>.</p>
+
+<h2 id="limitations">Limitations</h2>
+
+<p>The vector CVAE model produces definitions that mostly refer to a correct sense of the word.  However, it has issues with grammar, combining multiple senses in one definition, and vagueness. For example, <em>cannon: the gun weapon</em>, misses the key feature that it is large, and <em>rocking: having the sound and (as a swing)</em> confuses rocking in the sense of music (sound) and rocking in the sense of movement (swing).  A promising avenue for future work is to generate definitions in context, and to use sense embeddings to disentangle the different possible senses.</p>
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">Isaac Dykeman</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>Isaac Dykeman</li>
+          <li><a href="mailto:ijdykeman@gmail.com">ijdykeman@gmail.com</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/ijdykeman"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">ijdykeman</span></a>
+
+          </li>
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89435172-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>The Constrained Tile Placement Algorithm behind Generate Worlds</title>
+  <meta name="description" content="This post describes the algorithm that powers Generate Worlds, a tool that lets users create and explore procedural worlds by building small sets of voxel ti...">
+
+  <link rel="stylesheet" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/css/main.css">
+  <link rel="canonical" href="http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/procedural_generation/2019/11/08/generate-worlds-algorithm.html">
+  <link rel="alternate" type="application/rss+xml" title="Isaac Dykeman" href="http://ijdykeman.github.io/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/feed.xml">
+</head>
+
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  <body>
+
+    <header class="site-header">
+
+  <div class="wrapper">
+
+    <a class="site-title" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/">Isaac Dykeman</a>
+
+    <nav class="site-nav">
+      <a href="#" class="menu-icon">
+        <svg viewBox="0 0 18 15">
+          <path fill="#424242" d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.031C17.335,0,18,0.665,18,1.484L18,1.484z"/>
+          <path fill="#424242" d="M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0c0-0.82,0.665-1.484,1.484-1.484 h15.031C17.335,6.031,18,6.696,18,7.516L18,7.516z"/>
+          <path fill="#424242" d="M18,13.516C18,14.335,17.335,15,16.516,15H1.484C0.665,15,0,14.335,0,13.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.031C17.335,12.031,18,12.696,18,13.516L18,13.516z"/>
+        </svg>
+      </a>
+
+      <div class="trigger">
+<!--         
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/about/">About</a>
+          
+          
+        
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/gallery/">Gallery</a>
+          
+          
+        
+          
+        
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/projects/megagrant.html">MegaGrant Proposal for Low Cost Motion Capture</a>
+          
+          
+        
+          
+          
+          <a class="page-link" href="/IJDykeman/ijdykeman.github.io/claude/blog-demo-live-refresh-dtc0hb/preview/reading_list/">Reading List</a>
+          
+          
+        
+          
+         -->
+          <a class="page-link" href="/about/">About</a>
+      </div>
+    </nav>
+
+  </div>
+
+</header>
+
+
+    <div class="page-content">
+      <div class="wrapper">
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+	<script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML" type="text/javascript"></script>
+
+  <header class="post-header">
+    <h1 class="post-title" itemprop="name headline">The Constrained Tile Placement Algorithm behind Generate Worlds</h1>
+    <p class="post-meta"><time datetime="2019-11-08T00:00:00+00:00" itemprop="datePublished">Nov 8, 2019</time></p>
+  </header>
+
+  <div class="post-content" itemprop="articleBody">
+    <p>This post describes the algorithm that powers <a href="http://generateworlds.com/">Generate Worlds</a>, a tool that lets users create and explore procedural worlds by building small sets of voxel tiles.  In this post I’ll give an overview of the algorithm, and my next post will show that it compares favorably to competing methods in terms of speed and flexibility.  For some background on what constraint-based procedural generation is and why it’s interesting, look at my <a href="https://ijdykeman.github.io/procedural_generation/2019/05/17/introducing-generate-worlds.html">previous post</a>.</p>
+
+<p>If you’d like to try your hand at creating procedural worlds using this system, consider buying Generate Worlds.  If the price is too steep, read on, and this post will give you all the information you need to implement the Generate Worlds algorithm yourself.</p>
+
+<iframe frameborder="0" src="https://itch.io/embed/406212?linkback=true&amp;border_width=2&amp;bg_color=353535&amp;fg_color=ffffff&amp;link_color=fa5c5c&amp;border_color=333333" width="100%" height="169"></iframe>
+
+<h3 id="tile-sets">Tile Sets</h3>
+
+<p>In Generate Worlds, each environment is assembled from a <em>tile set</em>.  Tiles are simply small voxel models.  Let’s start with an example.  The image below contains 9 tiles.  As you can see, each tile is made of voxels, which display as colored cubes.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/labeled_woods_tiles.svg" alt="woods tiles" /></p>
+
+<p>If we put arrange these voxel models in a sensible way, we can make a little pastoral scene, as in the animation below. By “sensible” I mean that tiles fit together if their colors match along the touching edge.</p>
+
+<video width="100%" controls="" autoplay="" loop="" muted="">
+  <source src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/woods_tile_assembly.mov" />
+Your browser does not support the video tag.
+</video>
+
+<p>The goal of the Generate Worlds algorithm is to perform this assembly quickly and automatically. Before considering the algorithm, let’s look at the problem setup.</p>
+
+<h3 id="putting-tiles-together">Putting Tiles Together</h3>
+
+<p>Consider a tile set containing the 4 tiles in the image below:
+<img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/simple_tile_set.png" alt="simple tile set" /></p>
+
+<p>These tiles are analogous to the 3D ones shown in the previous section.</p>
+
+<p>The Generate Worlds algorithm creates <em>valid tilings</em> by imposing one simple rule: <em>If two tiles touch, all colors along the touching face must match.</em>  This rule formalizes the intuition that a human designer might use to construct a 3D world out of voxel tiles.</p>
+
+<p>In a valid tiling of the 4 tiles above, light-colored cells will touch only light-colored cells and dark-colored cell will only touch dark-colored cells along tile borders.  For example:</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/valid_vs_invalid_pair.svg" alt="valid vs invalid pair" /></p>
+
+<p>The example above on the right is invalid because a light square touches a dark square along the edge where the tiles touch.  Below are two valid tilings generated with this tile set:</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/simple_example_tilings.png" alt="simple example tilings" /></p>
+
+<p>Creating a valid tiling turns out to be non-trivial in general.  For instance, take the following simple, greedy strategy: We start with an empty grid.  At each iteration, place a tile in some location by choosing a tile that is valid given the tiles that we’ve already placed.  The diagram below illustrates the difficulty with this strategy.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/greedy_placement.svg" alt="greedy placement" /></p>
+
+<p>By placing tiles without looking ahead at how placements affect future options, the greedy approach quickly gets stuck; in the diagram above, no valid placement is possible at the red location.  This is the central difficulty: past placements can reduce current placement options to zero.  We need some way to prevent placements that cause us to get stuck.  The algorithm implemented in Generate Worlds starts by considering all tiles to be possible at all locations in the grid.  If I place one tile in the grid, clearly some of those possible placements go away.  Once the algorithm takes those possibilities away, it can reexamine the remaining possibilities and remove yet more tiles that are now incompatible with the smaller set of remaining possible tiles at neighboring locations.</p>
+
+<p>Consider the example below.  The algorithm starts with a 3x3 grid with a single tile placed in the center.  The placement of this tile immediately implies that 9 possible tiles in the neighboring grid locations are impossible, so it removes them from consideration.  Once these tiles are removed, it can remove tiles that are not compatible with any tile still under consideration in the neighboring grid squares.  The red locations in the diagram highlight locations where tiles are removed because they are incompatible with all the neighbors still under consideration.  If the algorithm continues this process until no more tiles can be removed, it gets to the state on the bottom left of the diagram below.  As you can see, many tiles have been removed from consideration.  If a tile placement strategy were to only choose tiles from these remaining groups, it would be considerably less likely to get stuck than it would when using the greedy algorithm I described earlier.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/removing_incompatible_tiles.svg" alt="removing incompatible tiles" /></p>
+
+<p>The problem with this approach is that it requires an expensive iterative process each time I place a tile.  But note that any time I place the inverted T tile, the 19 tiles that I removed in the example above can be removed from consideration around that placement.  I call the collection of tiles that remain under consideration around the tile after it is placed the <em>allowed neighborhood</em> for that tile.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/allowed_neighborhood_example.svg" alt="allowed neighborhood example" /></p>
+
+<h3 id="rapid-tiling-by-caching-information">Rapid Tiling by Caching Information</h3>
+
+<p><strong>The key insight of the Generate Worlds algorithm is that the information gathered about a tile’s possible neighbors can be reused each time that tile is placed.</strong>  For the inverted T-shaped tile above, for instance, we can remove 19 tiles from consideration in the eight surrounding grid squares as soon as that tile is placed by looking up a cached version of the allowed neighborhood for that tile.</p>
+
+<p>For instance, in the example below, the algorithm is tiling a 5x5 grid by using the cached allowed neighborhoods of the 4 tiles.  After placing the first tile, it removes the 19 tiles from consideration that we found to be impossible in the example above.  After placing each tile, the possibilities not in the allowed neighborhood of the placed tile are removed from consideration.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/tiling_a_world.svg" alt="tiling a world" /></p>
+
+<p>Continuing in this way, we can tile the entire grid with only fast local updates to the sets of tiles still under consideration at each location.</p>
+
+<p>Allowed neighborhoods can be as large as you want, allowing distant incompatible tiles to be removed from consideration each time a tile is placed.  While generating the allowed neighborhoods is relatively slow, it only needs to be done once, and  thereafter each tile placement takes time linear in the size of the neighborhood.</p>
+
+<h3 id="extension-to-3d">Extension to 3D</h3>
+
+<p>The Generate Worlds algorithm extends naturally to worlds with height.  Instead 2D tiles that must match in color along their shared edges with 4 neighbor tiles, we have 3D tiles that must match in color along 6 faces with their neighbors.  Consider these 3D tiles:</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/dungeon_tiles.svg" alt="dungeon tiles" /></p>
+
+<p>Assembling these tiles in 3D looks like this:</p>
+
+<video width="100%" controls="" autoplay="" loop="" muted="">
+  <source src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/dungeon_tile_assembly.mov" />
+Your browser does not support the video tag.
+</video>
+
+<p>In this case, the allowed neighborhoods are 3D grids instead of 2D grids, and the algorithm generates them in an analogous fashion to what I’ve illustrated above for the 2D case.</p>
+
+<h3 id="result-gallery">Result Gallery</h3>
+
+<p>Below are images of worlds generated using implementations of this algorithm, along with brief descriptions.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/generate_worlds_room.jpg" alt="generate worlds room" /></p>
+
+<p>A screenshot from <a href="http://generateworlds.com/">Generate Worlds</a> showing a  room with an exit.  The ridges on the ceiling coincide with tile boundaries.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/perspective_dungeon.jpg" alt="perspective view of a dungeon" /></p>
+
+<p>A screenshot from a separate tool I am building, which is also powered by the Generate Worlds algorithm, showing different types of rooms and passageways.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/isometric_dungeon.jpg" alt="isometric view of a dungeon" /></p>
+
+<p>A similar world as above, but now in a cute isometric view</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/traitors_world.png" alt="Dante’s ninth circle" /></p>
+
+<p>A world inspired by Dante’s ninth circle of hell: sinner frozen in a plane of ice.  Rendered in MagicaVoxel.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/sodomites_world.png" alt="Dante’s second circle" /></p>
+
+<p>A world inspired by Dante’s second circle of hell: a landscape under burning rain, crossed by a bridge.  Rendered in MagicaVoxel.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/waterfall_world.png" alt="waterfalls world" /></p>
+
+<p>A world with grassy platforms with waterfalls and rivers.  Rendered in MagicaVoxel.</p>
+
+<p><img src="http://ijdykeman.github.io/assets/generate_worlds_algorithm/town_world.png" alt="town world" /></p>
+
+<p>A medieval town landscape with buildings and walls.  Rendered in MagicaVoxel.</p>
+
+
+  </div>
+
+</article>
+
+      </div>
+    </div>
+
+    <footer class="site-footer">
+
+  <div class="wrapper">
+
+    <!-- <h2 class="footer-heading">Isaac Dykeman</h2> -->
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li>Isaac Dykeman</li>
+          <li><a href="mailto:ijdykeman@gmail.com">ijdykeman@gmail.com</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-2">
+        <ul class="social-media-list">
+          
+          <li>
+            <a href="https://github.com/ijdykeman"><span class="icon icon--github"><svg viewBox="0 0 16 16"><path fill="#828282" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/></svg>
+</span><span class="username">ijdykeman</span></a>
+
+          </li>
+          
+
+          
+        </ul>
+      </div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+
+    <script>
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-89435172-1', 'auto');
+  ga('send', 'pageview');
+
+</script>
+
+  </body>
+
+</html>
