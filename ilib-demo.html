@@ -52,58 +52,6 @@
       touch-action: none;
     }
 
-    .bar {
-      position: fixed;
-      left: 0;
-      right: 0;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: max(10px, env(safe-area-inset-top)) 16px 10px;
-      z-index: 5;
-      pointer-events: none;
-    }
-
-    .bar.top { top: 0; background: linear-gradient(180deg, rgba(10,14,26,0.55), transparent); }
-
-    .bar a, .pill {
-      pointer-events: auto;
-      text-decoration: none;
-      color: var(--text);
-      font-size: 14px;
-      line-height: 1;
-      padding: 9px 13px;
-      border-radius: 999px;
-      background: var(--panel);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      white-space: nowrap;
-    }
-
-    .bar .title {
-      font-weight: 600;
-      letter-spacing: 0.2px;
-    }
-    .bar .title small { opacity: 0.7; font-weight: 400; }
-    .spacer { flex: 1; }
-
-    #hint {
-      position: fixed;
-      left: 50%;
-      bottom: calc(16px + env(safe-area-inset-bottom));
-      transform: translateX(-50%);
-      z-index: 5;
-      font-size: 13px;
-      padding: 9px 15px;
-      border-radius: 999px;
-      background: var(--panel);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      transition: opacity 0.6s ease;
-    }
-
     #overlay {
       position: fixed;
       inset: 0;
@@ -142,14 +90,6 @@
 <body>
   <div id="wasm-example"><!-- WebGL canvas is injected here by the wasm app --></div>
 
-  <div class="bar top">
-    <a href="./" aria-label="Back to home">&larr; Isaac&nbsp;Dykeman</a>
-    <span class="spacer"></span>
-    <span class="title pill">ilib&nbsp;<small>· WebGL 3D</small></span>
-  </div>
-
-  <div id="hint">Drag to orbit · pinch to zoom · two fingers to pan</div>
-
   <div id="overlay">
     <div class="spinner" id="spinner"></div>
     <h1 id="ov-title">Loading the ilib demo…</h1>
@@ -161,7 +101,6 @@
     const ovTitle = document.getElementById('ov-title');
     const ovMsg = document.getElementById('ov-msg');
     const spinner = document.getElementById('spinner');
-    const hint = document.getElementById('hint');
 
     function fail(title, detail) {
       spinner.style.display = 'none';
@@ -197,10 +136,6 @@
       revealed = true;
       canvas.addEventListener('contextmenu', (e) => e.preventDefault());
       overlay.classList.add('hidden');
-      setTimeout(() => { if (hint) hint.style.opacity = '0'; }, 6000);
-      const hideHint = () => { if (hint) hint.style.opacity = '0'; };
-      canvas.addEventListener('pointerdown', hideHint, { once: true });
-      canvas.addEventListener('touchstart', hideHint, { once: true });
     }
 
     const existing = document.getElementById('rust_viewer');
