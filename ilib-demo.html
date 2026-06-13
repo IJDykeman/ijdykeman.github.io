@@ -184,83 +184,18 @@
       }
     } catch (e) { /* handled above */ }
 
-    // --- Translate touch gestures into events ilib already understands ----------
-    //
-    // ilib (winit 0.30) only drives its camera from *mouse* pointer events;
-    // raw touch is delivered as WindowEvent::Touch, which it ignores. So we
-    // synthesize non-touch PointerEvents (pointerType 'pen' -> winit's mouse
-    // path, and it skips pointer-capture) for one-finger orbit, and wheel
-    // events for two-finger pinch-zoom.
-    //
-    // winit reads fast-drag movement from getCoalescedEvents(), which returns
-    // nothing for synthetic events; removing the method makes winit fall back
-    // to the event itself. Must happen before winit registers its listeners.
-    try { delete PointerEvent.prototype.getCoalescedEvents; } catch (e) { /* ignore */ }
+    // Touch is handled natively inside ilib now (winit WindowEvent::Touch ->
+    // one-finger orbit, two-finger pinch-zoom + pan), and egui gets its own
+    // touch stream, so the page no longer synthesizes any pointer events.
+    // We only suppress the canvas context menu; page-level scroll/zoom is held
+    // off by `touch-action: none` and the locked viewport above.
 
-    function installTouchShim(canvas) {
-      const dist = (a, b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-      const mid = (a, b) => ({ x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 });
-      let lastPinch = null;
-
-      const sendPointer = (type, x, y, button, buttons) => {
-        canvas.dispatchEvent(new PointerEvent(type, {
-          pointerId: 1, pointerType: 'pen', isPrimary: true,
-          clientX: x, clientY: y, button, buttons,
-          bubbles: true, cancelable: true, composed: true, view: window,
-        }));
-      };
-
-      canvas.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        if (e.touches.length === 1) {
-          const t = e.touches[0];
-          sendPointer('pointerdown', t.clientX, t.clientY, 0, 1);
-        } else if (e.touches.length === 2) {
-          lastPinch = dist(e.touches[0], e.touches[1]);
-        }
-      }, { passive: false });
-
-      canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault();
-        if (e.touches.length === 1) {
-          const t = e.touches[0];
-          // button -1 => treated as a move, not a button press
-          sendPointer('pointermove', t.clientX, t.clientY, -1, 1);
-        } else if (e.touches.length === 2) {
-          const d = dist(e.touches[0], e.touches[1]);
-          const m = mid(e.touches[0], e.touches[1]);
-          if (lastPinch != null && d !== lastPinch) {
-            canvas.dispatchEvent(new WheelEvent('wheel', {
-              deltaY: (lastPinch - d) * 2.2, deltaMode: 0,
-              clientX: m.x, clientY: m.y,
-              bubbles: true, cancelable: true, view: window,
-            }));
-          }
-          lastPinch = d;
-        }
-      }, { passive: false });
-
-      const endTouch = (e) => {
-        if (e.cancelable) e.preventDefault();
-        if (e.touches.length === 0) {
-          sendPointer('pointerup', 0, 0, 0, 0);
-          lastPinch = null;
-        } else if (e.touches.length < 2) {
-          lastPinch = null;
-        }
-      };
-      canvas.addEventListener('touchend', endTouch, { passive: false });
-      canvas.addEventListener('touchcancel', endTouch, { passive: false });
-
-      canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-    }
-
-    // Reveal the scene and wire up touch once the wasm app injects its canvas.
+    // Reveal the scene once the wasm app injects its canvas.
     let revealed = false;
     function onCanvasReady(canvas) {
       if (revealed) return;
       revealed = true;
-      installTouchShim(canvas);
+      canvas.addEventListener('contextmenu', (e) => e.preventDefault());
       overlay.classList.add('hidden');
       setTimeout(() => { if (hint) hint.style.opacity = '0'; }, 6000);
       // remove first-interaction hint immediately on touch/click
