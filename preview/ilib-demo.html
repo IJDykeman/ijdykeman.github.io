@@ -88,6 +88,19 @@
     .bar .title small { opacity: 0.7; font-weight: 400; }
     .spacer { flex: 1; }
 
+    #build {
+      position: fixed;
+      right: 10px;
+      bottom: calc(10px + env(safe-area-inset-bottom));
+      z-index: 7;
+      font: 11px/1.2 ui-monospace, Menlo, monospace;
+      padding: 5px 8px;
+      border-radius: 6px;
+      background: rgba(255, 196, 0, 0.85);
+      color: #1a1a1a;
+      pointer-events: none;
+    }
+
     #dbg {
       position: fixed;
       left: 12px;
@@ -168,6 +181,9 @@
 
   <!-- temporary touch-diagnostics HUD (visible so the device can self-report) -->
   <div id="dbg">touch: waiting…</div>
+
+  <!-- build stamp so you can confirm you're on the latest deploy (not a CDN cache) -->
+  <div id="build">build v9 · pinch-mult · 18:30Z</div>
 
   <div id="overlay">
     <div class="spinner" id="spinner"></div>
