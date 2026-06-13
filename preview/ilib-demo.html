@@ -88,6 +88,22 @@
     .bar .title small { opacity: 0.7; font-weight: 400; }
     .spacer { flex: 1; }
 
+    #dbg {
+      position: fixed;
+      left: 12px;
+      top: calc(58px + env(safe-area-inset-top));
+      z-index: 6;
+      font: 12px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+      padding: 8px 10px;
+      border-radius: 8px;
+      background: rgba(8, 11, 20, 0.78);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      color: #b9f6ca;
+      white-space: pre;
+      pointer-events: none;
+      max-width: 70vw;
+    }
+
     #hint {
       position: fixed;
       left: 50%;
@@ -150,6 +166,9 @@
 
   <div id="hint">Drag to orbit · pinch to zoom</div>
 
+  <!-- temporary touch-diagnostics HUD (visible so the device can self-report) -->
+  <div id="dbg">touch: waiting…</div>
+
   <div id="overlay">
     <div class="spinner" id="spinner"></div>
     <h1 id="ov-title">Loading the ilib demo…</h1>
@@ -196,6 +215,28 @@
       if (revealed) return;
       revealed = true;
       canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+      // Diagnostics: count touch/pointer events the browser delivers to the
+      // canvas, so we can tell if the issue is delivery vs. ilib handling.
+      // Passive + capture so this never interferes with winit's own handlers.
+      const dbg = document.getElementById('dbg');
+      const counts = { ts: 0, tm: 0, te: 0, pd: 0, pm: 0, pu: 0 };
+      let last = '';
+      const draw = () => {
+        if (dbg) dbg.textContent =
+          `touch  start ${counts.ts}  move ${counts.tm}  end ${counts.te}\n` +
+          `pointer down ${counts.pd}  move ${counts.pm}  up ${counts.pu}\n` +
+          `last ${last}`;
+      };
+      const opt = { capture: true, passive: true };
+      canvas.addEventListener('touchstart', (e) => { counts.ts++; const t = e.touches[0]; last = t ? `(${t.clientX | 0},${t.clientY | 0}) n=${e.touches.length}` : ''; draw(); }, opt);
+      canvas.addEventListener('touchmove', (e) => { counts.tm++; const t = e.touches[0]; last = t ? `(${t.clientX | 0},${t.clientY | 0}) n=${e.touches.length}` : ''; draw(); }, opt);
+      canvas.addEventListener('touchend', () => { counts.te++; draw(); }, opt);
+      canvas.addEventListener('pointerdown', (e) => { counts.pd++; last = `${e.pointerType}`; draw(); }, opt);
+      canvas.addEventListener('pointermove', (e) => { counts.pm++; draw(); }, opt);
+      canvas.addEventListener('pointerup', () => { counts.pu++; draw(); }, opt);
+      draw();
+
       overlay.classList.add('hidden');
       setTimeout(() => { if (hint) hint.style.opacity = '0'; }, 6000);
       // remove first-interaction hint immediately on touch/click
