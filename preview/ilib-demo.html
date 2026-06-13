@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <!-- viewport-fit=cover for iPhone notch; lock page zoom so gestures reach the canvas -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#3b558d">
+  <title>ilib — interactive 3D demo</title>
+  <style>
+    :root {
+      --bg: #2c3656;
+      --panel: rgba(18, 24, 43, 0.72);
+      --text: #eef2fb;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      /* stop iOS rubber-band scroll / pull-to-refresh stealing touches */
+      overscroll-behavior: none;
+    }
+
+    /* The wasm app appends its <canvas id="rust_viewer"> here. */
+    #wasm-example {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh; /* dynamic viewport height: avoids iOS Safari toolbar gaps */
+      background: linear-gradient(160deg, #3b558d 0%, #26304d 100%);
+    }
+
+    #rust_viewer {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+      /* we translate touch -> pointer ourselves; keep the browser from
+         scrolling/zooming on top of the canvas */
+      touch-action: none;
+    }
+
+    .bar {
+      position: fixed;
+      left: 0;
+      right: 0;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: max(10px, env(safe-area-inset-top)) 16px 10px;
+      z-index: 5;
+      pointer-events: none;
+    }
+
+    .bar.top { top: 0; background: linear-gradient(180deg, rgba(10,14,26,0.55), transparent); }
+
+    .bar a, .pill {
+      pointer-events: auto;
+      text-decoration: none;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1;
+      padding: 9px 13px;
+      border-radius: 999px;
+      background: var(--panel);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      white-space: nowrap;
+    }
+
+    .bar .title {
+      font-weight: 600;
+      letter-spacing: 0.2px;
+    }
+    .bar .title small { opacity: 0.7; font-weight: 400; }
+    .spacer { flex: 1; }
+
+    #hint {
+      position: fixed;
+      left: 50%;
+      bottom: calc(16px + env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      z-index: 5;
+      font-size: 13px;
+      padding: 9px 15px;
+      border-radius: 999px;
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: opacity 0.6s ease;
+    }
+
+    #overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 18px;
+      text-align: center;
+      padding: 24px;
+      background: radial-gradient(120% 120% at 50% 40%, #34406a 0%, #1c2440 100%);
+      transition: opacity 0.5s ease;
+    }
+
+    #overlay.hidden { opacity: 0; pointer-events: none; }
+
+    .spinner {
+      width: 42px;
+      height: 42px;
+      border: 4px solid rgba(255, 255, 255, 0.2);
+      border-top-color: #7fb2ff;
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #overlay h1 { font-size: 19px; margin: 0; font-weight: 600; }
+    #overlay p { margin: 0; max-width: 320px; opacity: 0.78; font-size: 14px; line-height: 1.5; }
+    #overlay .err { color: #ffb4b4; white-space: pre-wrap; font-size: 13px; text-align: left; }
+    code { background: rgba(0,0,0,0.25); padding: 1px 5px; border-radius: 5px; }
+  </style>
+</head>
+
+<body>
+  <div id="wasm-example"><!-- WebGL canvas is injected here by the wasm app --></div>
+
+  <div class="bar top">
+    <a href="./" aria-label="Back to home">&larr; Isaac&nbsp;Dykeman</a>
+    <span class="spacer"></span>
+    <span class="title pill">ilib&nbsp;<small>· WebGL 3D</small></span>
+  </div>
+
+  <div id="hint">Drag to orbit · pinch to zoom</div>
+
+  <div id="overlay">
+    <div class="spinner" id="spinner"></div>
+    <h1 id="ov-title">Loading the ilib demo…</h1>
+    <p id="ov-msg">Compiling a Rust + wgpu 3D scene to your browser (~7&nbsp;MB WebAssembly). First load may take a few seconds.</p>
+  </div>
+
+  <script type="module">
+    const overlay = document.getElementById('overlay');
+    const ovTitle = document.getElementById('ov-title');
+    const ovMsg = document.getElementById('ov-msg');
+    const spinner = document.getElementById('spinner');
+    const hint = document.getElementById('hint');
+
+    function fail(title, detail) {
+      spinner.style.display = 'none';
+      ovTitle.textContent = title;
+      ovMsg.innerHTML = '';
+      const pre = document.createElement('div');
+      pre.className = 'err';
+      pre.textContent = String(detail || '');
+      ovMsg.appendChild(pre);
+      overlay.classList.remove('hidden');
+    }
+
+    // --- WebGL availability check (iOS Safari supports WebGL2) ------------------
+    try {
+      const probe = document.createElement('canvas');
+      if (!probe.getContext('webgl2') && !probe.getContext('webgl')) {
+        fail('WebGL not available',
+          'This device/browser did not expose a WebGL context, which the demo needs to render.');
+        throw new Error('no webgl');
+      }
+    } catch (e) { /* handled above */ }
+
+    // --- Translate touch gestures into events ilib already understands ----------
+    //
+    // ilib (winit 0.30) only drives its camera from *mouse* pointer events;
+    // raw touch is delivered as WindowEvent::Touch, which it ignores. So we
+    // synthesize non-touch PointerEvents (pointerType 'pen' -> winit's mouse
+    // path, and it skips pointer-capture) for one-finger orbit, and wheel
+    // events for two-finger pinch-zoom.
+    //
+    // winit reads fast-drag movement from getCoalescedEvents(), which returns
+    // nothing for synthetic events; removing the method makes winit fall back
+    // to the event itself. Must happen before winit registers its listeners.
+    try { delete PointerEvent.prototype.getCoalescedEvents; } catch (e) { /* ignore */ }
+
+    function installTouchShim(canvas) {
+      const dist = (a, b) => Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+      const mid = (a, b) => ({ x: (a.clientX + b.clientX) / 2, y: (a.clientY + b.clientY) / 2 });
+      let lastPinch = null;
+
+      const sendPointer = (type, x, y, button, buttons) => {
+        canvas.dispatchEvent(new PointerEvent(type, {
+          pointerId: 1, pointerType: 'pen', isPrimary: true,
+          clientX: x, clientY: y, button, buttons,
+          bubbles: true, cancelable: true, composed: true, view: window,
+        }));
+      };
+
+      canvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (e.touches.length === 1) {
+          const t = e.touches[0];
+          sendPointer('pointerdown', t.clientX, t.clientY, 0, 1);
+        } else if (e.touches.length === 2) {
+          lastPinch = dist(e.touches[0], e.touches[1]);
+        }
+      }, { passive: false });
+
+      canvas.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        if (e.touches.length === 1) {
+          const t = e.touches[0];
+          // button -1 => treated as a move, not a button press
+          sendPointer('pointermove', t.clientX, t.clientY, -1, 1);
+        } else if (e.touches.length === 2) {
+          const d = dist(e.touches[0], e.touches[1]);
+          const m = mid(e.touches[0], e.touches[1]);
+          if (lastPinch != null && d !== lastPinch) {
+            canvas.dispatchEvent(new WheelEvent('wheel', {
+              deltaY: (lastPinch - d) * 2.2, deltaMode: 0,
+              clientX: m.x, clientY: m.y,
+              bubbles: true, cancelable: true, view: window,
+            }));
+          }
+          lastPinch = d;
+        }
+      }, { passive: false });
+
+      const endTouch = (e) => {
+        if (e.cancelable) e.preventDefault();
+        if (e.touches.length === 0) {
+          sendPointer('pointerup', 0, 0, 0, 0);
+          lastPinch = null;
+        } else if (e.touches.length < 2) {
+          lastPinch = null;
+        }
+      };
+      canvas.addEventListener('touchend', endTouch, { passive: false });
+      canvas.addEventListener('touchcancel', endTouch, { passive: false });
+
+      canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+    }
+
+    // Reveal the scene and wire up touch once the wasm app injects its canvas.
+    let revealed = false;
+    function onCanvasReady(canvas) {
+      if (revealed) return;
+      revealed = true;
+      installTouchShim(canvas);
+      overlay.classList.add('hidden');
+      setTimeout(() => { if (hint) hint.style.opacity = '0'; }, 6000);
+      // remove first-interaction hint immediately on touch/click
+      const hideHint = () => { if (hint) hint.style.opacity = '0'; };
+      canvas.addEventListener('pointerdown', hideHint, { once: true });
+      canvas.addEventListener('touchstart', hideHint, { once: true });
+    }
+
+    const existing = document.getElementById('rust_viewer');
+    if (existing) {
+      onCanvasReady(existing);
+    } else {
+      const observer = new MutationObserver(() => {
+        const c = document.getElementById('rust_viewer');
+        if (c) { observer.disconnect(); onCanvasReady(c); }
+      });
+      observer.observe(document.getElementById('wasm-example'), { childList: true, subtree: true });
+    }
+
+    // --- Boot the WebAssembly app ----------------------------------------------
+    try {
+      const { default: init } = await import('./ilib_demo/ilib_js_app.js');
+      await init();
+      // Safety net: if the canvas never appears, surface an error.
+      setTimeout(() => {
+        if (!revealed && !document.getElementById('rust_viewer')) {
+          fail('The demo did not start', 'The WebAssembly module loaded but no canvas was rendered.');
+        }
+      }, 8000);
+    } catch (e) {
+      console.error(e);
+      fail('Could not load the demo', e && e.message ? e.message : e);
+    }
+  </script>
+</body>
+
+</html>
