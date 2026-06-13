@@ -2,3 +2,6 @@ _site
 .sass-cache
 .jekyll-metadata
 **/.DS_Store
+
+# local cloudflared binary used by scripts/serve_demo.sh
+.cloudflared-bin
