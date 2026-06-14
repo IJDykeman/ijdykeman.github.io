@@ -74,4 +74,4 @@ window.onresize = adjustHeight;
 adjustHeight();
 </script>
 
-A 3D visualizer written in Rust.
+A 3D visualizer written in Rust. [Open the full-screen interactive demo]({{ "/ilib-demo.html" | relative_url }}) — runs in your browser and works on iPhone (drag to orbit, pinch to zoom, two fingers to pan).
